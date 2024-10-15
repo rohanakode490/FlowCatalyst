@@ -1,16 +1,17 @@
 {
-  "name": "APP",
+  "name": "FlowCatalyst",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "turbo": "^2.1.2",
-    "typescript": "^5.4.5"
+    "turbo": "^2.1.2"
   },
   "engines": {
     "node": ">=18"
