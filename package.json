@@ -6,12 +6,12 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "db:generate": "turbo run db:generate",
-    "db:push": "turbo run db:push"
+    "db:update": "turbo run db:generate && turbo run db:push",
+    "db:studio": "turbo run db:studio --filter=@repo/database"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "turbo": "^2.1.2"
+    "turbo": "^2.1.3"
   },
   "engines": {
     "node": ">=18"
