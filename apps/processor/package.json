@@ -1,12 +1,14 @@
 {
-  "name": "@flowcatalyst/hooks",
+  "name": "@flowcatalyst/processor",
+  "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "tsc -b && node dist/index.js"
   },
+  "license": "ISC",
   "dependencies": {
     "@flowcatalyst/database": "*",
-    "@types/express": "^4.17.21",
-    "express": "^4.21.2"
+    "kafkajs": "^2.2.4"
   }
 }

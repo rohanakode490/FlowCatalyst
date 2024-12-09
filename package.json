@@ -1,5 +1,5 @@
 {
-  "name": "FlowCatalyst",
+  "name": "flowcatalyst",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -8,6 +8,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:update": "turbo run db:generate && turbo run db:push",
     "db:studio": "turbo run db:studio --filter=@repo/database"
+  },
+  "prisma": {
+    "schema": "packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
@@ -20,5 +23,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
 }

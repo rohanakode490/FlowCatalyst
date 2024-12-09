@@ -1,5 +1,9 @@
 import express from "express";
-import { prisma, Prisma } from "@repo/database";
+import prisma from "@flowcatalyst/database";
+
+import { PrismaClient } from "@flowcatalyst/database";
+
+const client = new PrismaClient();
 
 const app = express();
 app.use(express.json());
@@ -11,7 +15,7 @@ app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
   const body = req.body;
 
   // Store in db a new trigger
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  await client.$transaction(async (tx) => {
     const run = await tx.zapRun.create({
       data: {
         zapId: zapId,
