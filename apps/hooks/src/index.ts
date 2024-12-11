@@ -1,5 +1,4 @@
 import express from "express";
-import prisma from "@flowcatalyst/database";
 
 import { PrismaClient } from "@flowcatalyst/database";
 
