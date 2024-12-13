@@ -2,15 +2,19 @@
   "name": "@flowcatalyst/database",
   "version": "0.0.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
     "db:studio": "prisma studio"
-  },
-  "exports": {
-    ".": "./index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0"

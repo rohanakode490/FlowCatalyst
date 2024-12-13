@@ -3,17 +3,24 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc -b && node dist/index.js"
+    "dev2": "tsc -b && node dist/index.js",
+    "dev": "npm run build --workspace=@flowcatalyst/database && tsc -b && node dist/index.js"
   },
   "keywords": [],
+  "exports": {
+    ".": "./index.ts"
+  },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "@flowcatalyst/database": "*",
-    "@types/express": "^4.17.21",
-    "express": "^4.21.2",
     "@types/cors": "^2.8.17",
-    "cors": "^2.8.5"
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.24.1"
   }
 }
