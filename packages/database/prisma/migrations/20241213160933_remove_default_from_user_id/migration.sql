@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Zap" ALTER COLUMN "userId" DROP DEFAULT;

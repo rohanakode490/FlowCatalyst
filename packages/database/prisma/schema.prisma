@@ -18,14 +18,17 @@ model User {
   name     String
   email    String @unique
   password String
+  zaps     Zap[]
 }
 
 model Zap {
   id        String   @id @default(uuid())
+  userId    Int
   triggerId String
   trigger   Trigger? //one trigger per zap
   actions   Action[] //many actions per zap
   zapRuns   ZapRun[]
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Trigger {
@@ -37,11 +40,12 @@ model Trigger {
 }
 
 model Action {
-  id       String          @id @default(uuid())
-  zapId    String
-  zap      Zap             @relation(fields: [zapId], references: [id])
-  actionId String
-  type     AvailableAction @relation(fields: [actionId], references: [id])
+  id            String          @id @default(uuid())
+  zapId         String
+  zap           Zap             @relation(fields: [zapId], references: [id])
+  actionId      String
+  type          AvailableAction @relation(fields: [actionId], references: [id])
+  sortingOrder  Int             @default(0)
 }
 
 model AvailableAction {
