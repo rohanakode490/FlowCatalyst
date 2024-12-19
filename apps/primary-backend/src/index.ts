@@ -12,6 +12,6 @@ app.use("/api/v1/user", userRouter);
 
 app.use("/api/v1/zap", zapRouter);
 
-app.listen(3000, () => {
-  console.log(`Server is working on http://localhost:3000`);
+app.listen(4000, () => {
+  console.log(`Server is working on http://localhost:4000`);
 });
