@@ -4,6 +4,7 @@ import { ContainerScroll } from "@/components/globals/container-scroll-animation
 import { Button } from "@/components/ui/button";
 import { InfiniteMovingCards } from "@/components/globals/infinite-moving-cards";
 import { Integrations } from "@/lib/constant";
+import { Footer } from "@/components/footer/footer";
 
 export default function Home() {
   return (
@@ -36,8 +37,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section className="py-24 md:mt-[27rem] mt-7">
-        <div className="container px-4 py-4 md:py-8">
+      <section className="pt-24 md:mt-[27rem] mt-7">
+        <div className="container px-4 py-4">
           <h2 className="text-3xl font-bold text-center">
             Popular Integrations
           </h2>
@@ -50,6 +51,7 @@ export default function Home() {
           />
         </div>
       </section>
+      <Footer />
     </main>
   );
 }
