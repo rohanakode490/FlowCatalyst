@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware";
-import { SignupSchema } from "../types";
+import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "../db";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
@@ -49,7 +49,7 @@ router.post("/signup", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const body = req.body;
-  const parsedData = SignupSchema.safeParse(body);
+  const parsedData = SigninSchema.safeParse(body);
 
   if (!parsedData.success) {
     return res.status(411).json({
