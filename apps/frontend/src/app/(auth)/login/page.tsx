@@ -36,8 +36,8 @@ export default function LogIn() {
         password,
       });
       if (response) {
-        localStorage.setItem("token", "response.data.token");
-        router.push("/dashboard");
+        localStorage.setItem("token", response.data.token);
+        router.push("/workflows");
       }
     } catch (error: any) {
       if (error.response && error.response.data) {

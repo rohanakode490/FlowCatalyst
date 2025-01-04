@@ -20,7 +20,7 @@ export default function Sidebar() {
     <nav className="dark:bg-black h-screen justify-between flex items-center flex-col gap-10 py-6 px-4">
       <div className="flex items-center justify-center flex-col gap-8">
         {/* TODO: Add Logo */}
-        <Link className="flex font-bold flex-row" href="/">
+        <Link className="flex font-bold flex-row py-2" href="/">
           Flow
         </Link>
 
