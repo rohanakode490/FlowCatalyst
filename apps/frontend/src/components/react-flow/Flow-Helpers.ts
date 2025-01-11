@@ -5,6 +5,7 @@ type NodeType = Node<{
   name: string;
   logo: string;
   configured: boolean;
+  action: boolean;
   formData?: Record<string, any>;
 }>;
 
@@ -65,8 +66,13 @@ export const addNodeBelow = (
   const newNode: NodeType = {
     id: newNodeId,
     type: "customNode",
-    position: { x: 0, y: newY },
-    data: { name: "New Node", logo: "/logo.png", configured: false },
+    position: { x: 1, y: newY },
+    data: {
+      name: "New Node",
+      logo: "/logo.png",
+      configured: false,
+      action: true,
+    },
   };
 
   if (targetNode) {
@@ -132,7 +138,7 @@ export const deleteNode = (
     VERTICAL_SPACING: number,
   ) => void,
 ) => {
-  if (nodes.length <= 2) return;
+  if (nodes.length <= 3) return;
 
   const nodeEdges = edges.filter(
     (e) => e.source === nodeId || e.target === nodeId,

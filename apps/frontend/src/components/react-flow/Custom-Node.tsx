@@ -1,9 +1,9 @@
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { useTheme } from "next-themes";
 import { X } from "lucide-react";
 
-function CustomNode({ data, id }) {
+const CustomNode = memo(({ data, id }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
 
@@ -24,24 +24,26 @@ function CustomNode({ data, id }) {
         onClick={handleNodeClick}
       >
         {/* Delete button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (data.canDelete) {
-              data.onDelete(id);
-            } else {
-              alert("At least 2 Flows needed");
-            }
-          }}
-          className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 
+        {data.action && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (data.canDelete) {
+                data.onDelete(id);
+              } else {
+                alert("At least 2 Flows needed");
+              }
+            }}
+            className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 
         ${
           isDarkMode
             ? "bg-red-600 hover:bg-red-700"
             : "bg-red-500 hover:bg-red-600"
         }`}
-        >
-          <X className="w-4 h-4 text-white" />
-        </button>
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+        )}
 
         {/* Left side: Logo */}
         <div
@@ -62,11 +64,13 @@ function CustomNode({ data, id }) {
         </div>
 
         {/* Handles for connecting nodes */}
-        <Handle
-          type="target"
-          position={Position.Top}
-          className={`w-12 bg-teal-500 ${isDarkMode ? "bg-teal-600" : "bg-teal-400"}`}
-        />
+        {data.action && (
+          <Handle
+            type="target"
+            position={Position.Top}
+            className={`w-12 bg-teal-500 ${isDarkMode ? "bg-teal-600" : "bg-teal-400"}`}
+          />
+        )}
         <Handle
           type="source"
           position={Position.Bottom}
@@ -75,6 +79,6 @@ function CustomNode({ data, id }) {
       </div>
     </>
   );
-}
+});
 
 export default memo(CustomNode);

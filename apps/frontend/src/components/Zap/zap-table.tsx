@@ -22,7 +22,7 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
         <TableRow>
           <TableHead></TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Last Edit</TableHead>
+          <TableHead>Created At</TableHead>
           <TableHead className="text-right">Running</TableHead>
           <TableHead></TableHead>
         </TableRow>
@@ -40,7 +40,7 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
               <Switch />
             </TableCell>
             <TableCell>
-              <Link href={"/zap/" + zap.id}>
+              <Link href={`/flow/edit/${zap.id}`}>
                 <ChevronRight />
               </Link>
             </TableCell>

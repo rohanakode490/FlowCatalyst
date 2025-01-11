@@ -5,7 +5,7 @@ import FormComponent from "@/components/react-flow/FormComponent";
 
 interface SidebarProps {
   selectedNode: any;
-  selectedNodeId: string;
+  selectedNodeId: string | null;
   onClose: () => void;
   onChangeWebhook: () => void;
   onFormSubmit: (nodeId: string, formData: any) => void;
