@@ -30,10 +30,10 @@ export const FlowControls = ({ onAlignNodes, nodes }: FlowControlsProps) => {
       // Prepare data for the backend
       const zapData = {
         availableTriggerId: triggerNode.data.id, // Assuming the trigger node has an ID
-        triggerMetadata: triggerNode.data.formData, // Optional metadata
+        triggerMetadata: triggerNode.data.metadata, // Optional metadata
         actions: actionNodes.map((node) => ({
           availableActionId: node.data.id, // Assuming the action node has an ID
-          actionMetadata: node.data.formData, // Optional metadata
+          actionMetadata: node.data.metadata, // Optional metadata
         })),
       };
 

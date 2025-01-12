@@ -67,7 +67,7 @@ export default function Flow({
     propEdges || initialEdges,
   );
 
-  const [selectedNodeId, setSelectedNodeId] = useState(null); // Track selected node
+  const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
   const {
     selectedWebhook,
     isDialogOpen,
@@ -135,7 +135,7 @@ export default function Flow({
                 name: webhook.name, // Update name
                 logo: webhook.logo, // Update logo
                 configured: true, // Mark as configured
-                formData: webhook.defaultFormData || {}, // Reset form data for the new webhook
+                metadata: webhook.defaultFormData || {}, // Reset form data for the new webhook
               },
             };
           }
@@ -149,7 +149,7 @@ export default function Flow({
 
   // Handle form submission
   const handleFormSubmit = useCallback(
-    (nodeId, formData) => {
+    (nodeId: string, formData: Record<string, any>) => {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
@@ -157,7 +157,7 @@ export default function Flow({
               ...node,
               data: {
                 ...node.data,
-                formData,
+                metadata: formData,
               },
             };
           }
@@ -240,13 +240,13 @@ export default function Flow({
 
   return (
     <>
-      <FlowControls
-        onAlignNodes={() =>
-          alignNodesVertically(setNodes, fitView, VERTICAL_SPACING)
-        }
-        nodes={nodes}
-        edges={edges}
-      />
+      {/* <FlowControls */}
+      {/*   onAlignNodes={() => */}
+      {/*     alignNodesVertically(setNodes, fitView, VERTICAL_SPACING) */}
+      {/*   } */}
+      {/*   nodes={nodes} */}
+      {/*   edges={edges} */}
+      {/* /> */}
 
       <div className="flex w-[90vw] h-[90vh] overflow-hidden">
         <FlowCanvas
@@ -258,6 +258,18 @@ export default function Flow({
           onNodeClick={handleNodeClick}
           isDarkMode={isDarkMode}
         />
+
+        {/* Floating Toolbar (Bottom-Right Corner) */}
+        <div className="absolute bottom-20 left-4 flex gap-2">
+          <FlowControls
+            onAlignNodes={() =>
+              alignNodesVertically(setNodes, fitView, VERTICAL_SPACING)
+            }
+            nodes={nodes}
+            edges={edges}
+          />
+        </div>
+        {/* Conditionally Render Sidebar Panel */}
         {selectedNode && !isDialogOpen && (
           <Sidebar
             selectedNode={selectedNode}

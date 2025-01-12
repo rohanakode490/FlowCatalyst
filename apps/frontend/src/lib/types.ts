@@ -30,3 +30,12 @@ export interface Zap {
     };
   };
 }
+
+export interface FormField {
+  type: "text" | "number" | "select" | "checkbox";
+  label: string;
+  name: string;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  required?: boolean;
+}

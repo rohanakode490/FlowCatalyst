@@ -12,10 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { BACKEND_URL } from "@/app/config";
 import Error from "@/components/globals/form-error";
 import Navbar from "@/components/globals/navbar";
+import api from "@/lib/api";
 
 export default function SignUp() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function SignUp() {
     e.preventDefault();
     setError(""); //clear previous errors
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
+      const response = await api.post("/user/signup", {
         name,
         email,
         password,

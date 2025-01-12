@@ -40,7 +40,7 @@ export default function EditZapPage() {
               logo: trigger.type.image,
               configured: true,
               action: false, // Trigger node
-              formData: trigger.triggerMetadata || {},
+              metadata: trigger.triggerMetadata || {},
             },
           },
           ...actions.map((action: any, index: number) => ({
@@ -53,7 +53,7 @@ export default function EditZapPage() {
               logo: action.type.image,
               configured: true,
               action: true, // Action node
-              formData: action.actionMetadata || {},
+              metadata: action.actionMetadata || {},
             },
           })),
         ];
@@ -80,6 +80,8 @@ export default function EditZapPage() {
   if (loading) {
     return <div>Loading...</div>; // Show a loading state
   }
+
+  // TODO: Add a PUT method for the save button
 
   return (
     <Heading heading="Edit Zap">

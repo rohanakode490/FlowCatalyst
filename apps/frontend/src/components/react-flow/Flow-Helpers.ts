@@ -6,7 +6,7 @@ type NodeType = Node<{
   logo: string;
   configured: boolean;
   action: boolean;
-  formData?: Record<string, any>;
+  metadata?: Record<string, any>;
 }>;
 
 type EdgeType = Edge;
@@ -138,7 +138,7 @@ export const deleteNode = (
     VERTICAL_SPACING: number,
   ) => void,
 ) => {
-  if (nodes.length <= 3) return;
+  if (nodes.length <= 2) return;
 
   const nodeEdges = edges.filter(
     (e) => e.source === nodeId || e.target === nodeId,
