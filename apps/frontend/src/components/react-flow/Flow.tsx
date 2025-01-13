@@ -50,11 +50,15 @@ const initialEdges = [
 interface FlowProps {
   initialNodes?: any[]; // Optional initial nodes
   initialEdges?: any[]; // Optional initial edges
+  triggerData?: Record<string, any>;
+  zapId?: string;
 }
 
 export default function Flow({
   initialNodes: propNodes,
   initialEdges: propEdges,
+  triggerData,
+  zapId,
 }: FlowProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -267,6 +271,8 @@ export default function Flow({
             }
             nodes={nodes}
             edges={edges}
+            zapId={zapId}
+            triggerData={triggerData}
           />
         </div>
         {/* Conditionally Render Sidebar Panel */}
@@ -277,6 +283,7 @@ export default function Flow({
             onClose={() => setSelectedNodeId(null)}
             onChangeWebhook={() => handleChangeWebhook(selectedNodeId)}
             onFormSubmit={handleFormSubmit}
+            triggerData={triggerData}
           />
         )}
       </div>

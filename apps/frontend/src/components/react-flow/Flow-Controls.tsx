@@ -7,12 +7,38 @@ interface FlowControlsProps {
   onAlignNodes: () => void;
   nodes: any[];
   edges: any[];
+  zapId?: string;
+  triggerData?: Record<string, any>;
 }
 
-export const FlowControls = ({ onAlignNodes, nodes }: FlowControlsProps) => {
+export const FlowControls = ({
+  onAlignNodes,
+  nodes,
+  zapId,
+  triggerData,
+}: FlowControlsProps) => {
   // Check if all nodes are configured
   const isSaveDisabled = nodes.some((node) => !node.data.configured);
   const router = useRouter();
+
+  const mapTriggerDataToAction = (
+    actionConfig: any,
+    triggerData: Record<string, any>,
+  ) => {
+    const mappedConfig = { ...actionConfig };
+
+    // Replace variables in the action config with trigger data
+    for (const key in mappedConfig) {
+      if (typeof mappedConfig[key] === "string") {
+        mappedConfig[key] = mappedConfig[key].replace(
+          /{{trigger\.(.*?)}}/g,
+          (_, variable) => triggerData[variable] || "",
+        );
+      }
+    }
+
+    return mappedConfig;
+  };
 
   // Function to save the flow to the Zap database
   const handleSaveFlow = async () => {
@@ -33,19 +59,30 @@ export const FlowControls = ({ onAlignNodes, nodes }: FlowControlsProps) => {
         triggerMetadata: triggerNode.data.metadata, // Optional metadata
         actions: actionNodes.map((node) => ({
           availableActionId: node.data.id, // Assuming the action node has an ID
-          actionMetadata: node.data.metadata, // Optional metadata
+          actionMetadata: mapTriggerDataToAction(
+            node.data.metadata,
+            triggerData,
+          ), // Optional metadata
         })),
       };
 
-      // Send data to the backend
-      const response = await api.post("/zap", zapData, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
+      const isEditing = !!zapId;
+
+      // Send/Update data to the backend
+      const response = isEditing
+        ? await api.put(`/zap/${zapId}`, zapData, {
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          })
+        : await api.post("/zap", zapData, {
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          });
 
       // Redirect to the dashboard after saving
-      if (response.data.zapId) {
+      if (response.data.zapId || response.data.success) {
         router.push("/workflows");
       }
     } catch (error: any) {

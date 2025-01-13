@@ -14,6 +14,7 @@ export default function EditZapPage() {
   const [initialNodes, setInitialNodes] = useState<any[]>([]);
   const [initialEdges, setInitialEdges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [triggerData, setTriggerData] = useState<Record<string, any>>({});
 
   // Fetch the saved Zap structure
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function EditZapPage() {
               logo: trigger.type.image,
               configured: true,
               action: false, // Trigger node
-              metadata: trigger.triggerMetadata || {},
+              metadata: trigger.metadata || {},
             },
           },
           ...actions.map((action: any, index: number) => ({
@@ -53,7 +54,7 @@ export default function EditZapPage() {
               logo: action.type.image,
               configured: true,
               action: true, // Action node
-              metadata: action.actionMetadata || {},
+              metadata: action.metadata || {},
             },
           })),
         ];
@@ -66,6 +67,12 @@ export default function EditZapPage() {
         }));
         setInitialNodes(nodes);
         setInitialEdges(edges);
+
+        // Fetch trigger data
+        const triggerResponse = await api.get(
+          `/trigger-response/${trigger.id}`,
+        );
+        setTriggerData(triggerResponse.data.triggerData);
       } catch (error) {
         console.error("Failed to fetch Zap:", error);
         // router.push("/workflows"); // Redirect to the dashboard if the fetch fails
@@ -87,7 +94,12 @@ export default function EditZapPage() {
     <Heading heading="Edit Zap">
       <ReactFlowProvider>
         {!loading && (
-          <Flow initialNodes={initialNodes} initialEdges={initialEdges} />
+          <Flow
+            initialNodes={initialNodes}
+            initialEdges={initialEdges}
+            triggerData={triggerData}
+            zapId={zapId}
+          />
         )}
       </ReactFlowProvider>
     </Heading>

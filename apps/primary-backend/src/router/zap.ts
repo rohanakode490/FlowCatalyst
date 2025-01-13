@@ -119,4 +119,60 @@ router.get("/:zapId", authMiddleware, async (req, res) => {
   });
 });
 
+router.put("/:zapId", authMiddleware, async (req, res) => {
+  const { zapId } = req.params;
+  const body = req.body;
+
+  const parsedData = ZapCreateSchema.safeParse(body);
+
+  if (!parsedData.success) {
+    return res.status(400).json({
+      message: "Incorrect Inputs",
+      errors: parsedData.error.errors,
+    });
+  }
+
+  try {
+    const updatedZap = await prismaClient.$transaction(async (tx) => {
+      // Update the trigger
+      const trigger = await tx.trigger.update({
+        where: { zapId },
+        data: {
+          triggerId: parsedData.data.availableTriggerId,
+          metadata: parsedData.data.triggerMetadata,
+        },
+      });
+
+      // Delete existing actions
+      await tx.action.deleteMany({
+        where: { zapId },
+      });
+
+      // Create new actions
+      const actions = await Promise.all(
+        parsedData.data.actions.map((action, index) =>
+          tx.action.create({
+            data: {
+              zapId,
+              actionId: action.availableActionId,
+              sortingOrder: index,
+              metadata: action.actionMetadata,
+            },
+          }),
+        ),
+      );
+
+      return { trigger, actions };
+    });
+
+    res.json({
+      success: true,
+      updatedZap,
+    });
+  } catch (error) {
+    console.error("Failed to update Zap:", error);
+    res.status(500).json({ message: "Failed to update Zap" });
+  }
+});
+
 export const zapRouter = router;

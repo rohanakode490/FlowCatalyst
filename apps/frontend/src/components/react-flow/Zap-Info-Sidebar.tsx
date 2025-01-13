@@ -11,6 +11,7 @@ interface SidebarProps {
   onClose: () => void;
   onChangeWebhook: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
+  triggerData?: Record<string, any>;
 }
 
 export const Sidebar = ({
@@ -19,6 +20,7 @@ export const Sidebar = ({
   onClose,
   onChangeWebhook,
   onFormSubmit,
+  triggerData,
 }: SidebarProps) => {
   const isResizing = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,8 @@ export const Sidebar = ({
               ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase()]
               : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()]
           }
+          triggerData={triggerData}
+          onClose={onClose}
         />
         <div className="border-t">
           <Button
