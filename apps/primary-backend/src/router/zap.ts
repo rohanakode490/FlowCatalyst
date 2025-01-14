@@ -175,4 +175,60 @@ router.put("/:zapId", authMiddleware, async (req, res) => {
   }
 });
 
+router.delete("/:zapId", authMiddleware, async (req, res) => {
+  const { zapId } = req.params;
+  //@ts-ignore
+  const userId = req.id;
+
+  console.log(zapId);
+
+  try {
+    // Check if the Zap belongs to the user
+    const zap = await prismaClient.zap.findUnique({
+      where: { id: zapId },
+      include: { trigger: true, actions: true },
+    });
+
+    if (!zap) {
+      return res.status(404).json({ message: "Zap not found" });
+    }
+
+    if (zap.userId !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete this Zap" });
+    }
+
+    // Delete the Zap and its associated trigger and actions
+    await prismaClient.$transaction(async (tx) => {
+      // Delete the trigger
+      if (zap.trigger) {
+        await tx.trigger.delete({
+          where: { id: zap.trigger.id },
+        });
+      }
+
+      // Delete the actions
+      if (zap.actions.length > 0) {
+        await tx.action.deleteMany({
+          where: { zapId },
+        });
+      }
+
+      // Delete the Zap
+      await tx.zap.delete({
+        where: { id: zapId },
+      });
+    });
+
+    res.json({
+      success: true,
+      message: "Zap deleted successfully",
+    });
+  } catch (error) {
+    console.error("Failed to delete Zap:", error);
+    res.status(500).json({ message: "Failed to delete Zap" });
+  }
+});
+
 export const zapRouter = router;
