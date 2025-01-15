@@ -69,15 +69,16 @@ export const FlowControls = ({
       const isEditing = !!zapId;
 
       // Send/Update data to the backend
+      const token = localStorage.getItem("token");
       const response = isEditing
         ? await api.put(`/zap/${zapId}`, zapData, {
             headers: {
-              Authorization: localStorage.getItem("token"),
+              Authorization: `Bearer ${token}`,
             },
           })
         : await api.post("/zap", zapData, {
             headers: {
-              Authorization: localStorage.getItem("token"),
+              Authorization: `Bearer ${token}`,
             },
           });
 

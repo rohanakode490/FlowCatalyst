@@ -180,8 +180,6 @@ router.delete("/:zapId", authMiddleware, async (req, res) => {
   //@ts-ignore
   const userId = req.id;
 
-  console.log(zapId);
-
   try {
     // Check if the Zap belongs to the user
     const zap = await prismaClient.zap.findUnique({

@@ -7,10 +7,11 @@ export default function GetZaps() {
   const [zaps, setZaps] = useState<Zap[]>([]);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     api
       .get("/zap/", {
         headers: {
-          Authorization: localStorage.getItem("token"),
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {

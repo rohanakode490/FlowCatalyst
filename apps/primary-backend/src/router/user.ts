@@ -4,6 +4,7 @@ import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "../db";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
+const bcrypt = require("bcryptjs");
 
 const router = Router();
 
@@ -30,13 +31,16 @@ router.post("/signup", async (req, res) => {
     });
   }
 
+  // Hash the password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(parsedData.data.password, salt);
+
   //Store in DataBase
   await prismaClient.user.create({
     data: {
       name: parsedData.data.name,
       email: parsedData.data.email,
-      //TODO: Hash password
-      password: parsedData.data.password,
+      password: hashedPassword,
     },
   });
 
@@ -56,32 +60,47 @@ router.post("/login", async (req, res) => {
       message: "Incorrect Inputs",
     });
   }
-
-  // Check in the DataBase
-  const user = await prismaClient.user.findFirst({
-    where: {
-      email: parsedData.data.email,
-      password: parsedData.data.password, //TODO: After hashing in the "signup" check here as well
-    },
+  // Find user by email
+  const user = await prismaClient.user.findUnique({
+    where: { email: parsedData.data.email },
   });
-
-  //Wrong Credentials
   if (!user) {
-    return res.status(403).json({
-      message: "Incorrect Credentials",
-    });
+    return res.status(401).json({ message: "Email not found" });
   }
 
-  // Sign in with JWT
-  const token = jwt.sign(
-    {
-      id: user.id,
-    },
-    JWT_PASSWORD,
+  // Validate password
+  const isPasswordValid = await bcrypt.compare(
+    parsedData.data.password,
+    user.password,
   );
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "Incorrect password" });
+  }
 
-  res.json({
-    token: token,
+  // Generate JWT
+  const token = jwt.sign({ id: user.id }, JWT_PASSWORD, { expiresIn: "10h" });
+
+  const oneDay = 1000 * 60 * 60 * 24;
+
+  // Set JWT in a cookie
+  // res.cookie("token", token, {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "strict",
+  //   maxAge: 3600000, // 1 hour in milliseconds
+  // });
+  res.cookie("token", token, {
+    httpOnly: true,
+    expires: new Date(Date.now() + oneDay),
+    secure: process.env.NODE_ENV === "production",
+    signed: true,
+  });
+
+  res.header("auth", token);
+
+  res.status(200).json({
+    message: "Logged in successfully",
+    token,
   });
 });
 

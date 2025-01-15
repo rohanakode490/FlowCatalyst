@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Error from "@/components/globals/form-error";
 import Navbar from "@/components/globals/navbar";
@@ -34,7 +34,7 @@ export default function LogIn() {
         email,
         password,
       });
-      if (response) {
+      if (response.status === 200) {
         localStorage.setItem("token", response.data.token);
         router.push("/workflows");
       }
@@ -97,7 +97,6 @@ export default function LogIn() {
             <div className="mt-4 text-center">
               <a
                 href="/signup"
-                onClick={handleSubmit}
                 className="text-sm text-neutral-400 hover:text-white"
               >
                 Don't have an account? Sign up

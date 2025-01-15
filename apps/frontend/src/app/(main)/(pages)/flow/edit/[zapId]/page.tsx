@@ -22,9 +22,10 @@ export default function EditZapPage() {
 
     const fetchZap = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await api.get(`/zap/${zapId}`, {
           headers: {
-            Authorization: localStorage.getItem("token"),
+            Authorization: `Bearer ${token}`,
           },
         });
         const { trigger, actions } = response.data.zap;

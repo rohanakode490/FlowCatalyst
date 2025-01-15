@@ -22,16 +22,15 @@ import { ConfirmationDialog } from "./Confirmation-Dialog";
 export default function ZapTable({ zaps }: { zaps: Zap[] }) {
   const [zapToDelete, setZapToDelete] = useState<string | null>(null);
 
-  console.log("zapToDelete", zapToDelete);
   // Function to handle Zap deletion
   const handleDeleteZap = async (zapId: string) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await api.delete(`/zap/${zapId}`, {
         headers: {
-          Authorization: localStorage.getItem("token"),
+          Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response);
 
       if (response.data.success) {
         toast.success("Zap deleted successfully!");

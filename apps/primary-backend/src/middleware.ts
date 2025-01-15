@@ -7,8 +7,21 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const token = req.headers.authorization as unknown as string;
+  // Check for token in the Authorization header (Bearer token)
+  const authHeader = req.headers.authorization;
+  const tokenFromHeader = authHeader && authHeader.split(" ")[1]; // Extract "Bearer <token>"
 
+  // Check for token in the signed cookie
+  const tokenFromCookie = req.signedCookies.token;
+
+  // Use the token from the header if it exists, otherwise fall back to the cookie
+  const token = getToken(tokenFromHeader, tokenFromCookie);
+
+  if (!token) {
+    return res.status(403).json({
+      message: "You are not logged in.",
+    });
+  }
   try {
     const payload = jwt.verify(token, JWT_PASSWORD);
     //@ts-ignore
@@ -19,4 +32,26 @@ export function authMiddleware(
       message: "You are not logged in.",
     });
   }
+}
+
+function getToken(tokenFromHeader: any, tokenFromCookie: any) {
+  if (
+    tokenFromHeader !== null &&
+    tokenFromHeader !== undefined &&
+    tokenFromHeader !== "" &&
+    tokenFromHeader !== "null" &&
+    tokenFromHeader !== "undefined"
+  ) {
+    return tokenFromHeader;
+  }
+  if (
+    tokenFromCookie !== null &&
+    tokenFromCookie !== undefined &&
+    tokenFromCookie !== "" &&
+    tokenFromCookie !== "null" &&
+    tokenFromCookie !== "undefined"
+  ) {
+    return tokenFromCookie;
+  }
+  return null; // or handle as needed if both are invalid
 }
