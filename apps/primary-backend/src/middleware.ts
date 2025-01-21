@@ -18,16 +18,19 @@ export function authMiddleware(
   const token = getToken(tokenFromHeader, tokenFromCookie);
 
   if (!token) {
-    return res.status(403).json({
-      message: "You are not logged in.",
-    });
+    return res.status(401).json({ message: "Token is missing." });
   }
+
   try {
     const payload = jwt.verify(token, JWT_PASSWORD);
     //@ts-ignore
     req.id = payload.id;
     next();
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token has expired." });
+    }
+    console.log("errors", error);
     return res.status(403).json({
       message: "You are not logged in.",
     });

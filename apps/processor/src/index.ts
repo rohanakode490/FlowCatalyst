@@ -1,8 +1,7 @@
-import { PrismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowcatalyst/database";
 const { Kafka } = require("kafkajs");
 
 const TOPIC_NAME = "zap-events";
-const client = new PrismaClient();
 
 const kafka = new Kafka({
   clientId: "outbox-processor",
@@ -15,7 +14,7 @@ async function main() {
 
   while (1) {
     // Put in the Outbox
-    const pendingRows = await client.zapRunOutbox.findMany({
+    const pendingRows = await prismaClient.zapRunOutbox.findMany({
       where: {},
       take: 10,
     });
@@ -31,7 +30,7 @@ async function main() {
     });
 
     //Delete from the Outbox
-    await client.zapRunOutbox.deleteMany({
+    await prismaClient.zapRunOutbox.deleteMany({
       where: {
         id: {
           in: pendingRows.map((r) => r.id),

@@ -25,6 +25,7 @@ model Zap {
   id        String   @id @default(uuid())
   userId    Int
   triggerId String
+  createdAt DateTime @default(now()) @db.Date
   trigger   Trigger? //one trigger per zap
   actions   Action[] //many actions per zap
   zapRuns   ZapRun[]
@@ -36,6 +37,7 @@ model Trigger {
   zapId     String           @unique
   triggerId String
   metadata  Json             @default("{}")
+  response  Json             @default("{}")
   type      AvailableTrigger @relation(fields: [triggerId], references: [id])
   zap       Zap              @relation(fields: [zapId], references: [id])
 }
@@ -61,6 +63,7 @@ model AvailableTrigger {
   id       String    @id @default(uuid())
   name     String
   image    String
+  metadata Json      @default("{}")
   triggers Trigger[]
 }
 

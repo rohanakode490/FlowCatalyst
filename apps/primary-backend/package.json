@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "tsc -b",
     "dev2": "tsc -b && node dist/index.js",
     "dev": "npm run build --workspace=@flowcatalyst/database && tsc -b && node dist/index.js"
   },

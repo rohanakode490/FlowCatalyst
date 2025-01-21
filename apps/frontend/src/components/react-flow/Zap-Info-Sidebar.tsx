@@ -9,7 +9,7 @@ interface SidebarProps {
   selectedNode: any;
   selectedNodeId: string;
   onClose: () => void;
-  onChangeWebhook: () => void;
+  openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
   triggerData?: Record<string, any>;
 }
@@ -18,7 +18,7 @@ export const Sidebar = ({
   selectedNode,
   selectedNodeId,
   onClose,
-  onChangeWebhook,
+  openDialog,
   onFormSubmit,
   triggerData,
 }: SidebarProps) => {
@@ -28,6 +28,10 @@ export const Sidebar = ({
   const formFields = selectedNode.data.action
     ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || []
     : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || [];
+
+  const schema = selectedNode.data.action
+    ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase()]
+    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()];
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;
@@ -90,17 +94,13 @@ export const Sidebar = ({
           fields={formFields}
           initialData={initialData}
           onSubmit={(formData) => onFormSubmit(selectedNodeId, formData)}
-          schema={
-            selectedNode.data.action
-              ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase()]
-              : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()]
-          }
+          schema={schema}
           triggerData={triggerData}
           onClose={onClose}
         />
         <div className="border-t">
           <Button
-            onClick={onChangeWebhook}
+            onClick={openDialog}
             variant="outline"
             className="w-full mt-4"
           >

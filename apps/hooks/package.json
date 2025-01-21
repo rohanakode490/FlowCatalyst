@@ -2,7 +2,7 @@
   "name": "@flowcatalyst/hooks",
   "main": "index.js",
   "scripts": {
-    "start": "tsc -b && node dist/index.js"
+    "dev": "tsc -b && node dist/index.js"
   },
   "dependencies": {
     "@flowcatalyst/database": "*",

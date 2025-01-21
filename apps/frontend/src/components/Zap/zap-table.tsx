@@ -84,7 +84,7 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
               </TableCell>
               <TableCell>
                 <Link href={`/flow/edit/${zap.id}`}>
-                  <ChevronRight className="bg-red-900" />
+                  <ChevronRight />
                 </Link>
               </TableCell>
             </TableRow>

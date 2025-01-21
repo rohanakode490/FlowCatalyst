@@ -89,8 +89,6 @@ export default function EditZapPage() {
     return <div>Loading...</div>; // Show a loading state
   }
 
-  // TODO: Add a PUT method for the save button
-
   return (
     <Heading heading="Edit Zap">
       <ReactFlowProvider>

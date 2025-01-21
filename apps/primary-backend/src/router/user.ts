@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware";
 import { SigninSchema, SignupSchema } from "../types";
-import { prismaClient } from "../db";
+import { prismaClient } from "@flowcatalyst/database";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
 const bcrypt = require("bcryptjs");
@@ -105,7 +105,6 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/", authMiddleware, async (req, res) => {
-  //TODO: Fix the type
   //@ts-ignore
   const id = req.id;
 

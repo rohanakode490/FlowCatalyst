@@ -1,8 +1,8 @@
 import express from "express";
 
-import { PrismaClient } from "@flowcatalyst/database";
+import { Prisma, prismaClient } from "@flowcatalyst/database";
 
-const client = new PrismaClient();
+type PrismaTransactionalClient = Prisma.TransactionClient;
 
 const app = express();
 app.use(express.json());
@@ -14,7 +14,7 @@ app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
   const body = req.body;
 
   // Store in db a new trigger
-  await client.$transaction(async (tx) => {
+  await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
     const run = await tx.zapRun.create({
       data: {
         zapId: zapId,
@@ -31,7 +31,6 @@ app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
   res.json({
     message: "Webhook received successfully",
   });
-  // TODO: push it to a queue(redis/kafka)
 });
 
-app.listen(3000);
+app.listen(4001);

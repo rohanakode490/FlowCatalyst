@@ -17,6 +17,10 @@
     "db:generate": {
       "cache": false
     },
+    "db:migrate": {
+      "cache": false,
+      "persistent": true // This is necessary to interact with the CLI and assign names to your database migrations.
+    },
     "db:push": {
       "cache": false
     }

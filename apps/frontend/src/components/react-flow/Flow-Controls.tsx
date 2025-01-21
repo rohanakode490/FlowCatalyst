@@ -54,6 +54,7 @@ export const FlowControls = ({
       }
 
       // Prepare data for the backend
+      console.log(triggerNode);
       const zapData = {
         availableTriggerId: triggerNode.data.id, // Assuming the trigger node has an ID
         triggerMetadata: triggerNode.data.metadata, // Optional metadata

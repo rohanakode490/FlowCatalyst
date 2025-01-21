@@ -5,8 +5,6 @@ import { FormField } from "@/lib/types";
 import { Button } from "../ui/button";
 import Error from "../globals/form-error";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface DynamicFormProps {
@@ -26,78 +24,105 @@ function DynamicForm({
   triggerData,
   onClose,
 }: DynamicFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-  } = useForm({
-    resolver: zodResolver(schema), // Integrate Zod validation
-    defaultValues: initialData,
-  });
-
+  const [formData, setFormData] = useState<Record<string, any>>(
+    initialData === undefined ? {} : initialData,
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeInput, setActiveInput] = useState<string | null>(null);
 
-  const onFormSubmit = (data: Record<string, any>) => {
+  // Handle input changes
+  const handleInputChange = (fieldName: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [fieldName]: value }));
+
+    // Clear errors when the user starts typing
+    if (errors[fieldName]) {
+      setErrors((prev) => ({ ...prev, [fieldName]: "" }));
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate form data using Zod schema
     try {
-      onSubmit(data); // Call the onSubmit function
+      const validatedData = schema.parse(formData);
+      onSubmit(validatedData); // Submit the validated data
       onClose();
-      toast.success("Saved successfully!"); // Show success toast
+      toast.success("Saved successfully!");
     } catch (error) {
-      toast.error("Failed to save. Please try again."); // Show error toast
+      if (error instanceof z.ZodError) {
+        // Map Zod errors to the errors state
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          newErrors[err.path[0]] = err.message;
+        });
+        setErrors(newErrors);
+        toast.error("Please fix the errors before submitting.");
+      } else {
+        toast.error("Failed to save. Please try again.");
+      }
     }
   };
 
   // Handle adding a trigger field to the active input
   const handleAddTriggerField = (field: string) => {
     if (activeInput) {
-      const currentValue = watch(activeInput) || "";
-      setValue(activeInput, `${currentValue} {{trigger.${field}}}`);
+      const currentValue = formData[activeInput] || "";
+      handleInputChange(activeInput, `${currentValue} {{trigger.${field}}}`);
     }
   };
-  return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="space-y-4 overflow-y-auto"
-    >
-      {fields.map((field) => (
-        <div key={field.name}>
-          <Label htmlFor={field.name}>
-            {field.label}{" "}
-            {field.required && <span className="text-red-500">*</span>}
-          </Label>
-          {field.type === "text" || field.type === "number" ? (
-            <div className="flex flex-col gap-2">
-              <Input
-                type={field.type}
-                id={field.name}
-                {...register(field.name)}
-                placeholder={field.placeholder}
-                className="mt-1 flex-1"
-                onFocus={() => setActiveInput(field.name)} // Set active input on focus
-              />
-              {/* Buttons to insert trigger fields */}
-              {activeInput === field.name && (
-                <div className="flex gap-2 flex-wrap">
-                  {Object.keys(triggerData || {}).map((key) => (
-                    <Button
-                      key={key}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddTriggerField(key)}
-                    >
-                      {`{{trigger.${key}}}`}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : field.type === "select" ? (
+
+  // Render fields based on their type and conditions
+  const renderField = (field: FormField) => {
+    switch (field.type) {
+      case "text":
+      case "number":
+      case "password":
+        return (
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={field.name}>
+              {field.label}{" "}
+              {field.required && <span className="text-red-500">*</span>}
+            </Label>
+            <Input
+              type={field.type}
+              id={field.name}
+              value={formData[field.name] || ""}
+              placeholder={field.placeholder}
+              className="mt-1 flex-1"
+              onChange={(e) => handleInputChange(field.name, e.target.value)}
+              onFocus={() => setActiveInput(field.name)} // Set active input on focus
+            />
+            {/* Buttons to insert trigger fields */}
+            {activeInput === field.name && (
+              <div className="flex gap-2 flex-wrap">
+                {Object.keys(triggerData || {}).map((key) => (
+                  <Button
+                    key={key}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddTriggerField(key)}
+                  >
+                    {`{{trigger.${key}}}`}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case "select":
+        return (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={field.name}>
+              {field.label}{" "}
+              {field.required && <span className="text-red-500">*</span>}
+            </Label>
             <select
               id={field.name}
-              {...register(field.name)} // Register the field with react-hook-form
+              value={formData[field.name] || ""}
+              onChange={(e) => handleInputChange(field.name, e.target.value)}
               className="mt-1 block w-full p-2 border rounded-md"
             >
               {field.options?.map((option) => (
@@ -106,16 +131,21 @@ function DynamicForm({
                 </option>
               ))}
             </select>
-          ) : field.type === "checkbox" ? (
-            <Input
-              type="checkbox"
-              id={field.name}
-              {...register(field.name)} // Register the field with react-hook-form
-              className="mt-1"
-            />
-          ) : null}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto">
+      {fields.map((field, index) => (
+        <div key={index}>
+          {renderField(field)}
           {errors[field.name] && (
-            <Error className="mt-2" errorMessage={errors[field.name].message} />
+            <Error className="mt-2" errorMessage={errors[field.name]} />
           )}
         </div>
       ))}

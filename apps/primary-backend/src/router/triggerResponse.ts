@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { prismaClient } from "../db";
+import { prismaClient } from "@flowcatalyst/database";
 
 const router = Router();
 
@@ -66,7 +66,7 @@ router.get("/:triggerId", async (req, res) => {
   }
 
   res.json({
-    triggerData: trigger.metadata,
+    triggerData: trigger.response,
   });
 });
 

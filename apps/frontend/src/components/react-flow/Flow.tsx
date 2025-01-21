@@ -79,7 +79,6 @@ export default function Flow({
     openDialog,
     closeDialog,
   } = useWebhook();
-
   // Hydration fix
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -139,7 +138,7 @@ export default function Flow({
                 name: webhook.name, // Update name
                 logo: webhook.logo, // Update logo
                 configured: true, // Mark as configured
-                metadata: webhook.defaultFormData || {}, // Reset form data for the new webhook
+                metadata: webhook.metadata || {}, // Reset form data for the new webhook
               },
             };
           }
@@ -154,6 +153,7 @@ export default function Flow({
   // Handle form submission
   const handleFormSubmit = useCallback(
     (nodeId: string, formData: Record<string, any>) => {
+      console.log(formData);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
@@ -173,12 +173,9 @@ export default function Flow({
   );
 
   // Handle changing the webhook
-  const handleChangeWebhook = useCallback(
-    (nodeId) => {
-      openDialog(); // Open the dialog for webhook selection
-    },
-    [openDialog],
-  );
+  const handleOpenDialog = useCallback(() => {
+    openDialog(); // Open the dialog for webhook selection
+  }, [openDialog]);
 
   // Handle dialog close
   const handleDialogClose = useCallback(() => {
@@ -281,7 +278,7 @@ export default function Flow({
             selectedNode={selectedNode}
             selectedNodeId={selectedNodeId}
             onClose={() => setSelectedNodeId(null)}
-            onChangeWebhook={() => handleChangeWebhook(selectedNodeId)}
+            openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
             triggerData={triggerData}
           />

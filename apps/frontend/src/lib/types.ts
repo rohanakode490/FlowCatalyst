@@ -32,10 +32,12 @@ export interface Zap {
 }
 
 export interface FormField {
-  type: "text" | "number" | "select" | "checkbox";
+  type: "text" | "number" | "select" | "checkbox" | "password";
   label: string;
   name: string;
   placeholder?: string;
   options?: { value: string; label: string }[];
   required?: boolean;
+  description?: string;
+  condition?: string;
 }

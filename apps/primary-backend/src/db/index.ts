@@ -1,3 +1,3 @@
-import { PrismaClient } from "@flowcatalyst/database";
+import { Prisma } from "@flowcatalyst/database";
 
-export const prismaClient = new PrismaClient();
+export type PrismaTransactionalClient = Prisma.TransactionClient;

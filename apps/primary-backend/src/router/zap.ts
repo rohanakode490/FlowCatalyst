@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware";
 import { ZapCreateSchema } from "../types";
-import { prismaClient } from "../db";
+import { PrismaTransactionalClient } from "../db";
+
+import { prismaClient } from "@flowcatalyst/database";
 
 const router = Router();
 
@@ -17,47 +19,49 @@ router.post("/", authMiddleware, async (req, res) => {
     });
   }
 
-  const zapId = await prismaClient.$transaction(async (tx) => {
-    try {
-      // Create the zap with actions in a single transaction
-      const zap = await prismaClient.zap.create({
-        data: {
-          userId: id,
-          triggerId: "", // Temporary triggerId
-          actions: {
-            create: parsedData.data.actions.map((r, index) => ({
-              actionId: r.availableActionId,
-              sortingOrder: index,
-              metadata: r.actionMetadata,
-            })),
+  const zapId = await prismaClient.$transaction(
+    async (tx: PrismaTransactionalClient) => {
+      try {
+        // Create the zap with actions in a single transaction
+        const zap = await prismaClient.zap.create({
+          data: {
+            userId: id,
+            triggerId: "", // Temporary triggerId
+            actions: {
+              create: parsedData.data.actions.map((r, index) => ({
+                actionId: r.availableActionId,
+                sortingOrder: index,
+                metadata: r.actionMetadata,
+              })),
+            },
           },
-        },
-      });
+        });
 
-      // Create the trigger and associate it with the zap
-      const trigger = await tx.trigger.create({
-        data: {
-          triggerId: parsedData.data.availableTriggerId,
-          zapId: zap.id,
-        },
-      });
+        // Create the trigger and associate it with the zap
+        const trigger = await tx.trigger.create({
+          data: {
+            triggerId: parsedData.data.availableTriggerId,
+            zapId: zap.id,
+          },
+        });
 
-      // Update the zap with the correct triggerId
-      await prismaClient.zap.update({
-        where: {
-          id: zap.id,
-        },
-        data: {
-          triggerId: trigger.id,
-        },
-      });
+        // Update the zap with the correct triggerId
+        await prismaClient.zap.update({
+          where: {
+            id: zap.id,
+          },
+          data: {
+            triggerId: trigger.id,
+          },
+        });
 
-      return zap.id;
-    } catch (error) {
-      // Database error
-      throw new Error("Failed to create zap");
-    }
-  });
+        return zap.id;
+      } catch (error) {
+        // Database error
+        throw new Error("Failed to create zap");
+      }
+    },
+  );
 
   return res.json({
     zapId,

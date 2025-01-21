@@ -20,36 +20,47 @@ export const menuOptions = [
 ];
 
 export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
-  email: [
+  emailtrigger: [
     {
       type: "text",
       label: "Email Address",
       name: "emailAddress",
       placeholder: "Enter your email address",
+      required: true,
     },
     {
-      type: "text",
-      label: "Subject Filter",
-      name: "subjectFilter",
-      placeholder: "Filter emails by subject",
+      type: "password",
+      label: "Password",
+      name: "password",
+      placeholder: "Enter your email password",
+      required: true,
     },
   ],
-  solana: [
+  githubtrigger: [
     {
       type: "text",
-      label: "Wallet Address",
-      name: "walletAddress",
-      placeholder: "Enter the wallet address to monitor",
+      name: "username",
+      label: "GitHub Username",
+      placeholder: "Enter your GitHub username",
+      required: true,
+    },
+    {
+      type: "text",
+      name: "repository",
+      label: "Repository",
+      placeholder: "Enter the repository name (e.g., owner/repo)",
+      required: false,
     },
     {
       type: "select",
-      label: "Transaction Type",
-      name: "transactionType",
+      name: "event",
+      label: "Event Type",
       options: [
-        { value: "all", label: "All Transactions" },
-        { value: "nft", label: "NFT Transactions" },
-        { value: "token", label: "Token Transfers" },
+        { value: "Issue_comment", label: "Issue Comment" },
+        { value: "Push", label: "Push" },
+        { value: "Bounty", label: "Bounty" },
       ],
+      required: true,
     },
   ],
 };
