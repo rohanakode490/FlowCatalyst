@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ACTION_FORM_FIELDS, TRIGGER_FORM_FIELDS } from "@/lib/constant";
@@ -12,6 +12,7 @@ interface SidebarProps {
   openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
   triggerData?: Record<string, any>;
+  onTriggerTypeChange?: (triggerId: string) => Promise<void>;
 }
 
 export const Sidebar = ({
@@ -21,6 +22,7 @@ export const Sidebar = ({
   openDialog,
   onFormSubmit,
   triggerData,
+  onTriggerTypeChange,
 }: SidebarProps) => {
   const isResizing = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -97,6 +99,7 @@ export const Sidebar = ({
           schema={schema}
           triggerData={triggerData}
           onClose={onClose}
+          onTriggerTypeChange={onTriggerTypeChange}
         />
         <div className="border-t">
           <Button

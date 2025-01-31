@@ -13,14 +13,6 @@ const solanaTriggerSchema = z.object({
   }),
 });
 
-const githubTriggerSchema = z.object({
-  username: z.string().min(1, "GitHub username is required"),
-  repository: z.string().optional(), // Repository is optional
-  event: z.enum(["Issue_comment", "Push", "Bounty"], {
-    errorMap: () => ({ message: "Invalid event type" }),
-  }),
-});
-
 // Actions
 const slackActionSchema = z.object({
   channelName: z.string().min(1, "Channel name is required"),
@@ -44,7 +36,6 @@ const solanaActionSchema = z.object({
 export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {
   emailtrigger: emailTriggerSchema,
   solanatrigger: solanaTriggerSchema,
-  githubtrigger: githubTriggerSchema,
 };
 
 export const ACTION_SCHEMAS: Record<string, z.ZodSchema<any>> = {

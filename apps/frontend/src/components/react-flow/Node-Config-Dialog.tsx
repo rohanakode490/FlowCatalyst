@@ -11,7 +11,8 @@ interface NodeConfigDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectWebhook: (webhook: any) => void;
-  isAction: boolean; // Add a prop to determine if it's an action or trigger
+  isAction: boolean;
+  onTriggerTypeChange?: (triggerId: string) => Promise<void>; // Add a prop to determine if it's an action or trigger
 }
 
 export const NodeConfigDialog = ({
@@ -19,6 +20,7 @@ export const NodeConfigDialog = ({
   onClose,
   onSelectWebhook,
   isAction,
+  onTriggerTypeChange,
 }: NodeConfigDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -27,8 +29,14 @@ export const NodeConfigDialog = ({
           <DialogTitle>Select a Webhook/Zap</DialogTitle>
         </DialogHeader>
         <WebhookSelector
-          onSelect={onSelectWebhook}
+          onSelect={(webhook) => {
+            onSelectWebhook(webhook);
+            if (onTriggerTypeChange && !isAction) {
+              onTriggerTypeChange(webhook.id);
+            }
+          }}
           type={isAction ? "action" : "trigger"}
+          onTriggerTypeChange={onTriggerTypeChange}
         />
       </DialogContent>
     </Dialog>

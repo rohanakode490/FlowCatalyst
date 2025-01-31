@@ -30,6 +30,7 @@ export default function EditZapPage() {
         });
         const { trigger, actions } = response.data.zap;
 
+        console.log("t", trigger);
         // Map the trigger and actions to nodes and edges
         const nodes = [
           {
@@ -69,6 +70,7 @@ export default function EditZapPage() {
         setInitialNodes(nodes);
         setInitialEdges(edges);
 
+        console.log("trigger", trigger);
         // Fetch trigger data
         const triggerResponse = await api.get(
           `/trigger-response/${trigger.id}`,
@@ -85,6 +87,18 @@ export default function EditZapPage() {
     fetchZap();
   }, [zapId, router]);
 
+  // Function to update triggerData when the trigger type changes
+  const updateTriggerData = async (triggerTypeId: string) => {
+    try {
+      const triggerResponse = await api.get(
+        `/trigger-response/${triggerTypeId}`,
+      );
+      setTriggerData(triggerResponse.data.triggerData);
+    } catch (error) {
+      console.error("Failed to fetch trigger data:", error);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>; // Show a loading state
   }
@@ -98,6 +112,7 @@ export default function EditZapPage() {
             initialEdges={initialEdges}
             triggerData={triggerData}
             zapId={zapId}
+            onTriggerTypeChange={updateTriggerData}
           />
         )}
       </ReactFlowProvider>

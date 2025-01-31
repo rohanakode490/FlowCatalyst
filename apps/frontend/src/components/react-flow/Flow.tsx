@@ -52,6 +52,7 @@ interface FlowProps {
   initialEdges?: any[]; // Optional initial edges
   triggerData?: Record<string, any>;
   zapId?: string;
+  onTriggerTypeChange?: (trigger: string) => Promise<void>;
 }
 
 export default function Flow({
@@ -59,6 +60,7 @@ export default function Flow({
   initialEdges: propEdges,
   triggerData,
   zapId,
+  onTriggerTypeChange,
 }: FlowProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -72,6 +74,7 @@ export default function Flow({
   );
 
   const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
+
   const {
     selectedWebhook,
     isDialogOpen,
@@ -281,6 +284,7 @@ export default function Flow({
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
             triggerData={triggerData}
+            onTriggerTypeChange={onTriggerTypeChange}
           />
         )}
       </div>
@@ -291,6 +295,7 @@ export default function Flow({
           handleWebhookSelectForNode(selectedNodeId, webhook)
         }
         isAction={selectedNode?.data.action}
+        onTriggerTypeChange={onTriggerTypeChange}
       />
     </>
   );

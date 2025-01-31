@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import api from "@/lib/api"; // Import your API instance
+import api from "@/lib/api";
 
 interface WebhookSelectorProps {
   onSelect: (webhook: any) => void;
-  type: "action" | "trigger"; // Add a type prop
+  type: "action" | "trigger";
+  onTriggerTypeChange?: (triggerId: string) => void;
 }
 
-function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
+function WebhookSelector({
+  onSelect,
+  type,
+  onTriggerTypeChange,
+}: WebhookSelectorProps) {
   const [webhooks, setWebhooks] = useState<any[]>([]);
 
   // Fetch available actions or triggers based on the type
@@ -28,13 +33,21 @@ function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
       });
   }, [type]);
 
+  // Handle trigger selection
+  const handleTriggerSelect = (webhook: any) => {
+    onSelect(webhook);
+    if (type === "trigger" && onTriggerTypeChange) {
+      onTriggerTypeChange(webhook.id);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-4">
         {webhooks.map((webhook) => (
           <Button
             key={webhook.id}
-            onClick={() => onSelect(webhook)}
+            onClick={() => handleTriggerSelect(webhook)}
             className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <img

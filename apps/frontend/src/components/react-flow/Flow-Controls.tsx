@@ -8,37 +8,16 @@ interface FlowControlsProps {
   nodes: any[];
   edges: any[];
   zapId?: string;
-  triggerData?: Record<string, any>;
 }
 
 export const FlowControls = ({
   onAlignNodes,
   nodes,
   zapId,
-  triggerData,
 }: FlowControlsProps) => {
   // Check if all nodes are configured
   const isSaveDisabled = nodes.some((node) => !node.data.configured);
   const router = useRouter();
-
-  const mapTriggerDataToAction = (
-    actionConfig: any,
-    triggerData: Record<string, any>,
-  ) => {
-    const mappedConfig = { ...actionConfig };
-
-    // Replace variables in the action config with trigger data
-    for (const key in mappedConfig) {
-      if (typeof mappedConfig[key] === "string") {
-        mappedConfig[key] = mappedConfig[key].replace(
-          /{{trigger\.(.*?)}}/g,
-          (_, variable) => triggerData[variable] || "",
-        );
-      }
-    }
-
-    return mappedConfig;
-  };
 
   // Function to save the flow to the Zap database
   const handleSaveFlow = async () => {
@@ -54,19 +33,17 @@ export const FlowControls = ({
       }
 
       // Prepare data for the backend
-      console.log(triggerNode);
+      console.log("triggerNode", triggerNode);
       const zapData = {
         availableTriggerId: triggerNode.data.id, // Assuming the trigger node has an ID
         triggerMetadata: triggerNode.data.metadata, // Optional metadata
         actions: actionNodes.map((node) => ({
           availableActionId: node.data.id, // Assuming the action node has an ID
-          actionMetadata: mapTriggerDataToAction(
-            node.data.metadata,
-            triggerData,
-          ), // Optional metadata
+          actionMetadata: node.data.metadata,
         })),
       };
 
+      console.log("zapData", zapData);
       const isEditing = !!zapId;
 
       // Send/Update data to the backend

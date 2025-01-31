@@ -38,29 +38,24 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
   ],
   githubtrigger: [
     {
-      type: "text",
-      name: "username",
-      label: "GitHub Username",
-      placeholder: "Enter your GitHub username",
-      required: true,
-    },
-    {
-      type: "text",
-      name: "repository",
-      label: "Repository",
-      placeholder: "Enter the repository name (e.g., owner/repo)",
-      required: false,
-    },
-    {
       type: "select",
-      name: "event",
-      label: "Event Type",
+      label: "GitHub Event Type",
+      name: "githubEventType",
       options: [
-        { value: "Issue_comment", label: "Issue Comment" },
-        { value: "Push", label: "Push" },
-        { value: "Bounty", label: "Bounty" },
+        { value: "issue_comment", label: "Issue Comment" },
+        { value: "pull_request", label: "Pull Request" },
+        { value: "issues", label: "Issues" },
       ],
       required: true,
+    },
+    {
+      type: "readonly-link",
+      name: "githubwebhook",
+      label: "GitHub Webhook URL",
+      value: "hooks/github",
+      description:
+        "Copy this URL and paste it into the Payload URL field in your GitHub repository's webhook settings. Ensure you select the events you want to trigger this workflow (e.g., issue_comment, push). ",
+      docsLink: "/docs/github-webhook",
     },
   ],
 };
@@ -114,15 +109,22 @@ export const ACTION_FORM_FIELDS: Record<string, FormField[]> = {
       required: true,
     },
     {
-      type: "select",
-      label: "Transaction Type",
-      name: "transactionType",
-      options: [
-        { value: "all", label: "All Transactions" },
-        { value: "nft", label: "NFT Transactions" },
-        { value: "token", label: "Token Transfers" },
-      ],
+      type: "number",
+      label: "Amount",
+      name: "Amount",
       required: true,
     },
   ],
+};
+
+export const GITHUB_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
+  issue_comment: [
+    "user",
+    "issue_url",
+    "issue_title",
+    "Amount",
+    "ToSolanaAddress",
+  ],
+  pull_request: ["user", "pullRequest_url", "pullRequest_title"],
+  issues: ["user", "issue_url", "issue_title"],
 };

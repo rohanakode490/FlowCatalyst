@@ -10,6 +10,7 @@ export interface Zap {
   id: string;
   trigggerId: string;
   userId: number;
+  createdAt: Date;
   actions: {
     id: string;
     zapId: string;
@@ -32,12 +33,16 @@ export interface Zap {
 }
 
 export interface FormField {
-  type: "text" | "number" | "select" | "checkbox" | "password";
+  type: "text" | "number" | "select" | "readonly-link" | "password";
   label: string;
   name: string;
   placeholder?: string;
+  value?: string;
   options?: { value: string; label: string }[];
   required?: boolean;
   description?: string;
-  condition?: string;
+  docsLink?: string;
+  validation?: {
+    isNumberOrPlaceholder?: boolean;
+  };
 }

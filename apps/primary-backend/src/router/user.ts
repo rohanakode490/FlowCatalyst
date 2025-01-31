@@ -120,6 +120,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
   return res.json({
     user,
+    id,
   });
 });
 

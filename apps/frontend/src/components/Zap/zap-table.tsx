@@ -78,7 +78,15 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
                 {zap.actions.map((action) => action.type.name + " ")}
               </TableCell>
               <TableCell>{zap.id}</TableCell>
-              <TableCell>Dec 26, 2024</TableCell>
+              <TableCell>
+                {new Date(zap.createdAt)
+                  .toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                  .replace(",", "")}
+              </TableCell>
               <TableCell className="text-right">
                 <Switch />
               </TableCell>
