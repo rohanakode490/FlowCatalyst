@@ -24,8 +24,8 @@ const initialNodes = [
     type: "customNode",
     position: { x: 0, y: 0 },
     data: {
-      name: "LinkedIn",
-      logo: "/logo.png",
+      name: "Trigger",
+      logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
       configured: false,
       action: false,
     },
@@ -35,8 +35,8 @@ const initialNodes = [
     type: "customNode",
     position: { x: 0, y: 300 },
     data: {
-      name: "Email",
-      logo: "/logo.png",
+      name: "Action",
+      logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
       configured: false,
       action: true,
     },
@@ -156,7 +156,6 @@ export default function Flow({
   // Handle form submission
   const handleFormSubmit = useCallback(
     (nodeId: string, formData: Record<string, any>) => {
-      console.log(formData);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {

@@ -33,7 +33,6 @@ export const FlowControls = ({
       }
 
       // Prepare data for the backend
-      console.log("triggerNode", triggerNode);
       const zapData = {
         availableTriggerId: triggerNode.data.id, // Assuming the trigger node has an ID
         triggerMetadata: triggerNode.data.metadata, // Optional metadata
@@ -43,7 +42,6 @@ export const FlowControls = ({
         })),
       };
 
-      console.log("zapData", zapData);
       const isEditing = !!zapId;
 
       // Send/Update data to the backend

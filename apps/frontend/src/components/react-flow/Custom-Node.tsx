@@ -47,9 +47,7 @@ const CustomNode = memo(({ data, id }) => {
 
         {/* Left side: Logo */}
         <div
-          className={`rounded-full w-12 h-12 flex justify-center items-center ${
-            isDarkMode ? "bg-gray-700" : "bg-gray-100"
-          }`}
+          className={`rounded-full w-12 h-12 flex justify-center items-center bg-gray-400`}
         >
           <img src={data.logo} alt="Logo" className="w-8 h-8" />
         </div>

@@ -19,7 +19,6 @@ export async function sendEmail({
       html: `<div>${body}</div>`,
     });
 
-    console.log("response", response);
     return { success: true, response };
   } catch (error) {
     console.error("Error sending email:", error);

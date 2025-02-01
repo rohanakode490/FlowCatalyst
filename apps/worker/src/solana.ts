@@ -56,7 +56,6 @@ export async function transferSOL(
       senderKeypair,
     ]);
 
-    console.log(`SOL transfer successful! Signature: ${signature}`);
   } catch (error) {
     console.error("SOL transfer failed:", error);
     throw error;

@@ -19,16 +19,6 @@ async function main() {
       take: 10,
     });
 
-    if (pendingRows.length > 0) {
-      console.log(
-        "messages",
-        pendingRows.map((r) => {
-          return {
-            value: JSON.stringify({ zapRunId: r.zapRunId, stage: 0 }),
-          };
-        }),
-      );
-    }
     // Put in the queue
     await producer.send({
       topic: TOPIC_NAME,

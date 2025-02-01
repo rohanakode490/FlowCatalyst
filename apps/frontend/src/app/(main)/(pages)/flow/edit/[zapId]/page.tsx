@@ -30,7 +30,6 @@ export default function EditZapPage() {
         });
         const { trigger, actions } = response.data.zap;
 
-        console.log("t", trigger);
         // Map the trigger and actions to nodes and edges
         const nodes = [
           {
@@ -70,7 +69,6 @@ export default function EditZapPage() {
         setInitialNodes(nodes);
         setInitialEdges(edges);
 
-        console.log("trigger", trigger);
         // Fetch trigger data
         const triggerResponse = await api.get(
           `/trigger-response/${trigger.id}`,

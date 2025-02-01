@@ -48,13 +48,9 @@ function WebhookSelector({
           <Button
             key={webhook.id}
             onClick={() => handleTriggerSelect(webhook)}
-            className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex flex-row items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            <img
-              src={webhook.image}
-              alt={webhook.name}
-              className="w-11 h-12 mb-2"
-            />
+            <img src={webhook.image} alt={webhook.name} className="w-9 h-9" />
             <span className="text-sm">{webhook.name}</span>
           </Button>
         ))}

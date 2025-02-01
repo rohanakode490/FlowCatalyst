@@ -29,13 +29,6 @@ async function main() {
   await consumer.run({
     autoCommit: false, //Do not auto-Commit(incase the worker failed)
     eachMessage: async ({ topic, partition, message }) => {
-      console.log({
-        topic,
-        partition,
-        offset: message.offset,
-        value: message.value?.toString(),
-      });
-
       if (!message.value?.toString()) {
         return;
       }
@@ -44,7 +37,6 @@ async function main() {
       const zapRunId = parsedValue.zapRunId;
       const currStage = parsedValue.stage; // Which action is going to happen
 
-      console.log("zap", zapRunId, currStage);
       const zapRunDetails = await prismaClient.zapRun.findFirst({
         where: {
           id: zapRunId,
@@ -73,16 +65,6 @@ async function main() {
         return;
       }
 
-      console.log("currentAction", currentAction);
-      console.log(
-        dynamicFieldsVal,
-        typeof parseDynamicFields(
-          parseJson(currentAction.metadata),
-          parseJson(dynamicFieldsVal),
-        ),
-        typeof currentAction.metadata,
-      );
-
       //TODO: The operation(action)
       if (currentAction?.type.name === "Email") {
         const emailData = parseDynamicFields(
@@ -90,9 +72,6 @@ async function main() {
           parseJson(dynamicFieldsVal),
         );
 
-        console.log(
-          `Sending out email to ${emailData.recipientEmail} body is ${emailData.emailBody}`,
-        );
         const to = emailData.recipientEmail;
         const subject = emailData.emailSubject;
         const body = emailData.emailBody;

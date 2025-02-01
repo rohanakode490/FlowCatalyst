@@ -118,7 +118,6 @@ function DynamicForm({
       }
     }
 
-    console.log("submit", formData);
     // Skip validation if schema is for github-webhook which is only a link
     if (!schema) {
       onSubmit(formData); // Submit the form data without validation
@@ -198,7 +197,7 @@ function DynamicForm({
 
       setDynamicFields(fields.map((field) => `${field}`));
     }
-  }, [triggerData]);
+  }, [triggerData?.githubEventType]);
 
   // Render fields based on their type and conditions
   const renderField = (field: FormField) => {

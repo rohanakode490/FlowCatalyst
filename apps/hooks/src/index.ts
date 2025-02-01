@@ -46,10 +46,13 @@ const handleIssueCommentEvent = (payload: any): EventData | null => {
   const match = comment.body.match(bountyRegex);
   const isBounty = !!match;
 
-  console.log("isBounty", isBounty);
-
   // Only process if the comment is created
-  if (!isBounty || action !== "created") {
+  if (
+    !isBounty ||
+    action !== "created" ||
+    (comment.author_association !== "MEMBER" &&
+      comment.author_association !== "OWNER")
+  ) {
     return null;
   }
 
@@ -62,7 +65,6 @@ const handleIssueCommentEvent = (payload: any): EventData | null => {
     issue_url: issue.html_url,
   };
 
-  console.log("BC", match);
   try {
     // Extract the content inside the bounty block
     const bountyContent = match[1];
@@ -72,7 +74,6 @@ const handleIssueCommentEvent = (payload: any): EventData | null => {
       .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // Replace unquoted keys
       .replace(/:\s*'([^']*)'/g, ': "$1"'); // Replace single-quoted strings
 
-    console.log("Fixed JSON:", flexibleJson);
     const bountyData = JSON.parse(`{${flexibleJson}}`);
 
     // Validate required fields
@@ -123,8 +124,6 @@ const handleGitHubWebhook = async (
   const zapId = req.params.zapId;
   const payload = req.body;
 
-  console.log("payload: \n", payload, "\n\n\n");
-
   try {
     let eventData: EventData | null = null;
 
@@ -142,8 +141,6 @@ const handleGitHubWebhook = async (
       default:
         throw new Error(`Unsupported event type: ${eventType}`);
     }
-
-    console.log(eventData);
 
     // Only store data if the event is valid and meets the conditions
     if (eventData) {
