@@ -1,4 +1,4 @@
-import React from "React";
+import React from "react";
 import Navbar from "@/components/globals/navbar";
 import { ContainerScroll } from "@/components/globals/container-scroll-animation";
 import { Button } from "@/components/ui/button";

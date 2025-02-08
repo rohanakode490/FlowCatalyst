@@ -3,7 +3,7 @@ import React from "react";
 
 export default function ConnectionsPage() {
   return (
-    <Header Heading="Connections">
+    <Header heading="Connections">
       <div>Working!!!</div>
     </Header>
   );

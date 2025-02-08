@@ -8,6 +8,14 @@ import {
 import { useTheme } from "next-themes";
 import { Plus } from "lucide-react";
 
+interface EdgeData {
+  onAddNode: () => void;
+}
+
+type CustomEdgeProps = EdgeProps & {
+  data?: EdgeData;
+};
+
 const CustomEdge = memo(
   ({
     id,
@@ -18,7 +26,7 @@ const CustomEdge = memo(
     data,
     style = {},
     markerEnd,
-  }: EdgeProps) => {
+  }: CustomEdgeProps) => {
     const { resolvedTheme } = useTheme(); // Get current theme
     const isDarkMode = resolvedTheme === "dark";
 
@@ -29,7 +37,7 @@ const CustomEdge = memo(
       targetY,
     });
 
-    const onEdgeClick = (e) => {
+    const onEdgeClick = (e: React.FormEvent) => {
       e.stopPropagation();
       data?.onAddNode();
     };

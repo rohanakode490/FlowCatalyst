@@ -3,7 +3,22 @@ import { Handle, Position } from "@xyflow/react";
 import { useTheme } from "next-themes";
 import { X } from "lucide-react";
 
-const CustomNode = memo(({ data, id }) => {
+interface NodeData {
+  configured: boolean;
+  onOpenDialog: () => void;
+  action: boolean;
+  canDelete: boolean;
+  onDelete: (id: string) => void;
+  logo: string;
+  name: string;
+}
+
+interface CustomNodeProps {
+  id: string;
+  data: NodeData;
+}
+
+const CustomNode = memo(({ data, id }: CustomNodeProps) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
 

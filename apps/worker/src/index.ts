@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-import { Kafka } from "kafkajs";
+import { Kafka, Partitioners } from "kafkajs";
 import { prismaClient } from "@flowcatalyst/database";
 import { parseDynamicFields } from "./parser";
 import { sendEmail } from "./email";
@@ -19,7 +19,9 @@ const parseJson = (data: any) =>
 async function main() {
   const consumer = kafka.consumer({ groupId: "main-worker" });
   await consumer.connect();
-  const producer = kafka.producer();
+  const producer = kafka.producer({
+    createPartitioner: Partitioners.LegacyPartitioner,
+  });
   await producer.connect();
 
   // Get action from Kafka queue
@@ -55,7 +57,7 @@ async function main() {
       });
 
       const currentAction = zapRunDetails?.zap.actions.find(
-        (x) => x.sortingOrder === currStage,
+        (x: any) => x.sortingOrder === currStage,
       );
 
       const dynamicFieldsVal = zapRunDetails?.metadata;

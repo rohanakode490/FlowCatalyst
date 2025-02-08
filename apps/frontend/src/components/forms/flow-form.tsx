@@ -21,7 +21,7 @@ interface DynamicFormProps {
   schema: z.ZodSchema<any>;
   triggerData?: Record<string, any>;
   onClose: () => void;
-  onTriggerTypeChange: (trigger: string) => Promise<void>;
+  onTriggerTypeChange?: (trigger: string) => Promise<void>;
 }
 
 function DynamicForm({
@@ -58,7 +58,9 @@ function DynamicForm({
         GITHUB_TRIGGER_FIELDS_MAP[triggerData.githubEventType] || [];
       setDynamicFields(fields.map((field) => `{{trigger.${field}}}`));
 
-      onTriggerTypeChange(value);
+      if (onTriggerTypeChange !== undefined) {
+        onTriggerTypeChange(value);
+      }
     }
   };
 

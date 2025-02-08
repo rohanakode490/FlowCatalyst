@@ -4,7 +4,7 @@ const useWebhook = () => {
   const [selectedWebhook, setSelectedWebhook] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleWebhookSelect = (webhook) => {
+  const handleWebhookSelect = (webhook: any) => {
     setSelectedWebhook(webhook);
     setIsDialogOpen(false);
   };

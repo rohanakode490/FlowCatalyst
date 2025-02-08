@@ -1,15 +1,34 @@
-import { Kafka } from "kafkajs";
+import { Kafka, Partitioners } from "kafkajs";
 import { prismaClient } from "@flowcatalyst/database";
 
 const TOPIC_NAME = "zap-events";
 
 const kafka = new Kafka({
   clientId: "outbox-processor",
-  brokers: ["localhost:9092"],
+  brokers: [process.env.KAFKA_BROKERS || "localhost:9092"],
 });
 
+async function waitForKafka() {
+  const admin = kafka.admin();
+  while (true) {
+    try {
+      await admin.connect();
+      console.log("✅ Connected to Kafka!");
+      await admin.disconnect();
+      return;
+    } catch (err) {
+      console.error("⏳ Waiting for Kafka to be ready...");
+      await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
+}
+
 async function main() {
-  const producer = kafka.producer();
+  await waitForKafka();
+
+  const producer = kafka.producer({
+    createPartitioner: Partitioners.LegacyPartitioner,
+  });
   await producer.connect();
 
   while (1) {
@@ -22,7 +41,7 @@ async function main() {
     // Put in the queue
     await producer.send({
       topic: TOPIC_NAME,
-      messages: pendingRows.map((r) => {
+      messages: pendingRows.map((r: any) => {
         return {
           value: JSON.stringify({ zapRunId: r.zapRunId, stage: 0 }),
         };
@@ -33,7 +52,7 @@ async function main() {
     await prismaClient.zapRunOutbox.deleteMany({
       where: {
         id: {
-          in: pendingRows.map((r) => r.id),
+          in: pendingRows.map((r: any) => r.id),
         },
       },
     });
@@ -41,4 +60,5 @@ async function main() {
   }
 }
 
+console.log(process.env.KAFKA_BROKERS);
 main();

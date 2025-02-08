@@ -1,0 +1,17 @@
+# Ignore node_modules
+node_modules
+
+# Ignore build artifacts
+.next
+.turbo
+dist
+
+# Ignore logs and local development files
+*.log
+.env
+.env.local
+
+# Ignore Git and IDE files
+.git
+.idea
+.vscode

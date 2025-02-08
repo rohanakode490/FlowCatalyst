@@ -28,6 +28,9 @@ const initialNodes = [
       logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
       configured: false,
       action: false,
+      onOpenDialog: () => console.log("Open dialog"),
+      canDelete: true,
+      onDelete: (id: string) => console.log(`Delete node ${id}`),
     },
   },
   {
@@ -39,18 +42,27 @@ const initialNodes = [
       logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
       configured: false,
       action: true,
+      onOpenDialog: () => console.log("Open dialog"),
+      canDelete: true,
+      onDelete: (id: string) => console.log(`Delete node ${id}`),
     },
   },
 ];
 
 const initialEdges = [
-  { id: "e2-2", type: "buttonEdge", source: "1", target: "2" },
+  {
+    id: "e2-2",
+    type: "buttonEdge",
+    source: "1",
+    target: "2",
+    data: { onAddNode: () => console.log("AddNode") },
+  },
 ];
 
 interface FlowProps {
   initialNodes?: any[]; // Optional initial nodes
   initialEdges?: any[]; // Optional initial edges
-  triggerData?: Record<string, any>;
+  triggerData?: Record<string, any> | undefined;
   zapId?: string;
   onTriggerTypeChange?: (trigger: string) => Promise<void>;
 }
@@ -118,7 +130,7 @@ export default function Flow({
 
   // Handle node click
   const handleNodeClick = useCallback(
-    (event, node) => {
+    (node: any) => {
       setSelectedNodeId(node.id); // Always set the selected node ID
       if (!node.data.configured) {
         openDialog(); // Open the dialog for unconfigured nodes
@@ -129,7 +141,7 @@ export default function Flow({
 
   // Handle webhook selection
   const handleWebhookSelectForNode = useCallback(
-    (nodeId, webhook) => {
+    (nodeId: any, webhook: any) => {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
@@ -189,7 +201,7 @@ export default function Flow({
 
   // Memoized nodes with handlers
   const nodesWithHandlers = useMemo(() => {
-    return nodes.map((node) => ({
+    return nodes.map((node: any) => ({
       ...node,
       data: {
         ...node.data,
@@ -221,7 +233,7 @@ export default function Flow({
 
   // Memoized edges with handlers
   const edgesWithHandlers = useMemo(() => {
-    return edges.map((edge) => ({
+    return edges.map((edge: any) => ({
       ...edge,
       data: {
         ...edge.data,
@@ -271,7 +283,6 @@ export default function Flow({
             nodes={nodes}
             edges={edges}
             zapId={zapId}
-            triggerData={triggerData}
           />
         </div>
         {/* Conditionally Render Sidebar Panel */}
@@ -279,7 +290,7 @@ export default function Flow({
           <Sidebar
             selectedNode={selectedNode}
             selectedNodeId={selectedNodeId}
-            onClose={() => setSelectedNodeId(null)}
+            onClose={() => setSelectedNodeId("")}
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
             triggerData={triggerData}
