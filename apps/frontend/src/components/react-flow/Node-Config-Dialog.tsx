@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ interface NodeConfigDialogProps {
   onClose: () => void;
   onSelectWebhook: (webhook: any) => void;
   isAction: boolean;
+  setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
   onTriggerTypeChange?: (triggerId: string) => Promise<void>; // Add a prop to determine if it's an action or trigger
 }
 
@@ -20,6 +21,7 @@ export const NodeConfigDialog = ({
   onClose,
   onSelectWebhook,
   isAction,
+  setTriggerName,
   onTriggerTypeChange,
 }: NodeConfigDialogProps) => {
   return (
@@ -32,6 +34,8 @@ export const NodeConfigDialog = ({
           onSelect={(webhook) => {
             onSelectWebhook(webhook);
             if (onTriggerTypeChange && !isAction) {
+              console.log("webhook", webhook);
+              // setTriggerName(webhook.id);
               onTriggerTypeChange(webhook.id);
             }
           }}

@@ -15,6 +15,7 @@ import { FlowCanvas } from "./Flow-Canvas";
 import { addNodeBelow, alignNodesVertically, deleteNode } from "./Flow-Helpers";
 import { useTheme } from "next-themes";
 import "@xyflow/react/dist/style.css";
+import { TRIGGER_FORM_FIELDS } from "@/lib/constant";
 
 const VERTICAL_SPACING = 200;
 
@@ -86,6 +87,7 @@ export default function Flow({
   );
 
   const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
+  const [triggerName, setTriggerName] = useState<Record<string, any>>({});
 
   const {
     selectedWebhook,
@@ -130,9 +132,9 @@ export default function Flow({
 
   // Handle node click
   const handleNodeClick = useCallback(
-    (node: any) => {
+    (event: React.MouseEvent, node: any) => {
       setSelectedNodeId(node.id); // Always set the selected node ID
-      if (!node.data.configured) {
+      if (event || (node.data !== undefined && !node.data.configured)) {
         openDialog(); // Open the dialog for unconfigured nodes
       }
     },
@@ -198,6 +200,15 @@ export default function Flow({
 
   // Get the selected node's data
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+  useEffect(() => {
+    if (
+      selectedNode !== undefined &&
+      selectedNode.data.action === false &&
+      selectedNode.data.configured === true
+    ) {
+      setTriggerName(selectedNode.data.metadata);
+    }
+  }, [selectedNode]);
 
   // Memoized nodes with handlers
   const nodesWithHandlers = useMemo(() => {
@@ -290,6 +301,8 @@ export default function Flow({
           <Sidebar
             selectedNode={selectedNode}
             selectedNodeId={selectedNodeId}
+            triggerName={triggerName}
+            setTriggerName={setTriggerName}
             onClose={() => setSelectedNodeId("")}
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
@@ -301,6 +314,7 @@ export default function Flow({
       <NodeConfigDialog
         isOpen={isDialogOpen}
         onClose={handleDialogClose}
+        setTriggerName={setTriggerName}
         onSelectWebhook={(webhook) =>
           handleWebhookSelectForNode(selectedNodeId, webhook)
         }

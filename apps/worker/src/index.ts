@@ -67,7 +67,6 @@ async function main() {
         return;
       }
 
-      //TODO: The operation(action)
       if (currentAction?.type.name === "Email") {
         const emailData = parseDynamicFields(
           parseJson(currentAction.metadata),

@@ -20,22 +20,22 @@ export const menuOptions = [
 ];
 
 export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
-  emailtrigger: [
-    {
-      type: "text",
-      label: "Email Address",
-      name: "emailAddress",
-      placeholder: "Enter your email address",
-      required: true,
-    },
-    {
-      type: "password",
-      label: "Password",
-      name: "password",
-      placeholder: "Enter your email password",
-      required: true,
-    },
-  ],
+  // emailtrigger: [
+  //   {
+  //     type: "text",
+  //     label: "Email Address",
+  //     name: "emailAddress",
+  //     placeholder: "Enter your email address",
+  //     required: true,
+  //   },
+  //   {
+  //     type: "password",
+  //     label: "Password",
+  //     name: "password",
+  //     placeholder: "Enter your email password",
+  //     required: true,
+  //   },
+  // ],
   githubtrigger: [
     {
       type: "select",

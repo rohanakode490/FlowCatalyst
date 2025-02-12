@@ -1,17 +1,6 @@
 import { z } from "zod";
 
 // Triggers
-const emailTriggerSchema = z.object({
-  emailAddress: z.string().email("Invalid email address"),
-  subjectFilter: z.string().min(1, "Subject filter is required"),
-});
-
-const solanaTriggerSchema = z.object({
-  walletAddress: z.string().min(1, "Wallet address is required"),
-  transactionType: z.enum(["all", "nft", "token"], {
-    errorMap: () => ({ message: "Invalid transaction type" }),
-  }),
-});
 
 // Actions
 const slackActionSchema = z.object({
@@ -33,10 +22,7 @@ const solanaActionSchema = z.object({
 });
 
 // Map schemas to trigger/action names
-export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {
-  emailtrigger: emailTriggerSchema,
-  solanatrigger: solanaTriggerSchema,
-};
+export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {};
 
 export const ACTION_SCHEMAS: Record<string, z.ZodSchema<any>> = {
   slack: slackActionSchema,

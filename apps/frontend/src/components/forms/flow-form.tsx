@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/lib/types";
@@ -20,6 +20,8 @@ interface DynamicFormProps {
   initialData?: Record<string, any>;
   schema: z.ZodSchema<any>;
   triggerData?: Record<string, any>;
+  triggerName?: Record<string, any>;
+  setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
   onClose: () => void;
   onTriggerTypeChange?: (trigger: string) => Promise<void>;
 }
@@ -30,6 +32,8 @@ function DynamicForm({
   initialData,
   schema,
   triggerData,
+  triggerName,
+  setTriggerName,
   onClose,
   onTriggerTypeChange,
 }: DynamicFormProps) {
@@ -53,11 +57,23 @@ function DynamicForm({
     }
 
     // Update dynamic fields when the event type changes
-    if (fieldName === "githubEventType" && triggerData?.githubEventType) {
+    if (
+      fieldName === "githubEventType" &&
+      (triggerData?.githubEventType || triggerName?.githubEventType)
+    ) {
       const fields =
-        GITHUB_TRIGGER_FIELDS_MAP[triggerData.githubEventType] || [];
+        GITHUB_TRIGGER_FIELDS_MAP[
+          triggerData?.githubEventType ||
+            triggerName?.githubEventType ||
+            "issue_comment"
+        ];
       setDynamicFields(fields.map((field) => `{{trigger.${field}}}`));
 
+      setTriggerName(
+        triggerData?.githubEventType ||
+          triggerName?.githubEventType ||
+          "issue_comment",
+      );
       if (onTriggerTypeChange !== undefined) {
         onTriggerTypeChange(value);
       }
@@ -81,9 +97,11 @@ function DynamicForm({
     e.preventDefault();
 
     // Validate github-placeholders for each field
-    if (triggerData?.githubEventType) {
+    if (triggerData?.githubEventType || triggerName?.githubEventType) {
       const allowedFields =
-        GITHUB_TRIGGER_FIELDS_MAP[triggerData.githubEventType] || [];
+        GITHUB_TRIGGER_FIELDS_MAP[
+          triggerData?.githubEventType || triggerName?.githubEventType
+        ];
       for (const field of fields) {
         const value = formData[field.name];
         if (
@@ -191,15 +209,25 @@ function DynamicForm({
 
   // Update dynamic fields based on the last saved trigger type
   useEffect(() => {
-    if (triggerData) {
+    if (
+      (triggerData?.githubEventType && triggerData.githubEventType !== "") ||
+      triggerName?.githubEventType !== ""
+    ) {
       const fields =
         GITHUB_TRIGGER_FIELDS_MAP[
-          triggerData.githubEventType || "issue_comment"
+          triggerData?.githubEventType ||
+            triggerName?.githubEventType ||
+            "issue_comment"
         ];
 
+      setTriggerName(
+        triggerData?.githubEventType ||
+          triggerName?.githubEventType ||
+          "issue_comment",
+      );
       setDynamicFields(fields.map((field) => `${field}`));
     }
-  }, [triggerData?.githubEventType]);
+  }, [triggerData, triggerName]);
 
   // Render fields based on their type and conditions
   const renderField = (field: FormField) => {

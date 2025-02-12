@@ -4,6 +4,7 @@ import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "@flowcatalyst/database";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
+const passport = require("passport");
 const bcrypt = require("bcryptjs");
 
 const router = Router();
@@ -123,5 +124,38 @@ router.get("/", authMiddleware, async (req, res) => {
     id,
   });
 });
+
+// Google OAuth Routes
+
+// router.get(
+//   "/auth/google",
+//   passport.authenticate("google", { scope: ["profile", "email"] }),
+// );
+
+// router.get(
+//   "/auth/google",
+//   passport.authenticate("google", {
+//     scope: ["profile", "email"],
+//     prompt: "select_account", // Force account selection
+//   }),
+// );
+
+router.get(
+  "/auth/google",
+  (req, res, next) => {
+    console.log("Redirecting to Google OAuth:", req.originalUrl);
+    next();
+  },
+  passport.authenticate("google", { scope: ["profile", "email"] }),
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/api/v1/user" }),
+  (req, res) => {
+    console.log("Google authentication successful:", req);
+    res.redirect("/api/v1/user");
+  },
+);
 
 export const userRouter = router;

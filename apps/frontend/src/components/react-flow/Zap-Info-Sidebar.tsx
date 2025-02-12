@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ACTION_FORM_FIELDS, TRIGGER_FORM_FIELDS } from "@/lib/constant";
@@ -8,6 +14,8 @@ import { ACTION_SCHEMAS, TRIGGER_SCHEMAS } from "@/lib/schema";
 interface SidebarProps {
   selectedNode: any;
   selectedNodeId: string;
+  triggerName?: Record<string, any>;
+  setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
   onClose: () => void;
   openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
@@ -18,6 +26,8 @@ interface SidebarProps {
 export const Sidebar = ({
   selectedNode,
   selectedNodeId,
+  triggerName,
+  setTriggerName,
   onClose,
   openDialog,
   onFormSubmit,
@@ -98,7 +108,9 @@ export const Sidebar = ({
           onSubmit={(formData) => onFormSubmit(selectedNodeId, formData)}
           schema={schema}
           triggerData={triggerData}
+          triggerName={triggerName}
           onClose={onClose}
+          setTriggerName={setTriggerName}
           onTriggerTypeChange={onTriggerTypeChange}
         />
         <div className="border-t">

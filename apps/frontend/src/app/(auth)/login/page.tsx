@@ -10,11 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Error from "@/components/globals/form-error";
 import Navbar from "@/components/globals/navbar";
 import api from "@/lib/api";
+import { FcGoogle } from "react-icons/fc";
+import { SiGithub } from "react-icons/si";
+import { BACKEND_URL } from "@/lib/config";
 
 export default function LogIn() {
   const router = useRouter();
@@ -45,6 +48,16 @@ export default function LogIn() {
         setError("Something went wrong. Please try again after some time");
       }
     }
+  };
+
+  const handleGoogleLogin = () => {
+    // window.open(`${BACKEND_URL}/user/auth/google/callback`, "_self");
+    window.location.href = `${BACKEND_URL}/auth/google/callback`;
+  };
+
+  const handleGithubLogin = () => {
+    // window.open(`${BACKEND_URL}/user/auth/google/callback`, "_self");
+    window.location.href = `${BACKEND_URL}/auth/github/callback`;
   };
 
   return (
@@ -93,6 +106,22 @@ export default function LogIn() {
               <Button type="submit" className="w-full">
                 Sign In
               </Button>
+              <Button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full"
+              >
+                <FcGoogle className="text-lg" />
+                <span>Sign in with Google</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={handleGithubLogin}
+                className="w-full"
+              >
+                <SiGithub className="text-lg" />
+                <span>Sign in with Github</span>
+              </Button>
             </form>
             <div className="mt-4 text-center">
               <a
@@ -104,8 +133,6 @@ export default function LogIn() {
             </div>
           </CardContent>
         </Card>
-
-        {/* TODO: Add Google and Github OAuth */}
       </div>
     </>
   );
