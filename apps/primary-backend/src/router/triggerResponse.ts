@@ -66,7 +66,6 @@ router.get("/:triggerId", async (req, res) => {
 
   const githubEventType = trigger?.metadata;
 
-  console.log("trigger", githubEventType, trigger);
   if (!trigger) {
     return res.status(404).json({ message: "Trigger not found" });
   }

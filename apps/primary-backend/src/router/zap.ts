@@ -18,7 +18,6 @@ router.post("/", authMiddleware, async (req, res) => {
       message: "Incorrect Inputs",
     });
   }
-  console.log(parsedData);
 
   const zapId = await prismaClient.$transaction(
     async (tx: PrismaTransactionalClient) => {
@@ -136,8 +135,6 @@ router.put("/:zapId", authMiddleware, async (req, res) => {
       errors: parsedData.error.errors,
     });
   }
-
-  console.log(parsedData);
 
   try {
     const updatedZap = await prismaClient.$transaction(async (tx) => {

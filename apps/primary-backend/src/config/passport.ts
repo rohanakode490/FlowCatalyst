@@ -38,7 +38,6 @@ passport.use(
       done: any,
     ) => {
       try {
-        console.log("Google Profile:", profile);
         // Check if the user already exists in the database
         let user = await prismaClient.user.findUnique({
           where: { googleId: profile.id },

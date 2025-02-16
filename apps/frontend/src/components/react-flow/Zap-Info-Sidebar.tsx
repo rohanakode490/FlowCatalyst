@@ -20,7 +20,7 @@ interface SidebarProps {
   openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
   triggerData?: Record<string, any>;
-  onTriggerTypeChange?: (triggerId: string) => Promise<void>;
+  handleTriggerTypeChange?: (triggerId: string) => Promise<void>;
 }
 
 export const Sidebar = ({
@@ -32,7 +32,7 @@ export const Sidebar = ({
   openDialog,
   onFormSubmit,
   triggerData,
-  onTriggerTypeChange,
+  handleTriggerTypeChange,
 }: SidebarProps) => {
   const isResizing = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -111,7 +111,7 @@ export const Sidebar = ({
           triggerName={triggerName}
           onClose={onClose}
           setTriggerName={setTriggerName}
-          onTriggerTypeChange={onTriggerTypeChange}
+          handleTriggerTypeChange={handleTriggerTypeChange}
         />
         <div className="border-t">
           <Button

@@ -15,7 +15,6 @@ import { FlowCanvas } from "./Flow-Canvas";
 import { addNodeBelow, alignNodesVertically, deleteNode } from "./Flow-Helpers";
 import { useTheme } from "next-themes";
 import "@xyflow/react/dist/style.css";
-import { TRIGGER_FORM_FIELDS } from "@/lib/constant";
 
 const VERTICAL_SPACING = 200;
 
@@ -66,6 +65,7 @@ interface FlowProps {
   triggerData?: Record<string, any> | undefined;
   zapId?: string;
   onTriggerTypeChange?: (trigger: string) => Promise<void>;
+  originalEventType?: string;
 }
 
 export default function Flow({
@@ -74,6 +74,7 @@ export default function Flow({
   triggerData,
   zapId,
   onTriggerTypeChange,
+  originalEventType,
 }: FlowProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -85,17 +86,11 @@ export default function Flow({
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     propEdges || initialEdges,
   );
-
   const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
   const [triggerName, setTriggerName] = useState<Record<string, any>>({});
 
-  const {
-    selectedWebhook,
-    isDialogOpen,
-    handleWebhookSelect,
-    openDialog,
-    closeDialog,
-  } = useWebhook();
+  const { isDialogOpen, handleWebhookSelect, openDialog, closeDialog } =
+    useWebhook();
   // Hydration fix
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -132,9 +127,9 @@ export default function Flow({
 
   // Handle node click
   const handleNodeClick = useCallback(
-    (event: React.MouseEvent, node: any) => {
+    (_: React.MouseEvent, node: any) => {
       setSelectedNodeId(node.id); // Always set the selected node ID
-      if (event || (node.data !== undefined && !node.data.configured)) {
+      if (node.data !== undefined && !node.data.configured) {
         openDialog(); // Open the dialog for unconfigured nodes
       }
     },
@@ -208,7 +203,7 @@ export default function Flow({
     ) {
       setTriggerName(selectedNode.data.metadata);
     }
-  }, [selectedNode]);
+  }, [selectedNode, triggerName]);
 
   // Memoized nodes with handlers
   const nodesWithHandlers = useMemo(() => {
@@ -262,6 +257,17 @@ export default function Flow({
     }));
   }, [edges, nodes, setNodes, setEdges]);
 
+  // Handle trigger type changes
+  const handleTriggerTypeChange = async (triggerTypeId: string) => {
+    if (onTriggerTypeChange) {
+      // Skip if the event type hasn't changed
+      if (triggerTypeId !== originalEventType) {
+        return;
+      }
+      await onTriggerTypeChange(triggerTypeId);
+    }
+  };
+
   if (!mounted) return null; // Prevent rendering during SSR
 
   return (
@@ -307,7 +313,7 @@ export default function Flow({
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
             triggerData={triggerData}
-            onTriggerTypeChange={onTriggerTypeChange}
+            handleTriggerTypeChange={handleTriggerTypeChange}
           />
         )}
       </div>
@@ -319,7 +325,7 @@ export default function Flow({
           handleWebhookSelectForNode(selectedNodeId, webhook)
         }
         isAction={selectedNode?.data.action}
-        onTriggerTypeChange={onTriggerTypeChange}
+        handleTriggerTypeChange={handleTriggerTypeChange}
       />
     </>
   );

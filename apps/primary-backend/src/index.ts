@@ -182,7 +182,6 @@ passport.use(
 app.get(
   "/auth/google",
   (req, res, next) => {
-    console.log("Redirecting to Google OAuth:", req.originalUrl);
     next();
   },
   passport.authenticate("google", {
@@ -195,7 +194,6 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req: any, res) => {
-    console.log("Google authentication successful:", req.user?.id || "No user");
     const token = jwt.sign({ id: req.user.id }, JWT_PASSWORD, {
       expiresIn: "10h",
     });
@@ -224,7 +222,6 @@ app.get(
   "/auth/github/callback",
   passport.authenticate("github", { failureRedirect: "/login" }),
   (req: any, res) => {
-    console.log("GitHub authentication successful:", req.user?.id || "No user");
     const token = jwt.sign({ id: req.user.id }, JWT_PASSWORD, {
       expiresIn: "10h",
     });

@@ -13,7 +13,6 @@ async function waitForKafka() {
   while (true) {
     try {
       await admin.connect();
-      console.log("✅ Connected to Kafka!");
       await admin.disconnect();
       return;
     } catch (err) {
@@ -60,5 +59,4 @@ async function main() {
   }
 }
 
-console.log(process.env.KAFKA_BROKERS);
 main();

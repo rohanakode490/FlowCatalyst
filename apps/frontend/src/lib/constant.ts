@@ -109,10 +109,14 @@ export const ACTION_FORM_FIELDS: Record<string, FormField[]> = {
       required: true,
     },
     {
-      type: "number",
+      type: "text",
       label: "Amount",
       name: "Amount",
+      placeholder: "Enter the amount",
       required: true,
+      validation: {
+        isNumberOrPlaceholder: true,
+      },
     },
   ],
 };

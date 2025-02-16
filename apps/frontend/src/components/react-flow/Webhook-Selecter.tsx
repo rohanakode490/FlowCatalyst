@@ -5,13 +5,13 @@ import api from "@/lib/api";
 interface WebhookSelectorProps {
   onSelect: (webhook: any) => void;
   type: "action" | "trigger";
-  onTriggerTypeChange?: (triggerId: string) => void;
+  handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
 function WebhookSelector({
   onSelect,
   type,
-  onTriggerTypeChange,
+  handleTriggerTypeChange,
 }: WebhookSelectorProps) {
   const [webhooks, setWebhooks] = useState<any[]>([]);
 
@@ -36,8 +36,8 @@ function WebhookSelector({
   // Handle trigger selection
   const handleTriggerSelect = (webhook: any) => {
     onSelect(webhook);
-    if (type === "trigger" && onTriggerTypeChange) {
-      onTriggerTypeChange(webhook.id);
+    if (type === "trigger" && handleTriggerTypeChange) {
+      handleTriggerTypeChange(webhook.id);
     }
   };
 

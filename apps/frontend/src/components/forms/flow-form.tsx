@@ -23,7 +23,7 @@ interface DynamicFormProps {
   triggerName?: Record<string, any>;
   setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
   onClose: () => void;
-  onTriggerTypeChange?: (trigger: string) => Promise<void>;
+  handleTriggerTypeChange?: (trigger: string) => Promise<void>;
 }
 
 function DynamicForm({
@@ -35,13 +35,30 @@ function DynamicForm({
   triggerName,
   setTriggerName,
   onClose,
-  onTriggerTypeChange,
+  handleTriggerTypeChange,
 }: DynamicFormProps) {
   const params = useParams();
   const zapId = params.zapId as string;
-  const [formData, setFormData] = useState<Record<string, any>>(
-    initialData === undefined ? {} : initialData,
-  );
+  const [formData, setFormData] = useState<Record<string, any>>(() => {
+    const data = { ...(initialData || {}) };
+
+    // Check if triggerName or triggerData has githubEventType
+    if (
+      triggerName?.githubEventType !== undefined ||
+      triggerData?.githubEventType !== undefined
+    ) {
+      // Set the default value only if githubEventType is not already set in initialData
+      if (data.githubEventType === undefined || data.githubEventType === "") {
+        data.githubEventType = "issue_comment"; // Default value
+      }
+    }
+    // Provide a default value for the amount field
+    if (data.Amount === undefined || data.Amount === "") {
+      data.Amount = "0"; // Default value for amount
+    }
+
+    return data;
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeInput, setActiveInput] = useState<string | null>(null);
   const [userId, setUserId] = useState<string>("");
@@ -57,25 +74,23 @@ function DynamicForm({
     }
 
     // Update dynamic fields when the event type changes
-    if (
-      fieldName === "githubEventType" &&
-      (triggerData?.githubEventType || triggerName?.githubEventType)
-    ) {
-      const fields =
-        GITHUB_TRIGGER_FIELDS_MAP[
-          triggerData?.githubEventType ||
-            triggerName?.githubEventType ||
-            "issue_comment"
-        ];
+    if (fieldName === "githubEventType") {
+      const fields = GITHUB_TRIGGER_FIELDS_MAP[value || "issue_comment"];
       setDynamicFields(fields.map((field) => `{{trigger.${field}}}`));
 
-      setTriggerName(
-        triggerData?.githubEventType ||
-          triggerName?.githubEventType ||
-          "issue_comment",
-      );
-      if (onTriggerTypeChange !== undefined) {
-        onTriggerTypeChange(value);
+      // Update triggerName with the new githubEventType
+      setTriggerName((prev) => {
+        if (prev.githubEventType === value) {
+          return prev; // No change, return previous state
+        }
+        return {
+          ...prev,
+          githubEventType: value,
+        };
+      });
+
+      if (handleTriggerTypeChange !== undefined) {
+        handleTriggerTypeChange(value);
       }
     }
   };
@@ -88,26 +103,79 @@ function DynamicForm({
     });
   };
 
-  const validateNumberOrPlaceholder = (value: string) => {
-    return !isNaN(parseFloat(value)) || value.includes("{{trigger.Amount}}");
+  const validateNumberOrPlaceholder = (value: string | undefined | null) => {
+    if (value === undefined || value === null) {
+      return false;
+    }
+
+    // Check if the value is a valid number
+    if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+      return true;
+    }
+    // Check if the value is exactly the placeholder {{trigger.Amount}}
+    return value.trim() === "{{trigger.Amount}}";
   };
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate github-placeholders for each field
+    // setFormData((prev) => ({ ...prev, [fieldName]: value }));
+    const updatedFormData = { ...formData };
+    // Check if triggerName or triggerData has githubEventType
+    if (
+      triggerName?.githubEventType !== undefined ||
+      triggerData?.githubEventType !== undefined
+    ) {
+      // Ensure githubEventType has a default value if it's empty
+      if (
+        updatedFormData.githubEventType === undefined ||
+        updatedFormData.githubEventType === ""
+      ) {
+        updatedFormData.githubEventType = "issue_comment"; // Default value
+      }
+    }
+
+    // Update triggerName only if the githubEventType has changed
+    if (updatedFormData.githubEventType !== triggerName?.githubEventType) {
+      setTriggerName((prev) => ({
+        ...prev,
+        githubEventType: updatedFormData.githubEventType,
+      }));
+    }
+
+    // Validate the amount field
+    if (updatedFormData.Amount === undefined || updatedFormData.Amount === "") {
+      setErrors((prev) => ({
+        ...prev,
+        Amount: "Amount is required",
+      }));
+      toast.error("Amount is required");
+      return;
+    }
+
+    // Validate placeholders and number/placeholder fields if githubEventType is present
     if (triggerData?.githubEventType || triggerName?.githubEventType) {
       const allowedFields =
         GITHUB_TRIGGER_FIELDS_MAP[
           triggerData?.githubEventType || triggerName?.githubEventType
         ];
+
       for (const field of fields) {
-        const value = formData[field.name];
+        const value = updatedFormData[field.name];
+
+        // Skip validation for fields that do not support placeholders
         if (
-          (typeof value === "string" &&
-            !validatePlaceholder(value, allowedFields)) ||
-          !validateNumberOrPlaceholder(value)
+          field.name === "githubEventType" ||
+          field.name === "githubwebhook"
+        ) {
+          continue;
+        }
+
+        // Validate placeholders for fields that support them
+        if (
+          typeof value === "string" &&
+          !validatePlaceholder(value, allowedFields)
         ) {
           setErrors((prev) => ({
             ...prev,
@@ -116,31 +184,46 @@ function DynamicForm({
           toast.error("Invalid input field");
           return;
         }
+
+        // Validate number/placeholder fields (e.g., amount for Solana action)
+        if (
+          field.validation?.isNumberOrPlaceholder &&
+          !validateNumberOrPlaceholder(value)
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            [field.name]: `Invalid value for ${field.name}. It must be a number or contain a valid placeholder.`,
+          }));
+          toast.error("Invalid input field");
+          return;
+        }
       }
     }
 
     // Replace placeholders with actual values
-    const processedData = { ...formData };
+    const processedData = { ...updatedFormData };
     for (const key in processedData) {
       const value = processedData[key];
 
-      // If the field is a number/placeholder field, replace placeholders and convert to number
+      // If the field is a number/placeholder field, handle it appropriately
       if (
         fields.find((f) => f.name === key)?.validation?.isNumberOrPlaceholder
       ) {
-        if (typeof value === "string" && value.includes("{{trigger.Amount}}")) {
-          // Replace the placeholder with the actual value from triggerData
-          processedData[key] = replacePlaceholders(value, triggerData || {});
+        if (typeof value === "string" && validateNumberOrPlaceholder(value)) {
+          // If the value contains a placeholder, save it as-is
+          processedData[key] = value;
+        } else if (!isNaN(parseFloat(value))) {
+          processedData[key] = value;
+        } else {
+          // If the value is invalid, set it to 0 (or handle it as needed)
+          processedData[key] = "0";
         }
-
-        // Convert the value to a number
-        processedData[key] = parseFloat(processedData[key]);
       }
     }
 
     // Skip validation if schema is for github-webhook which is only a link
     if (!schema) {
-      onSubmit(formData); // Submit the form data without validation
+      onSubmit(processedData); // Submit the form data without validation
       onClose();
       toast.success("Saved successfully!");
       return;
@@ -148,7 +231,7 @@ function DynamicForm({
 
     // Validate form data using Zod schema
     try {
-      const validatedData = schema.parse(formData);
+      const validatedData = schema.parse(processedData);
       onSubmit(validatedData); // Submit the validated data
       onClose();
       toast.success("Saved successfully!");
@@ -182,7 +265,10 @@ function DynamicForm({
 
   // Generate the webhook URL based on the selected event type
   const generateWebhookUrl = () => {
-    const eventType = triggerData?.githubEventType || "issue_comment";
+    const eventType =
+      triggerData?.githubEventType ||
+      triggerName?.githubEventType ||
+      "issue_comment";
     return `${HOOKS_URL}/github-webhook/${eventType}/${userId}/${zapId || ""}`;
   };
 
@@ -220,11 +306,13 @@ function DynamicForm({
             "issue_comment"
         ];
 
-      setTriggerName(
-        triggerData?.githubEventType ||
-          triggerName?.githubEventType ||
-          "issue_comment",
-      );
+      // setTriggerName((prev) => ({
+      //   ...prev,
+      //   githubEventType:
+      //     triggerData?.githubEventType ||
+      //     triggerName?.githubEventType ||
+      //     "issue_comment",
+      // }));
       setDynamicFields(fields.map((field) => `${field}`));
     }
   }, [triggerData, triggerName]);
@@ -277,7 +365,10 @@ function DynamicForm({
             </Label>
             <select
               id={field.name}
-              value={formData[field.name] || ""}
+              value={
+                formData[field.name] ||
+                (field.name === "githubEventType" ? "issue_comment" : "")
+              }
               onChange={(e) => handleInputChange(field.name, e.target.value)}
               className="mt-1 block w-full p-2 border rounded-md"
             >

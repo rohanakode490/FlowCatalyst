@@ -6,6 +6,7 @@ import Heading from "@/components/globals/heading";
 import { ReactFlowProvider } from "@xyflow/react";
 import api from "@/lib/api";
 import Flow from "@/components/react-flow/Flow";
+import toast from "react-hot-toast";
 
 export default function EditZapPage() {
   const params = useParams();
@@ -15,6 +16,7 @@ export default function EditZapPage() {
   const [initialEdges, setInitialEdges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggerData, setTriggerData] = useState<Record<string, any>>({});
+  const [originalEventType, setOriginalEventType] = useState<string>("");
 
   // Fetch the saved Zap structure
   useEffect(() => {
@@ -74,6 +76,9 @@ export default function EditZapPage() {
           `/trigger-response/${trigger.id}`,
         );
         setTriggerData(triggerResponse.data.triggerData);
+        if (trigger.metadata?.githubEventType) {
+          setOriginalEventType(trigger.metadata.githubEventType);
+        }
       } catch (error) {
         console.error("Failed to fetch Zap:", error);
         // router.push("/workflows"); // Redirect to the dashboard if the fetch fails
@@ -92,8 +97,11 @@ export default function EditZapPage() {
         `/trigger-response/${triggerTypeId}`,
       );
       setTriggerData(triggerResponse.data.triggerData);
+      setOriginalEventType(triggerTypeId);
     } catch (error) {
       console.error("Failed to fetch trigger data:", error);
+      setTriggerData({});
+      toast.error("Failed to fetch trigger data. Using default values.");
     }
   };
 
@@ -111,6 +119,7 @@ export default function EditZapPage() {
             triggerData={triggerData}
             zapId={zapId}
             onTriggerTypeChange={updateTriggerData}
+            originalEventType={originalEventType}
           />
         )}
       </ReactFlowProvider>

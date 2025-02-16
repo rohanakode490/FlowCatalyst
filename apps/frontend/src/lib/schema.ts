@@ -16,9 +16,13 @@ const emailActionSchema = z.object({
 
 const solanaActionSchema = z.object({
   walletAddress: z.string().min(1, "Wallet address is required"),
-  transactionType: z.enum(["all", "nft", "token"], {
-    errorMap: () => ({ message: "Invalid transaction type" }),
-  }),
+  Amount: z
+    .string()
+    .refine(
+      (value) =>
+        !isNaN(parseFloat(value)) || value.includes("{{trigger.Amount}}"),
+      "Amount must be a valid number or contain a placeholder",
+    ),
 });
 
 // Map schemas to trigger/action names
