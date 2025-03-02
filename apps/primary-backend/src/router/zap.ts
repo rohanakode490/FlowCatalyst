@@ -4,6 +4,7 @@ import { ZapCreateSchema } from "../types";
 import { PrismaTransactionalClient } from "../db";
 
 import { prismaClient } from "@flowcatalyst/database";
+import axios from "axios";
 
 const router = Router();
 
@@ -19,9 +20,9 @@ router.post("/", authMiddleware, async (req, res) => {
     });
   }
 
-  const zapId = await prismaClient.$transaction(
-    async (tx: PrismaTransactionalClient) => {
-      try {
+  try {
+    const ID = await prismaClient.$transaction(
+      async (tx: PrismaTransactionalClient) => {
         // Create the zap with actions in a single transaction
         const zap = await prismaClient.zap.create({
           data: {
@@ -41,6 +42,7 @@ router.post("/", authMiddleware, async (req, res) => {
         const trigger = await tx.trigger.create({
           data: {
             triggerId: parsedData.data.availableTriggerId,
+            metadata: parsedData.data.triggerMetadata,
             zapId: zap.id,
           },
         });
@@ -55,17 +57,20 @@ router.post("/", authMiddleware, async (req, res) => {
           },
         });
 
-        return zap.id;
-      } catch (error) {
-        // Database error
-        throw new Error("Failed to create zap");
-      }
-    },
-  );
+        return { ZapId: zap.id, TriggerId: trigger.id };
+      },
+    );
+    if (parsedData.data.triggerMetadata.keywords !== undefined) {
+      await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
+        triggerId: ID.TriggerId,
+      });
+    }
 
-  return res.json({
-    zapId,
-  });
+    res.json(ID);
+  } catch (error: any) {
+    console.error("Failed to save Zap:", error);
+    res.status(500).json({ message: "Failed to save Zap" });
+  }
 });
 
 router.get("/", authMiddleware, async (req, res) => {
@@ -169,6 +174,13 @@ router.put("/:zapId", authMiddleware, async (req, res) => {
       return { trigger, actions };
     });
 
+    //For Testing
+    // if (parsedData.data.triggerMetadata.keywords !== undefined) {
+    //   await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
+    //     triggerId: updatedZap.trigger.id,
+    //   });
+    // }
+
     res.json({
       success: true,
       updatedZap,
@@ -188,7 +200,7 @@ router.delete("/:zapId", authMiddleware, async (req, res) => {
     // Check if the Zap belongs to the user
     const zap = await prismaClient.zap.findUnique({
       where: { id: zapId },
-      include: { trigger: true, actions: true },
+      include: { trigger: true, actions: true, zapRuns: true },
     });
 
     if (!zap) {
@@ -203,6 +215,13 @@ router.delete("/:zapId", authMiddleware, async (req, res) => {
 
     // Delete the Zap and its associated trigger and actions
     await prismaClient.$transaction(async (tx) => {
+      // Delete the ZapRun
+      if (zap.zapRuns.length > 0) {
+        await tx.zapRun.deleteMany({
+          where: { zapId: zapId },
+        });
+      }
+
       // Delete the trigger
       if (zap.trigger) {
         await tx.trigger.delete({

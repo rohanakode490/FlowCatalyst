@@ -33,7 +33,15 @@ export interface Zap {
 }
 
 export interface FormField {
-  type: "text" | "number" | "select" | "readonly-link" | "password";
+  type:
+    | "text"
+    | "number"
+    | "select"
+    | "multi-select"
+    | "readonly-link"
+    | "password"
+    | "tag-input"
+    | "country-state";
   label: string;
   name: string;
   placeholder?: string;

@@ -6,7 +6,6 @@ import Heading from "@/components/globals/heading";
 import { ReactFlowProvider } from "@xyflow/react";
 import api from "@/lib/api";
 import Flow from "@/components/react-flow/Flow";
-import toast from "react-hot-toast";
 
 export default function EditZapPage() {
   const params = useParams();
@@ -16,8 +15,9 @@ export default function EditZapPage() {
   const [initialEdges, setInitialEdges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggerData, setTriggerData] = useState<Record<string, any>>({});
-  const [originalEventType, setOriginalEventType] = useState<string>("");
+  const [originalEventType, setOriginalEventType] = useState<any[]>([]);
 
+  console.log("triggerData", triggerData);
   // Fetch the saved Zap structure
   useEffect(() => {
     if (!zapId) return;
@@ -31,6 +31,7 @@ export default function EditZapPage() {
           },
         });
         const { trigger, actions } = response.data.zap;
+        console.log("edit", trigger, actions);
 
         // Map the trigger and actions to nodes and edges
         const nodes = [
@@ -71,17 +72,11 @@ export default function EditZapPage() {
         setInitialNodes(nodes);
         setInitialEdges(edges);
 
-        // Fetch trigger data
-        const triggerResponse = await api.get(
-          `/trigger-response/${trigger.id}`,
-        );
-        setTriggerData(triggerResponse.data.triggerData);
-        if (trigger.metadata?.githubEventType) {
-          setOriginalEventType(trigger.metadata.githubEventType);
-        }
+        setTriggerData(trigger.metadata);
+        setOriginalEventType(nodes);
       } catch (error) {
         console.error("Failed to fetch Zap:", error);
-        // router.push("/workflows"); // Redirect to the dashboard if the fetch fails
+        router.push("/workflows"); // Redirect to the dashboard if the fetch fails
       } finally {
         setLoading(false);
       }
@@ -90,23 +85,8 @@ export default function EditZapPage() {
     fetchZap();
   }, [zapId, router]);
 
-  // Function to update triggerData when the trigger type changes
-  const updateTriggerData = async (triggerTypeId: string) => {
-    try {
-      const triggerResponse = await api.get(
-        `/trigger-response/${triggerTypeId}`,
-      );
-      setTriggerData(triggerResponse.data.triggerData);
-      setOriginalEventType(triggerTypeId);
-    } catch (error) {
-      console.error("Failed to fetch trigger data:", error);
-      setTriggerData({});
-      toast.error("Failed to fetch trigger data. Using default values.");
-    }
-  };
-
   if (loading) {
-    return <div>Loading...</div>; // Show a loading state
+    return <div>Loading...</div>;
   }
 
   return (
@@ -117,8 +97,8 @@ export default function EditZapPage() {
             initialNodes={initialNodes}
             initialEdges={initialEdges}
             triggerData={triggerData}
+            setTriggerData={setTriggerData}
             zapId={zapId}
-            onTriggerTypeChange={updateTriggerData}
             originalEventType={originalEventType}
           />
         )}

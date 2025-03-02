@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   useNodesState,
   useEdgesState,
@@ -60,20 +67,20 @@ const initialEdges = [
 ];
 
 interface FlowProps {
-  initialNodes?: any[]; // Optional initial nodes
-  initialEdges?: any[]; // Optional initial edges
+  initialNodes?: any[];
+  initialEdges?: any[];
   triggerData?: Record<string, any> | undefined;
+  setTriggerData?: Dispatch<SetStateAction<Record<string, any>>>;
   zapId?: string;
-  onTriggerTypeChange?: (trigger: string) => Promise<void>;
-  originalEventType?: string;
+  originalEventType?: any[];
 }
 
 export default function Flow({
   initialNodes: propNodes,
   initialEdges: propEdges,
   triggerData,
+  setTriggerData,
   zapId,
-  onTriggerTypeChange,
   originalEventType,
 }: FlowProps) {
   const { resolvedTheme } = useTheme();
@@ -89,8 +96,13 @@ export default function Flow({
   const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
   const [triggerName, setTriggerName] = useState<Record<string, any>>({});
 
-  const { isDialogOpen, handleWebhookSelect, openDialog, closeDialog } =
-    useWebhook();
+  const {
+    webhooks,
+    isDialogOpen,
+    handleWebhookSelect,
+    openDialog,
+    closeDialog,
+  } = useWebhook();
   // Hydration fix
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -146,11 +158,11 @@ export default function Flow({
               ...node,
               data: {
                 ...node.data,
-                id: webhook.id, // Set the id from the selected webhook
-                name: webhook.name, // Update name
-                logo: webhook.logo, // Update logo
-                configured: true, // Mark as configured
-                metadata: webhook.metadata || {}, // Reset form data for the new webhook
+                id: webhook.id,
+                name: webhook.name,
+                logo: webhook.image,
+                configured: true,
+                metadata: webhook.metadata || {},
               },
             };
           }
@@ -258,13 +270,17 @@ export default function Flow({
   }, [edges, nodes, setNodes, setEdges]);
 
   // Handle trigger type changes
-  const handleTriggerTypeChange = async (triggerTypeId: string) => {
-    if (onTriggerTypeChange) {
-      // Skip if the event type hasn't changed
-      if (triggerTypeId !== originalEventType) {
+  const handleTriggerTypeChange = (triggerTypeId: string) => {
+    if (originalEventType !== undefined) {
+      if (
+        triggerTypeId !== originalEventType[0].data.metadata?.githubEventType
+      ) {
         return;
       }
-      await onTriggerTypeChange(triggerTypeId);
+      if (setTriggerData !== undefined) {
+        setTriggerData(originalEventType[0].data.metadata.githubEventType);
+        setNodes(originalEventType);
+      }
     }
   };
 

@@ -20,7 +20,7 @@ interface SidebarProps {
   openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
   triggerData?: Record<string, any>;
-  handleTriggerTypeChange?: (triggerId: string) => Promise<void>;
+  handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
 export const Sidebar = ({
@@ -86,6 +86,20 @@ export const Sidebar = ({
     };
   }, []);
 
+  function findtype(triggerData: any, triggerName: any) {
+    if (triggerData?.githubEventType || triggerName?.githubEventType) {
+      return "github";
+    } else {
+      return "linkedin";
+    }
+  }
+  console.log(
+    "type",
+    triggerData,
+    triggerName,
+    findtype(triggerData, triggerName),
+  );
+
   return (
     <div
       ref={sidebarRef}
@@ -107,6 +121,7 @@ export const Sidebar = ({
           initialData={initialData}
           onSubmit={(formData) => onFormSubmit(selectedNodeId, formData)}
           schema={schema}
+          triggerType={findtype(triggerData, triggerName)}
           triggerData={triggerData}
           triggerName={triggerName}
           onClose={onClose}

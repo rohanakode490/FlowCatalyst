@@ -37,7 +37,7 @@ const Navbar = ({ OnlyLogo = false }: Props) => {
           <aside className="flex items-center gap-4">
             {/* Get Started Button */}
             <Link
-              href="/signup"
+              href="/workflows"
               className="relative inline-flex h-10 overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
             >
               {/* Animated Background */}

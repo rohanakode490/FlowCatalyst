@@ -1,11 +1,15 @@
 import express, { Request, Response } from "express";
-
 import { Prisma, prismaClient } from "@flowcatalyst/database";
+const cron = require("node-cron");
+const path = require("path");
+const { spawn } = require("child_process");
 
 type PrismaTransactionalClient = Prisma.TransactionClient;
 
 const app = express();
 app.use(express.json());
+
+const activeJobs = new Map<string, ReturnType<typeof cron.schedule>>();
 
 type EventData = {
   eventType: string;
@@ -168,7 +172,7 @@ const handleGitHubWebhook = async (
   } catch (error) {
     console.error("Error processing webhook:", error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : "Internal server error",
+      error,
     });
   }
 };
@@ -181,6 +185,225 @@ app.post(
     handleGitHubWebhook(req, res, eventType);
   },
 );
+
+// function runPythonScraper(
+//   keywords: any,
+//   location: any,
+//   limit: any,
+//   offset: any,
+//   experience: any,
+//   remote: any,
+//   job_type: any,
+// ) {
+//   return new Promise((resolve, reject) => {
+//     const scriptPath = path.join(__dirname, "scraper.py");
+//
+//     // Ensure you're using the correct Python path from venv
+//     const pythonCommand =
+//       "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+//
+//     console.log(
+//       keywords,
+//       location,
+//       limit,
+//       offset,
+//       experience,
+//       remote,
+//       job_type,
+//     );
+//     const pythonProcess = spawn(pythonCommand, [
+//       scriptPath,
+//       keywords,
+//       location,
+//       limit,
+//       offset,
+//       experience || "[]",
+//       remote || "[]",
+//       job_type || "[]",
+//     ]);
+//
+//     let jobs = "";
+//
+//     pythonProcess.stdout.on("data", (data: any) => {
+//       console.log("Python Output:", data.toString());
+//       jobs += data.toString();
+//     });
+//
+//     pythonProcess.stderr.on("data", (data: any) => {
+//       console.error(`Error from Python script: ${data}`);
+//       reject(data.toString());
+//     });
+//
+//     pythonProcess.on("close", (code: any) => {
+//       console.log("jobs", jobs);
+//       if (code === 0) {
+//         try {
+//           resolve(JSON.parse(jobs));
+//         } catch (error) {
+//           reject("Failed to parse Python output");
+//         }
+//       } else {
+//         reject(`Python script exited with code ${code}`);
+//       }
+//     });
+//   });
+// }
+//
+
+// Python scraper execution
+const runPythonScraper = (
+  keywords: string[],
+  location: string,
+  limit: number,
+  offset: number,
+  experience: string[],
+  remote: boolean,
+  jobType: string[],
+): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(__dirname, "scraper.py");
+    const pythonCommand =
+      "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+
+    const keywords_list = keywords.join(" OR ");
+    const args = [
+      scriptPath,
+      keywords_list,
+      location,
+      limit,
+      offset,
+      JSON.stringify(experience),
+      JSON.stringify(remote),
+      JSON.stringify(jobType),
+    ];
+
+    console.log("args", args);
+
+    const pythonProcess = spawn(pythonCommand, args);
+    let output = "";
+
+    pythonProcess.stdout.on("data", (data: Buffer) => {
+      output += data.toString();
+    });
+
+    pythonProcess.stderr.on("data", (data: Buffer) => {
+      console.error(`Python error: ${data}`);
+      reject(data.toString());
+    });
+
+    pythonProcess.on("close", (code: number) => {
+      if (code === 0) {
+        try {
+          const result = JSON.parse(output);
+          resolve(result);
+        } catch (error) {
+          reject("Failed to parse Python output");
+        }
+      } else {
+        reject(`Python script exited with code ${code}`);
+      }
+    });
+  });
+};
+
+// Core scraping and storage logic
+const executeScrapingFlow = async (triggerId: string) => {
+  try {
+    // Always fetch fresh parameters
+    const trigger: any = await prismaClient.trigger.findUnique({
+      where: { id: triggerId },
+      // include: { zap: true },
+    });
+
+    if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
+      console.log(`Trigger ${triggerId} not found or invalid type`);
+      return;
+    }
+    console.log(
+      "trigg",
+      trigger,
+      typeof trigger.metadata,
+      trigger.metadata.hasOwnProperty("keywords"),
+    );
+
+    let location =
+      trigger.metadata?.state === ""
+        ? `${trigger.metadata?.country}`
+        : `${trigger.metadata?.state}, ${trigger.metadata?.country}`;
+    // Execute Python scraper
+    const jobs = await runPythonScraper(
+      trigger.metadata?.keywords,
+      location,
+      trigger.metadata?.limit || 10,
+      0,
+      trigger.metadata.experience || "",
+      trigger.metadata.remote || "",
+      trigger.metadata.job_type || "",
+    );
+
+    // Store results
+    await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
+      const run = await tx.zapRun.create({
+        data: {
+          zapId: trigger.zapId,
+          metadata: {
+            type: "LINKEDIN_JOBS",
+            jobs,
+            scrapedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      await tx.zapRunOutbox.create({
+        data: { zapRunId: run.id },
+      });
+    });
+
+    console.log(`Successfully processed trigger ${triggerId}`);
+    return jobs;
+  } catch (error: any) {
+    console.error(`Error processing trigger ${triggerId}:`, error);
+    throw new Error(error);
+  }
+};
+
+// POST route to handle job search requests
+app.post("/schedule", async (req, res) => {
+  const { triggerId } = req.body;
+
+  try {
+    // Cancel existing job if present
+    const existingJob = activeJobs.get(triggerId);
+    if (existingJob) {
+      existingJob.stop();
+    }
+
+    // Create new cron job (every 10 hours)
+    const job = cron.schedule("0 */10 * * *", () =>
+      executeScrapingFlow(triggerId),
+    );
+    activeJobs.set(triggerId, job);
+
+    // Immediate first run
+    const job_list = await executeScrapingFlow(triggerId);
+
+    res.json({ success: true, job: job_list });
+  } catch (error) {
+    console.error("Scheduling error:", error);
+    res.status(500).json({ success: false, error: "Failed to schedule job" });
+  }
+});
+
+// Schedule job search every 10 hours
+// cron.schedule("0 */10 * * *", async () => {
+//   console.log("Running job search...");
+//   try {
+//     const jobs = await searchLinkedInJobs("software engineer", "United States");
+//     console.log("Jobs fetched:", jobs);
+//   } catch (error) {
+//     console.error("Error during scheduled job search:", error);
+//   }
+// });
 
 // Start the server
 app.listen(5000, () => {

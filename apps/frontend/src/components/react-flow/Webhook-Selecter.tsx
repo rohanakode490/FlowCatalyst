@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
+import useWebhook from "@/hooks/Webhook";
 
 interface WebhookSelectorProps {
   onSelect: (webhook: any) => void;
@@ -13,7 +14,7 @@ function WebhookSelector({
   type,
   handleTriggerTypeChange,
 }: WebhookSelectorProps) {
-  const [webhooks, setWebhooks] = useState<any[]>([]);
+  const { webhooks, setWebhooks } = useWebhook();
 
   // Fetch available actions or triggers based on the type
   useEffect(() => {

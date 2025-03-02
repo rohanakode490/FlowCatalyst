@@ -58,6 +58,74 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
       docsLink: "/docs/github-webhook",
     },
   ],
+  linkedinjobfetchingtrigger: [
+    {
+      type: "tag-input",
+      label: "Keywords",
+      name: "keywords",
+      placeholder: "Add keywords...",
+      required: true,
+    },
+    {
+      type: "country-state",
+      label: "Location",
+      name: "location",
+      placeholder: "Enter location (e.g., India)",
+      required: true,
+    },
+    {
+      type: "multi-select",
+      label: "Experience Level",
+      name: "experience",
+      options: [
+        { value: "1", label: "Internship" },
+        { value: "2", label: "Entry Level" },
+        { value: "3", label: "Associate" },
+        { value: "4", label: "Mid-Senior Level" },
+        { value: "5", label: "Director" },
+        { value: "6", label: "Executive" },
+      ],
+      required: false,
+    },
+    {
+      type: "multi-select",
+      label: "Remote/Onsite/Hybrid",
+      name: "remote",
+      options: [
+        { value: "1", label: "Onsite" },
+        { value: "2", label: "Remote" },
+        { value: "3", label: "Hybrid" },
+      ],
+      required: false,
+    },
+    {
+      type: "multi-select",
+      label: "Job Type",
+      name: "job_type",
+      options: [
+        { value: "F", label: "Full-time" },
+        { value: "C", label: "Contract" },
+        { value: "P", label: "Part-time" },
+        { value: "T", label: "Temporary" },
+        { value: "I", label: "Internship" },
+        { value: "V", label: "Volunteer" },
+        { value: "O", label: "Other" },
+      ],
+      required: false,
+    },
+    {
+      type: "select",
+      label: "Posted Within",
+      name: "listed_at",
+      options: [
+        { value: "86400", label: "Last 24 Hours" },
+        { value: "604800", label: "Last 7 Days" },
+        { value: "2592000", label: "Last 30 Days" },
+        { value: "0", label: "All Time" },
+      ],
+      required: false,
+    },
+  ],
 };
 
 export const ACTION_FORM_FIELDS: Record<string, FormField[]> = {
@@ -131,4 +199,17 @@ export const GITHUB_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
   ],
   pull_request: ["user", "pullRequest_url", "pullRequest_title"],
   issues: ["user", "issue_url", "issue_title"],
+};
+
+export const LINKEDIN_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
+  linkedin: [
+    "title",
+    "company",
+    "location",
+    "company_url",
+    "job_link",
+    "posted_date",
+    "skills",
+    "emailBodyTemplate",
+  ],
 };

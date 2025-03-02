@@ -27,7 +27,10 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
       data.onOpenDialog(); // Open the dialog for webhook selection
     }
   };
-
+  if (data.logo) {
+    const img = new Image();
+    img.src = data.logo;
+  }
   return (
     <>
       <div
@@ -64,7 +67,14 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
         <div
           className={`rounded-full w-12 h-12 flex justify-center items-center bg-gray-400`}
         >
-          <img src={data.logo} alt="Logo" className="w-8 h-8" />
+          {data.logo && (
+            <img
+              src={data.logo}
+              alt="Logo"
+              className="w-8 h-8"
+              style={{ display: "block" }}
+            />
+          )}
         </div>
 
         {/* Right side: Name of the Zap */}

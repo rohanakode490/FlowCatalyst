@@ -13,7 +13,7 @@ interface NodeConfigDialogProps {
   onSelectWebhook: (webhook: any) => void;
   isAction: boolean;
   setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
-  handleTriggerTypeChange?: (triggerId: string) => Promise<void>; // Add a prop to determine if it's an action or trigger
+  handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
 export const NodeConfigDialog = ({
@@ -33,9 +33,13 @@ export const NodeConfigDialog = ({
         <WebhookSelector
           onSelect={(webhook) => {
             onSelectWebhook(webhook);
-            if (handleTriggerTypeChange && !isAction) {
-              // setTriggerName(webhook.id);
-              handleTriggerTypeChange(webhook.id);
+            if (
+              handleTriggerTypeChange &&
+              !isAction &&
+              webhook.metadata.githubEventType !== undefined
+            ) {
+              setTriggerName(webhook.metadata);
+              handleTriggerTypeChange(webhook.metadata.githubEventType);
             }
           }}
           type={isAction ? "action" : "trigger"}

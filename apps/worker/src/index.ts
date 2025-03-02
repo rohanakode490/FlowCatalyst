@@ -5,6 +5,7 @@ import { prismaClient } from "@flowcatalyst/database";
 import { parseDynamicFields } from "./parser";
 import { sendEmail } from "./email";
 import { transferSOL } from "./solana";
+import { loadTemplate, renderTemplate } from "./templateLoader";
 
 const TOPIC_NAME = "zap-events";
 
@@ -13,8 +14,14 @@ const kafka = new Kafka({
   brokers: ["localhost:9092"],
 });
 
-const parseJson = (data: any) =>
-  typeof data === "string" ? JSON.parse(data) : data;
+const parseJson = (data: any, fallback: any = {}) => {
+  try {
+    return typeof data === "string" ? JSON.parse(data) : data || fallback;
+  } catch (error) {
+    console.error("JSON parsing failed:", error);
+    return fallback;
+  }
+};
 
 async function main() {
   const consumer = kafka.consumer({ groupId: "main-worker" });
@@ -68,16 +75,71 @@ async function main() {
       }
 
       if (currentAction?.type.name === "Email") {
-        const emailData = parseDynamicFields(
-          parseJson(currentAction.metadata),
-          parseJson(dynamicFieldsVal),
-        );
+        try {
+          // Safely parse metadata and dynamic fields
+          const emailMetadata = parseJson(currentAction.metadata);
+          const dynamicFields = parseJson(dynamicFieldsVal);
 
-        const to = emailData.recipientEmail;
-        const subject = emailData.emailSubject;
-        const body = emailData.emailBody;
-        await sendEmail({ to, subject, body });
-        console.log("Sent Email");
+          if (!emailMetadata) {
+            throw new Error("Email metadata is missing or invalid");
+          }
+
+          // Validate required fields
+          if (!emailMetadata?.recipientEmail || !emailMetadata?.emailSubject) {
+            throw new Error("Missing required email fields");
+          }
+
+          const to = emailMetadata.recipientEmail;
+          let subject = emailMetadata.emailSubject;
+          let emailBody = emailMetadata.emailBody;
+
+          const containsTriggerPlaceholders =
+            subject.includes("{{trigger.") || emailBody.includes("{{trigger.");
+
+          if (
+            containsTriggerPlaceholders &&
+            dynamicFields.jobs &&
+            Array.isArray(dynamicFields.jobs)
+          ) {
+            if (subject.includes("{{trigger.")) {
+              subject = dynamicFields.jobs
+                .map((job: any) => {
+                  return parseDynamicFields(subject, { trigger: job });
+                })
+                .join(", ");
+            }
+
+            // Replace {{trigger.emailBodyTemplate}} with the rendered HTML
+            if (emailBody.includes("{{trigger.emailBodyTemplate}}")) {
+              const template = loadTemplate("emailTemplate");
+              const renderedTemplate = renderTemplate(
+                template,
+                dynamicFields.jobs,
+              );
+              emailBody = emailBody.replace(
+                "{{trigger.emailBodyTemplate}}",
+                renderedTemplate,
+              );
+            }
+
+            //  Replace placeholders in emailBody for each job
+            if (emailBody.includes("{{trigger.")) {
+              emailBody = dynamicFields.jobs
+                .map((job: any) => {
+                  return parseDynamicFields(emailBody, { trigger: job });
+                })
+                .join("</br>");
+            }
+          } else {
+            // Fallback for non-array case or simple strings
+            subject = parseDynamicFields(subject, dynamicFields);
+            emailBody = parseDynamicFields(emailBody, dynamicFields);
+          }
+          console.log("Sent Email");
+          await sendEmail({ to, subject, body: emailBody });
+        } catch (error: any) {
+          console.error("Failed to process email action:", error.message);
+        }
       }
 
       if (currentAction?.type.name === "Solana") {

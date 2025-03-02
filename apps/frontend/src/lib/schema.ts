@@ -1,6 +1,17 @@
 import { z } from "zod";
 
 // Triggers
+const linkedinJobSchema = z.object({
+  keywords: z
+    .array(z.string().min(1, "Keyword cannot be empty"))
+    .min(1, "At least one keyword is required"),
+  country: z.string().min(1, "Country is required"),
+  state: z.string().optional(),
+  experience: z.array(z.string()).optional(),
+  remote: z.array(z.string()).optional(),
+  job_type: z.array(z.string()).optional(),
+  listed_at: z.string().optional(),
+});
 
 // Actions
 const slackActionSchema = z.object({
@@ -26,7 +37,9 @@ const solanaActionSchema = z.object({
 });
 
 // Map schemas to trigger/action names
-export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {};
+export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {
+  linkedinjobfetchingtrigger: linkedinJobSchema,
+};
 
 export const ACTION_SCHEMAS: Record<string, z.ZodSchema<any>> = {
   slack: slackActionSchema,
