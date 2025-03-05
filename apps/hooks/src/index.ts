@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { Prisma, prismaClient } from "@flowcatalyst/database";
-const cron = require("node-cron");
 const path = require("path");
 const { spawn } = require("child_process");
 
@@ -8,8 +7,6 @@ type PrismaTransactionalClient = Prisma.TransactionClient;
 
 const app = express();
 app.use(express.json());
-
-const activeJobs = new Map<string, ReturnType<typeof cron.schedule>>();
 
 type EventData = {
   eventType: string;
@@ -186,70 +183,6 @@ app.post(
   },
 );
 
-// function runPythonScraper(
-//   keywords: any,
-//   location: any,
-//   limit: any,
-//   offset: any,
-//   experience: any,
-//   remote: any,
-//   job_type: any,
-// ) {
-//   return new Promise((resolve, reject) => {
-//     const scriptPath = path.join(__dirname, "scraper.py");
-//
-//     // Ensure you're using the correct Python path from venv
-//     const pythonCommand =
-//       "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
-//
-//     console.log(
-//       keywords,
-//       location,
-//       limit,
-//       offset,
-//       experience,
-//       remote,
-//       job_type,
-//     );
-//     const pythonProcess = spawn(pythonCommand, [
-//       scriptPath,
-//       keywords,
-//       location,
-//       limit,
-//       offset,
-//       experience || "[]",
-//       remote || "[]",
-//       job_type || "[]",
-//     ]);
-//
-//     let jobs = "";
-//
-//     pythonProcess.stdout.on("data", (data: any) => {
-//       console.log("Python Output:", data.toString());
-//       jobs += data.toString();
-//     });
-//
-//     pythonProcess.stderr.on("data", (data: any) => {
-//       console.error(`Error from Python script: ${data}`);
-//       reject(data.toString());
-//     });
-//
-//     pythonProcess.on("close", (code: any) => {
-//       console.log("jobs", jobs);
-//       if (code === 0) {
-//         try {
-//           resolve(JSON.parse(jobs));
-//         } catch (error) {
-//           reject("Failed to parse Python output");
-//         }
-//       } else {
-//         reject(`Python script exited with code ${code}`);
-//       }
-//     });
-//   });
-// }
-//
-
 // Python scraper execution
 const runPythonScraper = (
   keywords: string[],
@@ -259,6 +192,8 @@ const runPythonScraper = (
   experience: string[],
   remote: boolean,
   jobType: string[],
+  listed_at: string,
+  existingUrns: string[],
 ): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, "scraper.py");
@@ -275,9 +210,11 @@ const runPythonScraper = (
       JSON.stringify(experience),
       JSON.stringify(remote),
       JSON.stringify(jobType),
+      listed_at,
+      existingUrns,
     ];
 
-    console.log("args", args);
+    // console.log("args", args);
 
     const pythonProcess = spawn(pythonCommand, args);
     let output = "";
@@ -312,19 +249,28 @@ const executeScrapingFlow = async (triggerId: string) => {
     // Always fetch fresh parameters
     const trigger: any = await prismaClient.trigger.findUnique({
       where: { id: triggerId },
-      // include: { zap: true },
+      include: {
+        zap: {
+          include: {
+            zapRuns: true,
+          },
+        },
+      },
     });
+
+    //Getting urn(s)
+    const zapruns = trigger.zap.zapRuns;
+    const recentRuns = zapruns
+      .sort((a: any, b: any) => b.createdAt - a.createdAt)
+      .slice(0, 10);
+    const existingUrns = recentRuns.flatMap(
+      (run: any) => run.metadata.jobs?.map((job: any) => job.urn) || [],
+    );
 
     if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
       console.log(`Trigger ${triggerId} not found or invalid type`);
       return;
     }
-    console.log(
-      "trigg",
-      trigger,
-      typeof trigger.metadata,
-      trigger.metadata.hasOwnProperty("keywords"),
-    );
 
     let location =
       trigger.metadata?.state === ""
@@ -339,6 +285,8 @@ const executeScrapingFlow = async (triggerId: string) => {
       trigger.metadata.experience || "",
       trigger.metadata.remote || "",
       trigger.metadata.job_type || "",
+      trigger.metadata.listed_at,
+      existingUrns,
     );
 
     // Store results
@@ -369,24 +317,31 @@ const executeScrapingFlow = async (triggerId: string) => {
 
 // POST route to handle job search requests
 app.post("/schedule", async (req, res) => {
-  const { triggerId } = req.body;
+  const { triggerId, userId } = req.body;
 
   try {
-    // Cancel existing job if present
-    const existingJob = activeJobs.get(triggerId);
-    if (existingJob) {
-      existingJob.stop();
-    }
+    const intervalHours = 10;
 
-    // Create new cron job (every 10 hours)
-    const job = cron.schedule("0 */10 * * *", () =>
-      executeScrapingFlow(triggerId),
-    );
-    activeJobs.set(triggerId, job);
+    // Create or update the schedule
+    await prismaClient.jobSchedule.upsert({
+      where: { triggerId },
+      create: {
+        triggerId,
+        userId,
+        interval: intervalHours,
+        nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
+      },
+      update: {
+        interval: intervalHours,
+        nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
+        isActive: true,
+      },
+    });
 
     // Immediate first run
     const job_list = await executeScrapingFlow(triggerId);
 
+    // console.log("job_list", job_list);
     res.json({ success: true, job: job_list });
   } catch (error) {
     console.error("Scheduling error:", error);
@@ -394,16 +349,37 @@ app.post("/schedule", async (req, res) => {
   }
 });
 
-// Schedule job search every 10 hours
-// cron.schedule("0 */10 * * *", async () => {
-//   console.log("Running job search...");
-//   try {
-//     const jobs = await searchLinkedInJobs("software engineer", "United States");
-//     console.log("Jobs fetched:", jobs);
-//   } catch (error) {
-//     console.error("Error during scheduled job search:", error);
-//   }
-// });
+// Background worker to check for due jobs
+const startScheduler = async () => {
+  setInterval(async () => {
+    const dueJobs = await prismaClient.jobSchedule.findMany({
+      where: {
+        nextRunAt: { lte: new Date() },
+        isActive: true,
+      },
+    });
+    console.log("checking...", dueJobs);
+
+    for (const job of dueJobs) {
+      try {
+        const jobs = await executeScrapingFlow(job.triggerId);
+        // console.log("jobs1", jobs);
+        // Update next run time
+        await prismaClient.jobSchedule.update({
+          where: { id: job.id },
+          data: {
+            nextRunAt: new Date(Date.now() + job.interval * 60 * 60 * 1000),
+          },
+        });
+      } catch (error) {
+        console.error(`Error processing job ${job.id}:`, error);
+      }
+    }
+  }, 120_000); // Check every 2 minutes
+};
+
+// Start the scheduler
+startScheduler().catch(console.error);
 
 // Start the server
 app.listen(5000, () => {
