@@ -1,16 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Heading from "@/components/globals/heading";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import GetZaps from "@/components/Zap/get-zaps";
 import ZapTable from "@/components/Zap/zap-table";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function WorkflowsPage() {
   const { loading, zaps } = GetZaps();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+
+    if (token) {
+      localStorage.setItem("token", token);
+      router.replace("/workflows");
+    }
+  }, [searchParams, router]);
 
   return (
     <Heading heading="Workflows">

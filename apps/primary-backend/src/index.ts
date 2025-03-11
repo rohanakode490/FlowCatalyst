@@ -16,6 +16,8 @@ import { prismaClient } from "@flowcatalyst/database";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 import jwt from "jsonwebtoken";
+// import { subscriptionsRouter } from "./router/subscription";
+import { pricingRouter } from "./router/pricing";
 
 dotenv.config();
 
@@ -208,7 +210,8 @@ app.get(
 
     res.header("auth", token);
 
-    res.redirect("http://localhost:3000/workflows");
+    // res.redirect("http://localhost:3000/workflows");
+    res.redirect(`http://localhost:3000/workflows?token=${token}`);
   },
 );
 
@@ -237,7 +240,8 @@ app.get(
 
     res.header("auth", token);
 
-    res.redirect("http://localhost:3000/workflows");
+    // res.redirect("http://localhost:3000/workflows");
+    res.redirect(`http://localhost:3000/workflows?token=${token}`);
   },
 );
 
@@ -250,6 +254,9 @@ app.use("/api/v1/trigger", triggerRouter);
 app.use("/api/v1/action", actionRouter);
 
 app.use("/api/v1/trigger-response", triggerResponseRouter);
+
+// app.use("/api/v1/subscription", subscriptionsRouter);
+app.use("/api/v1/pricing", pricingRouter);
 
 app.listen(4000, () => {
   console.log(`Server is working on http://localhost:4000`);

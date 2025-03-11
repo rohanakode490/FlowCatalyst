@@ -58,7 +58,7 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
       docsLink: "/docs/github-webhook",
     },
   ],
-  linkedinjobfetchingtrigger: [
+  linkedintrigger: [
     {
       type: "tag-input",
       label: "Keywords",

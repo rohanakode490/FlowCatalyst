@@ -14,14 +14,19 @@ datasource db {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  name        String
-  email       String        @unique
-  password    String
-  googleId    String?       @unique
-  githubId    String?       @unique
-  zaps        Zap[]
-  JobSchedule JobSchedule[]
+  id                 Int            @id @default(autoincrement())
+  name               String
+  email              String         @unique
+  password           String
+  googleId           String?        @unique
+  githubId           String?        @unique
+  dodoCustomerId     String?        @unique
+  cashfreeCustomerId String?        @unique
+  subscriptions      Subscription[]
+  sessions           Session[]
+  zaps               Zap[]
+  JobSchedule        JobSchedule[]
+  Trigger            Trigger[]
 }
 
 model Zap {
@@ -38,10 +43,12 @@ model Zap {
 model Trigger {
   id        String           @id @default(uuid())
   zapId     String           @unique
+  userId    Int              @default(1)
   triggerId String
   metadata  Json             @default("{}")
   type      AvailableTrigger @relation(fields: [triggerId], references: [id])
   zap       Zap              @relation(fields: [zapId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
 }
 
 model Action {
@@ -86,7 +93,7 @@ model ZapRunOutbox {
 model JobSchedule {
   id        String   @id @default(uuid())
   triggerId String   @unique
-  userId    Int // Foreign key to User
+  userId    Int
   interval  Int      @default(10) // Hours
   nextRunAt DateTime
   isActive  Boolean  @default(true)
@@ -97,4 +104,55 @@ model JobSchedule {
 
   @@index([nextRunAt])
   @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model SubscriptionPlan {
+  id             String         @id @default(uuid())
+  name           String // "Pro", "Enterprise", etc.
+  dodoPriceId    String? // dodo Price ID
+  cashfreePlanId String? // Cashfree Plan ID
+  price          Float
+  currency       String         @default("USD")
+  interval       String
+  features       Json // Stored as JSON array
+  active         Boolean        @default(true)
+  subscriptions  Subscription[]
+  createdAt      DateTime       @default(now())
+}
+
+model Subscription {
+  id                 String           @id @default(uuid())
+  userId             Int
+  user               User             @relation(fields: [userId], references: [id])
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
+  planId             String
+  status             String // "active", "canceled", "past_due"
+  paymentMethod      String // "dodopayments", "cashfree"
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  Payment            Payment[]
+}
+
+model Payment {
+  id             String       @id @default(uuid())
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String
+  amount         Float
+  currency       String
+  paymentMethod  String // "dodo", "cashfree"
+  transactionId  String // Gateway's transaction ID
+  status         String // "succeeded", "failed", "pending"
+  createdAt      DateTime     @default(now())
 }

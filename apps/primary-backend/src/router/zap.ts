@@ -41,12 +41,13 @@ router.post("/", authMiddleware, async (req, res) => {
         // Create the trigger and associate it with the zap
         const trigger = await tx.trigger.create({
           data: {
+            userId: id,
             triggerId: parsedData.data.availableTriggerId,
             metadata: parsedData.data.triggerMetadata,
             zapId: zap.id,
           },
         });
-
+        console.log("trigger", trigger);
         // Update the zap with the correct triggerId
         await prismaClient.zap.update({
           where: {
@@ -63,6 +64,7 @@ router.post("/", authMiddleware, async (req, res) => {
     if (parsedData.data.triggerMetadata.keywords !== undefined) {
       await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
         triggerId: ID.TriggerId,
+        userId: id,
       });
     }
 

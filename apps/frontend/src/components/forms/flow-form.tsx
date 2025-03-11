@@ -148,6 +148,7 @@ function DynamicForm({
 
     const updatedFormData = { ...formData };
 
+    console.log("here#1");
     let allowedFields: string[] = [];
     // Check if triggerName or triggerData has githubEventType
     if (triggerType === "github") {
@@ -172,124 +173,121 @@ function DynamicForm({
           GITHUB_TRIGGER_FIELDS_MAP[
             triggerData?.githubEventType || triggerName?.githubEventType
           ];
-      } else {
-        allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-
-        if (
-          updatedFormData.keywords !== undefined &&
-          !updatedFormData.keywords?.length
-        ) {
-          setErrors({ keywords: "At least one keyword is required" });
-          return;
-        }
-        if (
-          updatedFormData.location !== undefined &&
-          !updatedFormData.location
-        ) {
-          setErrors({ location: "Location is required" });
-          return;
-        }
       }
-
-      // Check if proper dynamic fields are assigned
-      for (const field of fields) {
-        const value = updatedFormData[field.name];
-
-        // Skip validation for fields that do not support placeholders
-        if (
-          field.name === "githubEventType" ||
-          field.name === "githubwebhook"
-        ) {
-          continue;
-        }
-
-        // Validate placeholders for fields that support them
-        if (
-          typeof value === "string" &&
-          !validatePlaceholder(value, allowedFields)
-        ) {
-          setErrors((prev) => ({
-            ...prev,
-            [field.name]: `Invalid placeholder for ${field.name}. Allowed fields: ${allowedFields.join(", ")}`,
-          }));
-          toast.error("Invalid input field");
-          return;
-        }
-
-        // Validate number/placeholder fields
-        if (
-          field.validation?.isNumberOrPlaceholder &&
-          !validateNumberOrPlaceholder(value)
-        ) {
-          setErrors((prev) => ({
-            ...prev,
-            [field.name]: `Invalid value for ${field.name}. It must be a number or contain a valid placeholder.`,
-          }));
-          toast.error("Invalid input field");
-          return;
-        }
-      }
-
-      // Validate the amount field
+    } else {
+      allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
       if (
-        fields.some((obj) => obj.name.includes("Amount")) &&
-        updatedFormData.Amount === ""
+        updatedFormData.keywords !== undefined &&
+        !updatedFormData.keywords?.length
+      ) {
+        setErrors({ keywords: "At least one keyword is required" });
+        return;
+      }
+      if (updatedFormData.country !== undefined && !updatedFormData.country) {
+        setErrors({ location: "Country is required" });
+        return;
+      }
+    }
+
+    console.log("here#2");
+    // Check if proper dynamic fields are assigned
+    for (const field of fields) {
+      const value = updatedFormData[field.name];
+
+      // Skip validation for fields that do not support placeholders
+      if (field.name === "githubEventType" || field.name === "githubwebhook") {
+        continue;
+      }
+
+      // Validate placeholders for fields that support them
+      if (
+        typeof value === "string" &&
+        !validatePlaceholder(value, allowedFields)
       ) {
         setErrors((prev) => ({
           ...prev,
-          Amount: "Amount is required",
+          [field.name]: `Invalid placeholder for ${field.name}. Allowed fields: ${allowedFields.join(", ")}`,
         }));
-        toast.error("Amount is required");
+        toast.error("Invalid input field");
         return;
       }
 
-      // Replace placeholders with actual values
-      const processedData = { ...updatedFormData };
-      for (const key in processedData) {
-        const value = processedData[key];
-
-        // If the field is a number/placeholder field
-        if (
-          fields.find((f) => f.name === key)?.validation?.isNumberOrPlaceholder
-        ) {
-          if (typeof value === "string" && validateNumberOrPlaceholder(value)) {
-            // If the value contains a placeholder, save it as is
-            processedData[key] = value;
-          } else if (!isNaN(parseFloat(value))) {
-            processedData[key] = value;
-          } else {
-            // If the value is invalid, set it to 0
-            processedData[key] = "0";
-          }
-        }
-      }
-
-      // Skip validation if schema is for github-webhook which is only a link
-      if (!schema) {
-        onSubmit(processedData);
-        onClose();
-        toast.success("Saved successfully!");
+      // Validate number/placeholder fields
+      if (
+        field.validation?.isNumberOrPlaceholder &&
+        !validateNumberOrPlaceholder(value)
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          [field.name]: `Invalid value for ${field.name}. It must be a number or contain a valid placeholder.`,
+        }));
+        toast.error("Invalid input field");
         return;
       }
+    }
 
-      // Validate form data using Zod schema
-      try {
-        const validatedData = schema.parse(processedData);
-        onSubmit(validatedData);
-        onClose();
-        toast.success("Saved successfully!");
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          // Map Zod errors to the errors state
-          const newErrors: Record<string, string> = {};
-          error.errors.forEach((err) => {
-            newErrors[err.path[0]] = `${err.message} ${err.path[0]}`;
-          });
-          setErrors(newErrors);
-          toast.error("Please fix the errors before submitting.");
+    // Validate the amount field
+    if (
+      fields.some((obj) => obj.name.includes("Amount")) &&
+      updatedFormData.Amount === ""
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        Amount: "Amount is required",
+      }));
+      toast.error("Amount is required");
+      return;
+    }
+
+    // Replace placeholders with actual values
+    const processedData = { ...updatedFormData };
+    for (const key in processedData) {
+      const value = processedData[key];
+
+      // If the field is a number/placeholder field
+      if (
+        fields.find((f) => f.name === key)?.validation?.isNumberOrPlaceholder
+      ) {
+        if (typeof value === "string" && validateNumberOrPlaceholder(value)) {
+          // If the value contains a placeholder, save it as is
+          processedData[key] = value;
+        } else if (!isNaN(parseFloat(value))) {
+          processedData[key] = value;
         } else {
-          toast.error("Failed to save. Please try again.");
+          // If the value is invalid, set it to 0
+          processedData[key] = "0";
         }
+      }
+    }
+
+    console.log("here#3");
+    // Skip validation if schema is for github-webhook which is only a link
+    if (!schema) {
+      onSubmit(processedData);
+      onClose();
+      toast.success("Saved successfully!");
+      return;
+    }
+
+    // Validate form data using Zod schema
+    try {
+      const validatedData = schema.parse(processedData);
+      console.log("here#fin");
+      onSubmit(validatedData);
+      console.log("here#fin2");
+      onClose();
+      toast.success("Saved successfully!");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Map Zod errors to the errors state
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          newErrors[err.path[0]] = `${err.message} ${err.path[0]}`;
+        });
+        setErrors(newErrors);
+        toast.error("Please fix the errors before submitting.");
+      } else {
+        toast.error("Failed to save. Please try again.");
       }
     }
   };
@@ -587,7 +585,6 @@ function DynamicForm({
                   className={isDarkMode ? "text-white" : "text-[#111827]"}
                 >
                   State{" "}
-                  {field.required && <span className="text-red-500">*</span>}
                 </Label>
                 <select
                   id="state"

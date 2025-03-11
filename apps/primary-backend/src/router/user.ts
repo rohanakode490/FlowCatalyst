@@ -45,8 +45,6 @@ router.post("/signup", async (req, res) => {
     },
   });
 
-  //TODO: Send email
-
   return res.json({
     message: "Please verify your account by checking your email",
   });

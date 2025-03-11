@@ -21,3 +21,13 @@ export const ZapCreateSchema = z.object({
     }),
   ),
 });
+
+export interface PricingPlan {
+  id: string;
+  name: string;
+  price: number;
+  interval: "month" | "year";
+  features: string[];
+  stripePriceId?: string;
+  cashfreePlanId?: string;
+}

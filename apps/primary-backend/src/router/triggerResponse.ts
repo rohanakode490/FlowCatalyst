@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prismaClient } from "@flowcatalyst/database";
+import { authMiddleware } from "../middleware";
 
 const router = Router();
 
@@ -53,6 +54,26 @@ const router = Router();
 //     res.status(500).json({ message: "Failed to update trigger metadata" });
 //   }
 // });
+
+router.get("/hasLinkedInTrigger", authMiddleware, async (req, res) => {
+  //@ts-ignore
+  const userId = req.id;
+
+  try {
+    const linkedinTrigger = await prismaClient.trigger.findFirst({
+      where: {
+        userId: userId,
+        type: {
+          name: "LinkedIn Trigger",
+        },
+      },
+    });
+    res.status(200).json({ hasLinkedInTrigger: !!linkedinTrigger });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error in fetching" });
+  }
+});
 
 router.get("/:triggerId", async (req, res) => {
   const { triggerId } = req.params;

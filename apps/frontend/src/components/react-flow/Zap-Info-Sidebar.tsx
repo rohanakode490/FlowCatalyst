@@ -93,12 +93,12 @@ export const Sidebar = ({
       return "linkedin";
     }
   }
-  console.log(
-    "type",
-    triggerData,
-    triggerName,
-    findtype(triggerData, triggerName),
-  );
+  // console.log(
+  //   "type",
+  //   triggerData,
+  //   triggerName,
+  //   findtype(triggerData, triggerName),
+  // );
 
   return (
     <div
