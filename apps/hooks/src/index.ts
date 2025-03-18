@@ -309,9 +309,9 @@ const executeScrapingFlow = async (triggerId: string) => {
 
     console.log(`Successfully processed trigger ${triggerId}`);
     return jobs;
-  } catch (error: any) {
+  } catch (error) {
     console.error(`Error processing trigger ${triggerId}:`, error);
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -363,7 +363,6 @@ const startScheduler = async () => {
     for (const job of dueJobs) {
       try {
         const jobs = await executeScrapingFlow(job.triggerId);
-        // console.log("jobs1", jobs);
         // Update next run time
         await prismaClient.jobSchedule.update({
           where: { id: job.id },

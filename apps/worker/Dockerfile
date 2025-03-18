@@ -1,5 +1,5 @@
 # ====== Base Image ======
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Set the working directory
 WORKDIR /app
@@ -14,7 +14,9 @@ FROM base AS builder
 RUN npm install -g turbo@^2.1.3
 
 # Copy the entire monorepo
-COPY . .
+COPY package-lock.json package.json turbo.json ./
+COPY apps/worker ./apps/worker
+COPY packages ./packages
 
 # Prune the workspace for the worker app
 RUN turbo prune --scope=@flowcatalyst/worker --docker
@@ -27,10 +29,12 @@ WORKDIR /app
 
 # Copy pruned package.json and lockfile
 COPY --from=builder /app/out/json/ ./
+COPY --from=builder /app/package-lock.json .
 
 # Install production dependencies only
 RUN npm install --omit=dev --ignore-scripts
-
+RUN npm install -g dotenv 
+RUN npm install dotenv-extended
 # Copy turbo.json explicitly
 COPY --from=builder /app/out/full/turbo.json ./turbo.json
 
@@ -42,12 +46,15 @@ RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the application
 RUN npm run build --workspace=@flowcatalyst/database && npm run build --workspace=@flowcatalyst/worker
-
+RUN ls -la node_modules | grep dotenv
 # ====== Runner Stage (Final Production Image) ======
 FROM base AS runner
 
 # Set working directory
 WORKDIR /app
+
+# Install OpenSSL (required for Prisma)
+RUN apk add --no-cache openssl
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 worker && adduser --system --uid 1001 worker
@@ -69,8 +76,8 @@ RUN chown -R worker:worker /app
 USER worker
 
 # Ensure Kafka is reachable before starting
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD nc -zv ${KAFKA_BROKERS:-localhost} 9092 || exit 1
+# HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+#     CMD nc -zv ${KAFKA_BROKERS:-localhost} 9092 || exit 1
 
 # Run Prisma migrations & start the app
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
