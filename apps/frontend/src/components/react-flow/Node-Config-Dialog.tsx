@@ -36,13 +36,11 @@ export const NodeConfigDialog = ({
     const checkLinkedInTrigger = async () => {
       try {
         const token = localStorage.getItem("token");
-        console.log("token", token);
         const response = await api.get(`/trigger-response/hasLinkedInTrigger`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("res", response);
         setHasLinkedInTrigger(response.data.hasLinkedInTrigger);
       } catch (error) {
         console.error("Failed to check LinkedIn trigger:", error);

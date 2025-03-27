@@ -74,7 +74,9 @@ async function main() {
         return;
       }
 
+      console.log("Ok");
       if (currentAction?.type.name === "Email") {
+        console.log("Started Working");
         try {
           // Safely parse metadata and dynamic fields
           const emailMetadata = parseJson(currentAction.metadata);

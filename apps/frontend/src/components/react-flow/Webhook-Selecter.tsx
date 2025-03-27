@@ -38,7 +38,6 @@ function WebhookSelector({
 
   // Handle trigger selection
   const handleTriggerSelect = (webhook: any) => {
-    console.log("webhook", webhook);
     if (
       type === "trigger" &&
       webhook.name === "LinkedIn" &&

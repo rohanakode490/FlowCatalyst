@@ -17,7 +17,6 @@ export default function EditZapPage() {
   const [triggerData, setTriggerData] = useState<Record<string, any>>({});
   const [originalEventType, setOriginalEventType] = useState<any[]>([]);
 
-  console.log("triggerData", triggerData);
   // Fetch the saved Zap structure
   useEffect(() => {
     if (!zapId) return;
@@ -31,7 +30,6 @@ export default function EditZapPage() {
           },
         });
         const { trigger, actions } = response.data.zap;
-        console.log("edit", trigger, actions);
 
         // Map the trigger and actions to nodes and edges
         const nodes = [
@@ -42,7 +40,7 @@ export default function EditZapPage() {
             data: {
               id: trigger.type.id, // Set the id from the database
               name: trigger.type.name,
-              logo: trigger.type.image,
+              image: trigger.type.image,
               configured: true,
               action: false, // Trigger node
               metadata: trigger.metadata || {},
@@ -55,7 +53,7 @@ export default function EditZapPage() {
             data: {
               id: action.type.id, // Set the id from the database
               name: action.type.name,
-              logo: action.type.image,
+              image: action.type.image,
               configured: true,
               action: true, // Action node
               metadata: action.metadata || {},

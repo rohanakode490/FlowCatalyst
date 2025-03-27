@@ -22,6 +22,8 @@ import { FlowCanvas } from "./Flow-Canvas";
 import { addNodeBelow, alignNodesVertically, deleteNode } from "./Flow-Helpers";
 import { useTheme } from "next-themes";
 import "@xyflow/react/dist/style.css";
+import { ChatInterface } from "../chat-interface/AI-ChatInterface";
+import { X } from "lucide-react";
 
 const VERTICAL_SPACING = 200;
 
@@ -32,7 +34,8 @@ const initialNodes = [
     position: { x: 0, y: 0 },
     data: {
       name: "Trigger",
-      logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
+      image:
+        "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
       configured: false,
       action: false,
       onOpenDialog: () => console.log("Open dialog"),
@@ -46,7 +49,8 @@ const initialNodes = [
     position: { x: 0, y: 300 },
     data: {
       name: "Action",
-      logo: "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
+      image:
+        "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
       configured: false,
       action: true,
       onOpenDialog: () => console.log("Open dialog"),
@@ -95,6 +99,7 @@ export default function Flow({
   );
   const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
   const [triggerName, setTriggerName] = useState<Record<string, any>>({});
+  const [showChat, setShowChat] = useState(false);
 
   const {
     webhooks,
@@ -160,7 +165,7 @@ export default function Flow({
                 ...node.data,
                 id: webhook.id,
                 name: webhook.name,
-                logo: webhook.image,
+                image: webhook.image,
                 configured: true,
                 metadata: webhook.metadata || {},
               },
@@ -216,6 +221,17 @@ export default function Flow({
       setTriggerName(selectedNode.data.metadata);
     }
   }, [selectedNode, triggerName]);
+
+  useEffect(() => {
+    const savedChatVisibility = localStorage.getItem("showChat");
+    setShowChat(savedChatVisibility === "true");
+  }, []);
+
+  const toggleChat = () => {
+    const newVisibility = !showChat;
+    setShowChat(newVisibility);
+    localStorage.setItem("showChat", newVisibility.toString());
+  };
 
   // Memoized nodes with handlers
   const nodesWithHandlers = useMemo(() => {
@@ -284,10 +300,18 @@ export default function Flow({
     }
   };
 
+  const handleWorkflowGenerated = (newNodes: any, newEdges: any) => {
+    console.log("generated", newNodes, newEdges);
+    setNodes(newNodes);
+    setEdges(newEdges);
+  };
+
+  console.log("Nodes", nodes);
+
   if (!mounted) return null; // Prevent rendering during SSR
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       {/* <FlowControls */}
       {/*   onAlignNodes={() => */}
       {/*     alignNodesVertically(setNodes, fitView, VERTICAL_SPACING) */}
@@ -295,7 +319,9 @@ export default function Flow({
       {/*   nodes={nodes} */}
       {/*   edges={edges} */}
       {/* /> */}
-
+      {/* <div className="mb-4 mx-"> */}
+      {/* <ChatInterface onWorkflowGenerated={handleWorkflowGenerated} /> */}
+      {/* </div> */}
       <div className="flex w-[90vw] h-[90vh] overflow-hidden">
         <FlowCanvas
           nodes={nodesWithHandlers}
@@ -306,6 +332,38 @@ export default function Flow({
           onNodeClick={handleNodeClick}
           isDarkMode={isDarkMode}
         />
+
+        {/* Chat Interface */}
+        {showChat && (
+          <div className="absolute top-48 left-8 w-96 bg-white dark:bg-[#1f2937] border border-[#e5e7eb] dark:border-[#374151] rounded-md shadow-lg">
+            <div className="flex justify-between items-center p-3 border-b border-[#e5e7eb] dark:border-[#374151]">
+              <h3 className="font-medium text-[#111827] dark:text-gray-100">
+                AI Workflow Assistant
+              </h3>
+              <button
+                onClick={toggleChat}
+                className="p-1 rounded-full hover:bg-[#f9fafb] dark:hover:bg-[#374151] transition-colors"
+              >
+                <X className="w-4 h-4 text-[#6b7280] dark:text-gray-300" />
+              </button>
+            </div>
+            <div className="p-4">
+              <ChatInterface onWorkflowGenerated={handleWorkflowGenerated} />
+            </div>
+          </div>
+        )}
+
+        {/* Chat Toggle Button */}
+        {!showChat && (
+          <button
+            onClick={toggleChat}
+            className="absolute top-48 left-7 p-2 bg-white dark:bg-[#1f2937] border border-[#e5e7eb] dark:border-[#374151] rounded-md shadow-sm hover:bg-[#f9fafb] dark:hover:bg-[#374151] transition-colors"
+          >
+            <span className="text-sm text-[#111827] dark:text-gray-100">
+              Open AI Assistant
+            </span>
+          </button>
+        )}
 
         {/* Floating Toolbar (Bottom-Right Corner) */}
         <div className="absolute bottom-20 left-4 flex gap-2">
@@ -343,6 +401,6 @@ export default function Flow({
         isAction={selectedNode?.data.action}
         handleTriggerTypeChange={handleTriggerTypeChange}
       />
-    </>
+    </div>
   );
 }

@@ -44,6 +44,7 @@ export const FlowControls = ({
 
       const isEditing = !!zapId;
 
+      console.log("ZapData", zapData);
       // Send/Update data to the backend
       const token = localStorage.getItem("token");
       const response = isEditing

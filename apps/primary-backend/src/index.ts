@@ -18,6 +18,8 @@ const GitHubStrategy = require("passport-github2").Strategy;
 import jwt from "jsonwebtoken";
 // import { subscriptionsRouter } from "./router/subscription";
 import { pricingRouter } from "./router/pricing";
+import { aiRouter } from "./router/ai";
+import { createFreeSubscription } from "./utis/subscription";
 
 dotenv.config();
 
@@ -25,12 +27,12 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser(JWT_PASSWORD));
-app.use(
-  rateLimiter({
-    windowMs: 15 * 60 * 1000,
-    max: 60,
-  }),
-);
+// app.use(
+//   rateLimiter({
+//     windowMs: 15 * 60 * 1000,
+//     max: 60,
+//   }),
+// );
 
 app.use(
   cors({
@@ -66,6 +68,7 @@ passport.deserializeUser(async (id: number, done: any) => {
 });
 
 // Google OAuth Strategy
+//TODO: Create random password for OAuth users
 passport.use(
   new GoogleStrategy(
     {
@@ -107,6 +110,7 @@ passport.use(
               password: "",
             },
           });
+          await createFreeSubscription(prismaClient, user.id);
         }
         return done(null, user);
       } catch (err) {
@@ -171,6 +175,7 @@ passport.use(
               password: "", // No password for OAuth users
             },
           });
+          await createFreeSubscription(prismaClient, user.id);
         }
 
         return done(null, user);
@@ -257,6 +262,8 @@ app.use("/api/v1/trigger-response", triggerResponseRouter);
 
 // app.use("/api/v1/subscription", subscriptionsRouter);
 app.use("/api/v1/pricing", pricingRouter);
+
+app.use("/api/v1/ai", aiRouter);
 
 app.listen(4000, () => {
   console.log(`Server is working on http://localhost:4000`);

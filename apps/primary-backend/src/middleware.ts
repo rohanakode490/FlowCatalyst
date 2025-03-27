@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
+import Redis from "ioredis";
+import { prismaClient } from "@flowcatalyst/database";
+
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 export function authMiddleware(
   req: Request,
@@ -8,6 +12,7 @@ export function authMiddleware(
   next: NextFunction,
 ) {
   // Check for token in the Authorization header (Bearer token)
+  console.log("here#0.1");
   const authHeader = req.headers.authorization;
   const tokenFromHeader = authHeader && authHeader.split(" ")[1]; // Extract "Bearer <token>"
 
@@ -58,3 +63,60 @@ function getToken(tokenFromHeader: any, tokenFromCookie: any) {
   }
   return null; // or handle as needed if both are invalid
 }
+
+export const aiRateLimiter = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    //@ts-ignore
+    const userId = req.id;
+
+    // const key = `ai_limits:${userId}`;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Login Required" });
+    }
+    const activeSubscription = await prismaClient.subscription.findFirst({
+      where: {
+        userId: userId,
+        status: "active",
+        currentPeriodEnd: { gte: new Date() },
+      },
+      include: { plan: true },
+    });
+
+    // Bypass limits for paid plans
+    if (activeSubscription && activeSubscription.plan.name !== "free") {
+      return next();
+    }
+
+    // Check lifetime prompt count
+    const key = `ai_prompts:${userId}`;
+    const currentCount = Number(await redis.get(key)) || 0;
+    console.log("curr", currentCount);
+
+    if (currentCount >= 2) {
+      return res.status(429).json({
+        error: "🔒 Lifetime Limit Reached",
+        message: "You've used your 2 free AI prompts",
+        upgradeUrl: "/pricing",
+        remaining: 0,
+      });
+    }
+
+    // Increment count
+    const newCount = await redis.incr(key);
+
+    // Attach limit info to response locals
+    res.locals.aiLimit = {
+      remaining: 2 - newCount,
+    };
+
+    next();
+  } catch (error) {
+    console.error("Rate limit error:", error);
+    res.status(500).json({ error: "Rate limit service unavailable" });
+  }
+};

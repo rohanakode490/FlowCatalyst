@@ -87,18 +87,15 @@ export const Sidebar = ({
   }, []);
 
   function findtype(triggerData: any, triggerName: any) {
-    if (triggerData?.githubEventType || triggerName?.githubEventType) {
+    if (
+      triggerData?.hasOwnProperty("githubEventType") ||
+      triggerName?.hasOwnProperty("githubEventType")
+    ) {
       return "github";
     } else {
       return "linkedin";
     }
   }
-  // console.log(
-  //   "type",
-  //   triggerData,
-  //   triggerName,
-  //   findtype(triggerData, triggerName),
-  // );
 
   return (
     <div

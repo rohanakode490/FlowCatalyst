@@ -4,6 +4,7 @@ import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "@flowcatalyst/database";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
+import { createFreeSubscription } from "../utis/subscription";
 const passport = require("passport");
 const bcrypt = require("bcryptjs");
 
@@ -37,7 +38,7 @@ router.post("/signup", async (req, res) => {
   const hashedPassword = await bcrypt.hash(parsedData.data.password, salt);
 
   //Store in DataBase
-  await prismaClient.user.create({
+  const user = await prismaClient.user.create({
     data: {
       name: parsedData.data.name,
       email: parsedData.data.email,
@@ -45,6 +46,7 @@ router.post("/signup", async (req, res) => {
     },
   });
 
+  await createFreeSubscription(prismaClient, user.id);
   return res.json({
     message: "Please verify your account by checking your email",
   });

@@ -13,6 +13,7 @@ router.post("/", authMiddleware, async (req, res) => {
   //@ts-ignore
   const id = req.id;
   const parsedData = ZapCreateSchema.safeParse(body);
+  console.log("bdy", body);
 
   if (!parsedData.success) {
     return res.status(411).json({
@@ -68,9 +69,9 @@ router.post("/", authMiddleware, async (req, res) => {
       });
     }
 
-    res.json(ID);
+    res.json({ success: true, zapId: ID.ZapId });
   } catch (error: any) {
-    console.error("Failed to save Zap:", error);
+    // console.error("Failed to save Zap:", error);
     res.status(500).json({ message: "Failed to save Zap" });
   }
 });

@@ -148,7 +148,6 @@ function DynamicForm({
 
     const updatedFormData = { ...formData };
 
-    console.log("here#1");
     let allowedFields: string[] = [];
     // Check if triggerName or triggerData has githubEventType
     if (triggerType === "github") {
@@ -189,7 +188,6 @@ function DynamicForm({
       }
     }
 
-    console.log("here#2");
     // Check if proper dynamic fields are assigned
     for (const field of fields) {
       const value = updatedFormData[field.name];
@@ -260,7 +258,6 @@ function DynamicForm({
       }
     }
 
-    console.log("here#3");
     // Skip validation if schema is for github-webhook which is only a link
     if (!schema) {
       onSubmit(processedData);
@@ -272,9 +269,7 @@ function DynamicForm({
     // Validate form data using Zod schema
     try {
       const validatedData = schema.parse(processedData);
-      console.log("here#fin");
       onSubmit(validatedData);
-      console.log("here#fin2");
       onClose();
       toast.success("Saved successfully!");
     } catch (error) {

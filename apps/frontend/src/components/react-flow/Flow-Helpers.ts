@@ -3,7 +3,7 @@ import { Node, Edge, useNodesState, useEdgesState } from "@xyflow/react";
 // Define types for the helper functions
 type NodeType = Node<{
   name: string;
-  logo: string;
+  image: string;
   configured: boolean;
   action: boolean;
   metadata?: Record<string, any>;
@@ -69,7 +69,7 @@ export const addNodeBelow = (
     position: { x: 1, y: newY },
     data: {
       name: "New Node",
-      logo: "/logo.png",
+      image: "/logo.png",
       configured: false,
       action: true,
     },

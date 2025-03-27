@@ -118,7 +118,7 @@ model Session {
 
 model SubscriptionPlan {
   id             String         @id @default(uuid())
-  name           String // "Pro", "Enterprise", etc.
+  name           String         @unique // "Pro", "Enterprise", etc.
   dodoPriceId    String? // dodo Price ID
   cashfreePlanId String? // Cashfree Plan ID
   price          Float

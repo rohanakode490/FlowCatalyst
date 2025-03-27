@@ -199,8 +199,9 @@ const runPythonScraper = (
     const scriptPath = path.join(__dirname, "scraper.py");
     const pythonCommand =
       "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+    // "python3";
 
-    const keywords_list = keywords.join(" OR ");
+    const keywords_list = keywords.join(" OR ") || "";
     const args = [
       scriptPath,
       keywords_list,
@@ -259,23 +260,42 @@ const executeScrapingFlow = async (triggerId: string) => {
     });
 
     //Getting urn(s)
-    const zapruns = trigger.zap.zapRuns;
-    const recentRuns = zapruns
-      .sort((a: any, b: any) => b.createdAt - a.createdAt)
-      .slice(0, 10);
-    const existingUrns = recentRuns.flatMap(
-      (run: any) => run.metadata.jobs?.map((job: any) => job.urn) || [],
-    );
-
+    console.log("Trig", trigger);
+    const zapruns = trigger.zap.zapRuns || [];
+    console.log("zapruns", zapruns);
+    let existingUrns = [];
+    if (zapruns !== undefined) {
+      const recentRuns = zapruns
+        .sort((a: any, b: any) => b.createdAt - a.createdAt)
+        .slice(0, 10);
+      existingUrns = recentRuns.flatMap(
+        (run: any) => run.metadata.jobs?.map((job: any) => job.urn) || [],
+      );
+    }
+    console.log("existing", existingUrns);
     if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
       console.log(`Trigger ${triggerId} not found or invalid type`);
       return;
     }
 
     let location =
-      trigger.metadata?.state === ""
+      trigger.metadata?.state === undefined || trigger.metadata.state === ""
         ? `${trigger.metadata?.country}`
         : `${trigger.metadata?.state}, ${trigger.metadata?.country}`;
+
+    console.log(
+      "arguments",
+      trigger.metadata?.keywords,
+      location,
+      trigger.metadata?.limit || 10,
+      0,
+      trigger.metadata.experience || "",
+      trigger.metadata.remote || "",
+      trigger.metadata.job_type || "",
+      trigger.metadata.listed_at || "86400",
+      existingUrns,
+    );
+
     // Execute Python scraper
     const jobs = await runPythonScraper(
       trigger.metadata?.keywords,
@@ -285,7 +305,7 @@ const executeScrapingFlow = async (triggerId: string) => {
       trigger.metadata.experience || "",
       trigger.metadata.remote || "",
       trigger.metadata.job_type || "",
-      trigger.metadata.listed_at,
+      trigger.metadata.listed_at || "86400",
       existingUrns,
     );
 
@@ -338,6 +358,7 @@ app.post("/schedule", async (req, res) => {
       },
     });
 
+    console.log("Done till here");
     // Immediate first run
     const job_list = await executeScrapingFlow(triggerId);
 

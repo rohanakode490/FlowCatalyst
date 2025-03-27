@@ -9,7 +9,7 @@ interface NodeData {
   action: boolean;
   canDelete: boolean;
   onDelete: (id: string) => void;
-  logo: string;
+  image: string;
   name: string;
 }
 
@@ -23,13 +23,14 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
   const isDarkMode = resolvedTheme === "dark";
 
   const handleNodeClick = () => {
+    console.log("data", data);
     if (!data.configured) {
       data.onOpenDialog(); // Open the dialog for webhook selection
     }
   };
-  if (data.logo) {
+  if (data.image) {
     const img = new Image();
-    img.src = data.logo;
+    img.src = data.image;
   }
   return (
     <>
@@ -67,9 +68,9 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
         <div
           className={`rounded-full w-12 h-12 flex justify-center items-center bg-gray-400`}
         >
-          {data.logo && (
+          {data.image && (
             <img
-              src={data.logo}
+              src={data.image}
               alt="Logo"
               className="w-8 h-8"
               style={{ display: "block" }}
