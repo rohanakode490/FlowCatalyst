@@ -40,7 +40,6 @@ export const ChatInterface = ({
     setLoading(true);
 
     try {
-      console.log("prompt", prompt);
       const token = localStorage.getItem("token");
       const { data } = await api.post(
         "/ai/generate",
@@ -52,8 +51,6 @@ export const ChatInterface = ({
         },
       );
 
-      console.log("data", data);
-
       setLimits((prev) => ({
         ...prev,
         remaining: data.remaining,
@@ -62,7 +59,6 @@ export const ChatInterface = ({
       onWorkflowGenerated(data.nodes, data.edges);
     } catch (error: any) {
       // Handle errors
-      console.log("errrrrr", error);
       const data = error.response.data || "";
       toast.error(
         <div className="flex flex-col space-y-1">

@@ -260,9 +260,9 @@ const executeScrapingFlow = async (triggerId: string) => {
     });
 
     //Getting urn(s)
-    console.log("Trig", trigger);
+    // console.log("Trig", trigger);
     const zapruns = trigger.zap.zapRuns || [];
-    console.log("zapruns", zapruns);
+    // console.log("zapruns", zapruns);
     let existingUrns = [];
     if (zapruns !== undefined) {
       const recentRuns = zapruns
@@ -272,7 +272,6 @@ const executeScrapingFlow = async (triggerId: string) => {
         (run: any) => run.metadata.jobs?.map((job: any) => job.urn) || [],
       );
     }
-    console.log("existing", existingUrns);
     if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
       console.log(`Trigger ${triggerId} not found or invalid type`);
       return;
@@ -282,19 +281,6 @@ const executeScrapingFlow = async (triggerId: string) => {
       trigger.metadata?.state === undefined || trigger.metadata.state === ""
         ? `${trigger.metadata?.country}`
         : `${trigger.metadata?.state}, ${trigger.metadata?.country}`;
-
-    console.log(
-      "arguments",
-      trigger.metadata?.keywords,
-      location,
-      trigger.metadata?.limit || 10,
-      0,
-      trigger.metadata.experience || "",
-      trigger.metadata.remote || "",
-      trigger.metadata.job_type || "",
-      trigger.metadata.listed_at || "86400",
-      existingUrns,
-    );
 
     // Execute Python scraper
     const jobs = await runPythonScraper(
@@ -358,7 +344,6 @@ app.post("/schedule", async (req, res) => {
       },
     });
 
-    console.log("Done till here");
     // Immediate first run
     const job_list = await executeScrapingFlow(triggerId);
 

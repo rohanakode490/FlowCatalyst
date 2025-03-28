@@ -11,7 +11,7 @@ const together = new Together({
   apiKey: process.env.TOGETHER_API_KEY,
 });
 
-// const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 // Zod Schemas
 const linkedinJobSchema = z.object({
@@ -351,16 +351,29 @@ const initComponentMap = async () => {
 
 // Call this on server start
 initComponentMap();
-// console.dir(componentMap, {
-//   depth: null,
-//   colors: true,
-// });
+
+function extractJsonOrAfterThink(text: string): string {
+  const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
+  const match = text.match(jsonRegex);
+
+  if (match) {
+    return match[1].trim(); // Extract JSON block
+  }
+
+  const thinkIndex = text.indexOf("</think>");
+  if (thinkIndex !== -1) {
+    return text.substring(thinkIndex + 8).trim(); // Extract everything after </think>
+  }
+
+  return text.trim(); // Return full text if no match
+}
 
 router.post("/generate", authMiddleware, aiRateLimiter, async (req, res) => {
   try {
+    //@ts-ignore
+    const userId = req.id;
     const { prompt } = req.body;
 
-    console.log("Here", prompt, "\n\n");
     // Call Together.ai
     const response = await together.chat.completions.create({
       model: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
@@ -378,17 +391,19 @@ router.post("/generate", authMiddleware, aiRateLimiter, async (req, res) => {
       stream: false,
     });
 
-    console.log(
-      "response",
-      response.choices[0]?.message?.content?.split("</think>")[1] ||
-        "NO RESPONSE\n\n",
+    // console.log(
+    //   "response",
+    //   response.choices[0]?.message?.content?.split("</think>")[1] ||
+    //     "NO RESPONSE\n\n",
+    // );
+    const workflowText = extractJsonOrAfterThink(
+      response.choices[0]?.message?.content || "",
     );
-    // Step 2: Parse and validate
-    const workflowText =
-      response.choices[0]?.message?.content?.split("</think>")[1];
+    // const workflowText =
+    //   response.choices[0]?.message?.content?.split("</think>")[1];
     const workflow = JSON.parse(workflowText || "");
 
-    console.log("workflow", workflow);
+    // console.log("workflow", workflow);
     // Validate trigger
     if (!["GithubTrigger", "LinkedinTrigger"].includes(workflow.trigger.type)) {
       throw new Error("Invalid trigger type");
@@ -444,8 +459,15 @@ router.post("/generate", authMiddleware, aiRateLimiter, async (req, res) => {
       source: i === 0 ? "trigger" : `action-${i - 1}`,
       target: `action-${i}`,
     }));
-    res.locals.aiLimit.remaining -= 1;
-    res.json({ nodes, edges });
+
+    const key = `ai_prompts:${userId}`;
+    // Increment count
+    const newCount = await redis.incr(key);
+
+    res.locals.aiLimit = {
+      remaining: 2 - newCount,
+    };
+    res.json({ nodes, edges, remaining: 2 - newCount });
   } catch (error) {
     console.error("Workflow generation failed:", error);
     res.status(500).json({ error });
@@ -477,10 +499,11 @@ router.get("/limits", authMiddleware, async (req, res) => {
         features: activeSubscription.plan.features,
       });
     }
-
+    const key = `ai_prompts:${userId}`;
+    const currentCount = Number(await redis.get(key)) || 0;
     res.json({
       isPro: false,
-      remaining: res.locals.aiLimit?.remaining || 2,
+      remaining: 2 - currentCount,
     });
   } catch (error) {
     console.error("Failed to get AI limits:", error);

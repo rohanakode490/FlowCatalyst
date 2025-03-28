@@ -301,12 +301,9 @@ export default function Flow({
   };
 
   const handleWorkflowGenerated = (newNodes: any, newEdges: any) => {
-    console.log("generated", newNodes, newEdges);
     setNodes(newNodes);
     setEdges(newEdges);
   };
-
-  console.log("Nodes", nodes);
 
   if (!mounted) return null; // Prevent rendering during SSR
 

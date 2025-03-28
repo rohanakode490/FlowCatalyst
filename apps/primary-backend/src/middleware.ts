@@ -12,7 +12,6 @@ export function authMiddleware(
   next: NextFunction,
 ) {
   // Check for token in the Authorization header (Bearer token)
-  console.log("here#0.1");
   const authHeader = req.headers.authorization;
   const tokenFromHeader = authHeader && authHeader.split(" ")[1]; // Extract "Bearer <token>"
 
@@ -35,7 +34,6 @@ export function authMiddleware(
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ message: "Token has expired." });
     }
-    console.log("errors", error);
     return res.status(403).json({
       message: "You are not logged in.",
     });
@@ -95,7 +93,6 @@ export const aiRateLimiter = async (
     // Check lifetime prompt count
     const key = `ai_prompts:${userId}`;
     const currentCount = Number(await redis.get(key)) || 0;
-    console.log("curr", currentCount);
 
     if (currentCount >= 2) {
       return res.status(429).json({
@@ -106,12 +103,9 @@ export const aiRateLimiter = async (
       });
     }
 
-    // Increment count
-    const newCount = await redis.incr(key);
-
     // Attach limit info to response locals
     res.locals.aiLimit = {
-      remaining: 2 - newCount,
+      remaining: 2,
     };
 
     next();

@@ -23,7 +23,6 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
   const isDarkMode = resolvedTheme === "dark";
 
   const handleNodeClick = () => {
-    console.log("data", data);
     if (!data.configured) {
       data.onOpenDialog(); // Open the dialog for webhook selection
     }
