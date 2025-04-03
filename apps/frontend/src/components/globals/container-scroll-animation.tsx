@@ -82,15 +82,32 @@ export const Card = ({
         boxShadow:
           "0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003",
       }}
-      className="max-w-5xl -mt-12 mx-auto h-[30rem] md:h-[40rem] w-full  p-6 bg-[#222222] rounded-[30px] shadow-2xl"
+      className="max-w-5xl -mt-12 mx-auto h-[30rem] md:h-[40rem] w-full p-3 sm:p-6 bg-[#222222] rounded-[30px] shadow-2xl"
     >
-      <div className="bg-gray-100 h-full w-full rounded-2xl  gap-4 overflow-hidden p-4 transition-all ">
-        {/* TODO: Add a banner Image */}
+      <div
+        className="relative w-full h-full rounded-2xl overflow-hidden 
+        bg-[#333333] 
+        before:content-[''] before:block before:pt-[56.25%] sm:before:pt-[45%] md:before:pt-[40%]"
+      >
         <Image
           src="/temp-banner.png"
           fill
           alt="bannerImage"
-          className="object-cover border-0 rounded-2xl"
+          priority
+          quality={80}
+          sizes="(max-width: 640px) 100vw,
+         (max-width: 768px) 90vw,
+         (max-width: 1024px) 80vw,
+         75vw"
+          className="object-contain "
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            maxWidth: "100%",
+            maxHeight: "100%",
+          }}
         />
       </div>
     </motion.div>

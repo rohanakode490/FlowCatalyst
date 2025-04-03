@@ -20,24 +20,29 @@ import jwt from "jsonwebtoken";
 import { pricingRouter } from "./router/pricing";
 import { aiRouter } from "./router/ai";
 import { createFreeSubscription } from "./utis/subscription";
+import helmet from "helmet";
+import GeneratePassword from "./utis/password-generater";
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
+app.use(helmet());
 app.use(cookieParser(JWT_PASSWORD));
-// app.use(
-//   rateLimiter({
-//     windowMs: 15 * 60 * 1000,
-//     max: 60,
-//   }),
-// );
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+  }),
+);
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -46,7 +51,12 @@ app.use(
     secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 },
+    cookie: {
+      maxAge: 1000 * 60 * 60,
+      httpOnly: true, // Prevent access from JavaScript
+      secure: process.env.NODE_ENV === "production", // Only send over HTTPS
+      sameSite: "strict", // Prevent CSRF attacks
+    },
   }),
 );
 
@@ -68,7 +78,6 @@ passport.deserializeUser(async (id: number, done: any) => {
 });
 
 // Google OAuth Strategy
-//TODO: Create random password for OAuth users
 passport.use(
   new GoogleStrategy(
     {
@@ -101,13 +110,14 @@ passport.use(
             data: { googleId: profile.id },
           });
         } else {
+          const pass = GeneratePassword();
           // Create new user
           user = await prismaClient.user.create({
             data: {
               name: profile.displayName,
               email,
               googleId: profile.id,
-              password: "",
+              password: pass,
             },
           });
           await createFreeSubscription(prismaClient, user.id);
@@ -166,13 +176,14 @@ passport.use(
             data: { githubId: profile.id },
           });
         } else {
+          const pass = GeneratePassword();
           // If no user exists, create a new one
           user = await prismaClient.user.create({
             data: {
               name: profile.username || "GitHub User",
               email,
               githubId: profile.id,
-              password: "", // No password for OAuth users
+              password: pass,
             },
           });
           await createFreeSubscription(prismaClient, user.id);

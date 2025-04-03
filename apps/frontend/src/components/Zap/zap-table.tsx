@@ -16,8 +16,7 @@ import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { ConfirmationDialog } from "./Confirmation-Dialog";
 
-//TODO: 1. Replace "zap.action.type.name" with their respective logos
-//      2. Add functionality to the switch
+//TODO: 1. Add functionality to the switch
 
 export default function ZapTable({ zaps }: { zaps: Zap[] }) {
   const [zapToDelete, setZapToDelete] = useState<string | null>(null);
@@ -48,15 +47,15 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
       setZapToDelete(null); // Close the confirmation dialog
     }
   };
-
+  console.log("zap", zaps);
   return (
     <>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead></TableHead>
+            <TableHead>Workflow</TableHead>
             <TableHead></TableHead>
-            <TableHead>Name</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead className="text-right">Running</TableHead>
             <TableHead></TableHead>
@@ -74,10 +73,32 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
                 </Button>
               </TableCell>
               <TableCell className="font-medium">
-                {zap.trigger.type.name}{" "}
-                {zap.actions.map((action) => action.type.name + " ")}
+                {zap.trigger.type.name}
+                {" -> "}
+                {zap.actions.map(
+                  (action, index) =>
+                    action.type.name +
+                    (index !== zap.actions.length - 1 ? " -> " : ""),
+                )}
               </TableCell>
-              <TableCell>{zap.id}</TableCell>
+              <TableCell>
+                <span className="flex gap-1">
+                  <img
+                    src={zap.trigger.type.image}
+                    alt="trigger"
+                    className="h-7 w-7"
+                  />
+
+                  {zap.actions.map((action) => (
+                    <img
+                      key={action.id}
+                      src={action.type.image}
+                      alt="action"
+                      className="h-7 w-7"
+                    />
+                  ))}
+                </span>
+              </TableCell>
               <TableCell>
                 {new Date(zap.createdAt)
                   .toLocaleDateString("en-GB", {

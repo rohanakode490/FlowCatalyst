@@ -42,14 +42,15 @@ model Zap {
 }
 
 model Trigger {
-  id        String           @id @default(uuid())
-  zapId     String           @unique
-  userId    Int              @default(1)
-  triggerId String
-  metadata  Json             @default("{}")
-  type      AvailableTrigger @relation(fields: [triggerId], references: [id])
-  zap       Zap              @relation(fields: [zapId], references: [id])
-  user      User             @relation(fields: [userId], references: [id])
+  id          String           @id @default(uuid())
+  zapId       String           @unique
+  userId      Int              @default(1)
+  triggerId   String
+  metadata    Json             @default("{}")
+  type        AvailableTrigger @relation(fields: [triggerId], references: [id])
+  zap         Zap              @relation(fields: [zapId], references: [id])
+  user        User             @relation(fields: [userId], references: [id])
+  JobSchedule JobSchedule[]
 }
 
 model Action {
@@ -93,7 +94,7 @@ model ZapRunOutbox {
 
 model JobSchedule {
   id        String   @id @default(uuid())
-  triggerId String   @unique
+  triggerId String
   userId    Int
   interval  Int      @default(10) // Hours
   nextRunAt DateTime
@@ -101,7 +102,8 @@ model JobSchedule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  trigger Trigger @relation(fields: [triggerId], references: [id])
 
   @@index([nextRunAt])
   @@index([userId])

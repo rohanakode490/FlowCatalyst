@@ -197,9 +197,12 @@ const runPythonScraper = (
 ): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, "scraper.py");
-    const pythonCommand =
-      "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+    // const pythonCommand =
+    //   "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
     // "python3";
+    const pythonCommand = process.env.VIRTUAL_ENV
+      ? `${process.env.VIRTUAL_ENV}/bin/python`
+      : "python3";
 
     const keywords_list = keywords.join(" OR ") || "";
     const args = [
@@ -329,18 +332,12 @@ app.post("/schedule", async (req, res) => {
     const intervalHours = 10;
 
     // Create or update the schedule
-    await prismaClient.jobSchedule.upsert({
-      where: { triggerId },
-      create: {
+    await prismaClient.jobSchedule.create({
+      data: {
         triggerId,
         userId,
         interval: intervalHours,
         nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
-      },
-      update: {
-        interval: intervalHours,
-        nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
-        isActive: true,
       },
     });
 
