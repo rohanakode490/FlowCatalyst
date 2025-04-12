@@ -9,6 +9,7 @@
   "dependencies": {
     "@flowcatalyst/database": "*",
     "@types/express": "^4.17.21",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "linkedin-jobs-api": "^1.0.6",
     "linkedin-jobs-scraper": "^18.0.0",

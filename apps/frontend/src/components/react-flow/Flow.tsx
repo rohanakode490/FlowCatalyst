@@ -24,6 +24,7 @@ import { useTheme } from "next-themes";
 import "@xyflow/react/dist/style.css";
 import { ChatInterface } from "../chat-interface/AI-ChatInterface";
 import { X } from "lucide-react";
+import userWebhook from "@/hooks/User";
 
 const VERTICAL_SPACING = 200;
 
@@ -101,13 +102,11 @@ export default function Flow({
   const [triggerName, setTriggerName] = useState<Record<string, any>>({});
   const [showChat, setShowChat] = useState(false);
 
-  const {
-    webhooks,
-    isDialogOpen,
-    handleWebhookSelect,
-    openDialog,
-    closeDialog,
-  } = useWebhook();
+  const { isDialogOpen, handleWebhookSelect, openDialog, closeDialog } =
+    useWebhook();
+
+  const { userSubscription } = userWebhook();
+
   // Hydration fix
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -273,6 +272,7 @@ export default function Flow({
         ...edge.data,
         onAddNode: () =>
           addNodeBelow(
+            userSubscription,
             edge.source,
             nodes,
             edges,

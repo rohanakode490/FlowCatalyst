@@ -47,6 +47,7 @@ RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 # Build the application
 RUN npm run build --workspace=@flowcatalyst/database && npm run build --workspace=@flowcatalyst/worker
 RUN ls -la node_modules | grep dotenv
+
 # ====== Runner Stage (Final Production Image) ======
 FROM base AS runner
 

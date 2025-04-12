@@ -6,15 +6,21 @@ from dotenv import load_dotenv
 from linkedin_api import Linkedin
 import ast
 from datetime import datetime, timezone
+import random
 
 load_dotenv()
 
-EMAIL = os.getenv("LINKEDIN_EMAIL")
-PASSWORD = os.getenv("LINKEDIN_PASSWORD")
-
+LINKEDIN_json = os.getenv("LINKEDIN")
+LINKEDIN = json.loads(LINKEDIN_json)
+random_index = random.randint(0, len(LINKEDIN) - 1)
 # Authenticate to LinkedIn
-api = Linkedin(EMAIL, PASSWORD)
+# print(random_index, "\t\t", LINKEDIN[random_index][0], LINKEDIN[random_index][1])
+api = Linkedin(LINKEDIN[random_index][0], LINKEDIN[random_index][1])
 
+# EMAIL = os.getenv("LINKEDIN_EMAIL")
+# PASSWORD = os.getenv("LINKEDIN_PASSWORD")
+#
+# api = Linkedin(EMAIL, PASSWORD)
 
 def parse_list_arg(arg):
     """Convert a string representation of a list into a Python list with string elements."""
@@ -47,7 +53,8 @@ def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[
                 job_type=job_type, #Array of strings
                 listed_at=listed_at
             )
-            if retries > 4:
+            # print(jobs)
+            if retries > 10:
                 break
             for job in jobs:
                 job_urn = job['entityUrn']
@@ -90,9 +97,8 @@ def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[
                     existing_urns.append(job_urn)
                     if len(jobs_with_links) >= 10:
                         break
-
             offset += 10
-            retries = 0 
+            retries += 1 
             time.sleep(1)
 
             # Convert result to JSON for Nodejs

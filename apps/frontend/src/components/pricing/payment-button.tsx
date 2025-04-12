@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import api from "@/lib/api";
-import { PricingPlan } from "@/app/(main)/pricing/page";
 import toast from "react-hot-toast";
+import { PricingPlan } from "@/app/pricing/page";
 
 interface PaymentButtonProps {
   plan: PricingPlan;

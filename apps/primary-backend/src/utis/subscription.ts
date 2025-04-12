@@ -12,7 +12,7 @@ export async function createFreeSubscription(
     console.error("Free subscription plan not configured");
   }
 
-  console.log("freePlan", freePlan, "\n\n");
+  // console.log("freePlan", freePlan, "\n\n");
   return prisma.subscription.create({
     //@ts-ignore
     data: {

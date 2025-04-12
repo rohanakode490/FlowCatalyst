@@ -7,6 +7,8 @@ import {
 } from "@xyflow/react";
 import { useTheme } from "next-themes";
 import { Plus } from "lucide-react";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface EdgeData {
   onAddNode: () => void;
@@ -39,7 +41,15 @@ const CustomEdge = memo(
 
     const onEdgeClick = (e: React.FormEvent) => {
       e.stopPropagation();
-      data?.onAddNode();
+      const resp: number = data?.onAddNode() || 1;
+
+      if (resp === 0) {
+        toast.error(
+          <Link href={"/pricing"} className="underline text-red-500">
+            Upgrade to Pro to unlock more actions.{" "}
+          </Link>,
+        );
+      }
     };
 
     return (

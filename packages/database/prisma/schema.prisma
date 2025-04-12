@@ -38,7 +38,7 @@ model Zap {
   trigger   Trigger? //one trigger per zap
   actions   Action[] //many actions per zap
   zapRuns   ZapRun[]
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Trigger {
@@ -49,7 +49,7 @@ model Trigger {
   metadata    Json             @default("{}")
   type        AvailableTrigger @relation(fields: [triggerId], references: [id])
   zap         Zap              @relation(fields: [zapId], references: [id])
-  user        User             @relation(fields: [userId], references: [id])
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   JobSchedule JobSchedule[]
 }
 
@@ -102,8 +102,8 @@ model JobSchedule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id])
-  trigger Trigger @relation(fields: [triggerId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trigger Trigger @relation(fields: [triggerId], references: [id], onDelete: Cascade)
 
   @@index([nextRunAt])
   @@index([userId])
@@ -112,7 +112,7 @@ model JobSchedule {
 model Session {
   id        String   @id @default(uuid())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -135,7 +135,7 @@ model SubscriptionPlan {
 model Subscription {
   id                 String           @id @default(uuid())
   userId             Int
-  user               User             @relation(fields: [userId], references: [id])
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan               SubscriptionPlan @relation(fields: [planId], references: [id])
   planId             String
   status             String // "active", "canceled", "past_due"

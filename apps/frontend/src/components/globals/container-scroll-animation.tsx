@@ -99,7 +99,7 @@ export const Card = ({
          (max-width: 768px) 90vw,
          (max-width: 1024px) 80vw,
          75vw"
-          className="object-contain "
+          className="object-cover"
           style={{
             position: "absolute",
             top: "50%",

@@ -98,7 +98,7 @@ router.get("/", authMiddleware, async (req, res) => {
   });
 
   res.json({
-    zaps,
+    zaps: zaps.length > 0 ? zaps : [],
   });
 });
 

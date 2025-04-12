@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import { Prisma, prismaClient } from "@flowcatalyst/database";
 const path = require("path");
 const { spawn } = require("child_process");
+
+dotenv.config();
 
 type PrismaTransactionalClient = Prisma.TransactionClient;
 
@@ -202,7 +205,7 @@ const runPythonScraper = (
     // "python3";
     const pythonCommand = process.env.VIRTUAL_ENV
       ? `${process.env.VIRTUAL_ENV}/bin/python`
-      : "python3";
+      : "python";
 
     const keywords_list = keywords.join(" OR ") || "";
     const args = [
@@ -215,7 +218,7 @@ const runPythonScraper = (
       JSON.stringify(remote),
       JSON.stringify(jobType),
       listed_at,
-      existingUrns,
+      JSON.stringify(existingUrns),
     ];
 
     // console.log("args", args);
@@ -295,7 +298,7 @@ const executeScrapingFlow = async (triggerId: string) => {
       trigger.metadata.remote || "",
       trigger.metadata.job_type || "",
       trigger.metadata.listed_at || "86400",
-      existingUrns,
+      existingUrns || [],
     );
 
     // Store results
@@ -327,7 +330,7 @@ const executeScrapingFlow = async (triggerId: string) => {
 // POST route to handle job search requests
 app.post("/schedule", async (req, res) => {
   const { triggerId, userId } = req.body;
-
+  console.log(`${process.env.VIRTUAL_ENV}/bin/python`);
   try {
     const intervalHours = 10;
 
@@ -377,7 +380,7 @@ const startScheduler = async () => {
         console.error(`Error processing job ${job.id}:`, error);
       }
     }
-  }, 120_000); // Check every 2 minutes
+  }, 3600000); // Check every 10 hours
 };
 
 // Start the scheduler

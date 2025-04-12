@@ -1,5 +1,4 @@
 import { Node, Edge, useNodesState, useEdgesState } from "@xyflow/react";
-
 // Define types for the helper functions
 type NodeType = Node<{
   name: string;
@@ -40,6 +39,7 @@ export const alignNodesVertically = (
  * Add a new node below the source node.
  */
 export const addNodeBelow = (
+  userSubscription: string,
   sourceNodeId: string,
   nodes: NodeType[],
   edges: EdgeType[],
@@ -53,8 +53,9 @@ export const addNodeBelow = (
   ) => void,
 ) => {
   const sourceNode = nodes.find((n) => n.id === sourceNodeId);
-  if (!sourceNode) return;
+  if (!sourceNode) return -1;
 
+  if (userSubscription === "free" && nodes.length > 3) return 0;
   const targetEdge = edges.find((e) => e.source === sourceNodeId);
   const targetNode = targetEdge
     ? nodes.find((n) => n.id === targetEdge.target)
@@ -120,6 +121,8 @@ export const addNodeBelow = (
 
   setNodes((nds) => [...nds, newNode]);
   alignNodesVertically(setNodes, () => {}, VERTICAL_SPACING); // Mock fitView for now
+
+  return 1;
 };
 
 /**

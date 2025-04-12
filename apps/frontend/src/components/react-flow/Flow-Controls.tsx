@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
@@ -16,12 +16,14 @@ export const FlowControls = ({
   zapId,
 }: FlowControlsProps) => {
   // Check if all nodes are configured
+  const [loading, setLoading] = useState(false);
   const isSaveDisabled = nodes.some((node) => !node.data.configured);
   const router = useRouter();
 
   // Function to save the flow to the Zap database
   const handleSaveFlow = async () => {
     try {
+      setLoading(true);
       // Extract trigger and actions from nodes
       const triggerNode = nodes.find((node) => !node.data.action); // Trigger node has action: false
       const actionNodes = nodes.filter((node) => node.data.action); // Action nodes have action: true
@@ -57,7 +59,6 @@ export const FlowControls = ({
               Authorization: `Bearer ${token}`,
             },
           });
-
       // Redirect to the dashboard after saving
       if (response.data.zapId || response.data.success) {
         router.push("/workflows");
@@ -69,8 +70,11 @@ export const FlowControls = ({
         console.error("Response status:", error.response.status);
       }
       alert("Failed to save Zap. Please check the console for details.");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="flex gap-2">
       <Button
@@ -82,9 +86,9 @@ export const FlowControls = ({
       <Button
         onClick={handleSaveFlow}
         className="self-start hover:bg-[#3F006B] hover:text-white"
-        disabled={isSaveDisabled}
+        disabled={isSaveDisabled || loading} // Combined disabled states
       >
-        Save Flow
+        {loading ? "Saving..." : "Save Flow"} {/* Show loading state */}
       </Button>
     </div>
   );

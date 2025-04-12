@@ -89,7 +89,7 @@ const LINKEDIN_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
 //   • experience: string[] (Allowed: "1","2","3","4","5","6")
 //   • remote: string[] (Allowed: "1","2","3")
 //   • job_type: string[] (Allowed: "F","C","P","T","I","V","O")
-//   • listed_at: string (EXACTLY: "86400"|"604800"|"2592000"|"0")
+//   • listed_at: string (EXACTLY: "
 // - Dynamic Fields (Use EXACTLY these placeholders):
 //   ${JSON.stringify(LINKEDIN_TRIGGER_FIELDS_MAP, null, 2)}
 //

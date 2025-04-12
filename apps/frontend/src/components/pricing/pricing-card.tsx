@@ -1,6 +1,6 @@
 "use client";
 
-import { PricingPlan } from "@/app/(main)/pricing/page";
+import { PricingPlan } from "@/app/pricing/page";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
 
