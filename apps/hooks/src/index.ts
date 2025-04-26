@@ -250,6 +250,46 @@ const runPythonScraper = (
   });
 };
 
+// Helper function to efficiently get recent URNs from database
+// async function getRecentJobUrns(
+//   zapId: string,
+//   limit: number = 10,
+// ): Promise<string[]> {
+//   // Fetch the most recent ZapRuns for this Zap
+//   const recentRuns = await prismaClient.zapRun.findMany({
+//     where: {
+//       zapId,
+//       metadata: {
+//         path: ["type"],
+//         equals: "LINKEDIN_JOBS",
+//       },
+//     },
+//     orderBy: {
+//       // Assuming ZapRun has a createdAt field, otherwise use another appropriate field
+//       // If there's no timestamp field, we might need a different approach
+//       id: "desc",
+//     },
+//     take: limit, // Limit to most recent runs
+//     select: {
+//       metadata: true,
+//     },
+//   });
+//
+//   // Extract and flatten URNs from all recent runs
+//   const allUrns: string[] = [];
+//
+//   for (const run of recentRuns) {
+//     const metadata = run.metadata as any;
+//     if (metadata.jobs && Array.isArray(metadata.jobs)) {
+//       const runUrns = metadata.jobs.map((job: any) => job.urn).filter(Boolean);
+//       allUrns.push(...runUrns);
+//     }
+//   }
+//
+//   // Remove duplicates and return
+//   return [...new Set(allUrns)];
+// }
+
 // Core scraping and storage logic
 const executeScrapingFlow = async (triggerId: string) => {
   try {
@@ -264,20 +304,15 @@ const executeScrapingFlow = async (triggerId: string) => {
         },
       },
     });
+    if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
+      console.log(`Trigger ${triggerId} not found or invalid type`);
+      return [];
+    }
 
     //Getting urn(s)
-    // console.log("Trig", trigger);
-    const zapruns = trigger.zap.zapRuns || [];
-    // console.log("zapruns", zapruns);
-    let existingUrns = [];
-    if (zapruns !== undefined) {
-      const recentRuns = zapruns
-        .sort((a: any, b: any) => b.createdAt - a.createdAt)
-        .slice(0, 10);
-      existingUrns = recentRuns.flatMap(
-        (run: any) => run.metadata.jobs?.map((job: any) => job.urn) || [],
-      );
-    }
+    // Get existing URNs efficiently
+    // const existingUrns = await getRecentJobUrns(trigger.zapId);
+
     if (!trigger || !trigger.metadata?.hasOwnProperty("keywords")) {
       console.log(`Trigger ${triggerId} not found or invalid type`);
       return;
@@ -298,27 +333,86 @@ const executeScrapingFlow = async (triggerId: string) => {
       trigger.metadata.remote || "",
       trigger.metadata.job_type || "",
       trigger.metadata.listed_at || "86400",
-      existingUrns || [],
+      [],
+      // existingUrns || [],
     );
+    if (jobs.length === 0) {
+      console.log(`No new jobs found for trigger ${triggerId}`);
+      return [];
+    }
 
-    // Store results
+    // // Store results
+    // await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
+    //   const run = await tx.zapRun.create({
+    //     data: {
+    //       zapId: trigger.zapId,
+    //       metadata: {
+    //         type: "LINKEDIN_JOBS",
+    //         jobs,
+    //         scrapedAt: new Date().toISOString(),
+    //       },
+    //     },
+    //   });
+    //
+    //   await tx.zapRunOutbox.create({
+    //     data: { zapRunId: run.id },
+    //   });
+    // });
+    // Store results in a transaction
     await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
-      const run = await tx.zapRun.create({
-        data: {
+      // Check if we can update an existing ZapRun instead of creating a new one
+      const existingRun = await tx.zapRun.findFirst({
+        where: {
           zapId: trigger.zapId,
           metadata: {
-            type: "LINKEDIN_JOBS",
-            jobs,
-            scrapedAt: new Date().toISOString(),
+            path: ["type"],
+            equals: "LINKEDIN_JOBS",
           },
         },
+        orderBy: { id: "desc" },
+        take: 1,
       });
 
-      await tx.zapRunOutbox.create({
-        data: { zapRunId: run.id },
-      });
+      let run: { id: string; zapId: string; metadata: Prisma.JsonValue } = {
+        id: "",
+        zapId: "",
+        metadata: {},
+      };
+      if (existingRun) {
+        // Update existing ZapRun if it's recent
+        const existingMetadata = existingRun.metadata as any;
+        const updatedJobs = [...jobs, ...(existingMetadata.jobs || [])];
+
+        // Update the existing record with new jobs
+        run = await tx.zapRun.update({
+          where: { id: existingRun.id },
+          data: {
+            metadata: {
+              ...existingMetadata,
+              jobs: updatedJobs,
+              lastUpdated: new Date().toISOString(),
+            },
+          },
+        });
+      } else {
+        // Create new ZapRun if no recent one exists
+        run = await tx.zapRun.create({
+          data: {
+            zapId: trigger.zapId,
+            metadata: {
+              type: "LINKEDIN_JOBS",
+              jobs,
+              scrapedAt: new Date().toISOString(),
+            },
+          },
+        });
+      }
+      if (run.id !== "") {
+        await tx.zapRunOutbox.create({
+          data: { zapRunId: run.id },
+        });
+      }
     });
-
     console.log(`Successfully processed trigger ${triggerId}`);
     return jobs;
   } catch (error) {
@@ -330,19 +424,37 @@ const executeScrapingFlow = async (triggerId: string) => {
 // POST route to handle job search requests
 app.post("/schedule", async (req, res) => {
   const { triggerId, userId } = req.body;
-  console.log(`${process.env.VIRTUAL_ENV}/bin/python`);
   try {
     const intervalHours = 10;
 
-    // Create or update the schedule
-    await prismaClient.jobSchedule.create({
-      data: {
+    // Find or create schedule
+    const existingSchedule = await prismaClient.jobSchedule.findFirst({
+      where: {
         triggerId,
         userId,
-        interval: intervalHours,
-        nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
       },
     });
+
+    if (existingSchedule) {
+      await prismaClient.jobSchedule.update({
+        where: { id: existingSchedule.id },
+        data: {
+          isActive: true,
+          interval: intervalHours,
+          nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      await prismaClient.jobSchedule.create({
+        data: {
+          triggerId,
+          userId,
+          interval: intervalHours,
+          nextRunAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
+        },
+      });
+    }
 
     // Immediate first run
     const job_list = await executeScrapingFlow(triggerId);
@@ -357,34 +469,59 @@ app.post("/schedule", async (req, res) => {
 
 // Background worker to check for due jobs
 const startScheduler = async () => {
+  const now = new Date();
+  const thresholdHours = 48; // Process jobs up to 48 hours old
+  const oldestAllowed = new Date(
+    now.getTime() - thresholdHours * 60 * 60 * 1000,
+  );
+  const CHECK_INTERVAL = 10 * 60 * 60 * 1000;
   setInterval(async () => {
     const dueJobs = await prismaClient.jobSchedule.findMany({
       where: {
-        nextRunAt: { lte: new Date() },
+        nextRunAt: {
+          lte: now, // Due now or earlier
+          gte: oldestAllowed, // But not older than threshold
+        },
         isActive: true,
       },
+      include: {
+        trigger: true,
+      },
+      // Prevent multiple jobs per trigger
+      orderBy: { updatedAt: "desc" },
+      distinct: ["triggerId"],
     });
     console.log("checking...", dueJobs);
 
     for (const job of dueJobs) {
       try {
-        const jobs = await executeScrapingFlow(job.triggerId);
+        // const jobs = await executeScrapingFlow(job.triggerId);
+
         // Update next run time
         await prismaClient.jobSchedule.update({
           where: { id: job.id },
           data: {
-            nextRunAt: new Date(Date.now() + job.interval * 60 * 60 * 1000),
+            nextRunAt: new Date(now.getTime() + job.interval * 60 * 60 * 1000),
+            updatedAt: now,
           },
         });
+
+        // Execute the job
+        await executeScrapingFlow(job.triggerId);
+
+        // Small delay between jobs to prevent system overload
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       } catch (error) {
         console.error(`Error processing job ${job.id}:`, error);
       }
     }
-  }, 3600000); // Check every 10 hours
+  }, CHECK_INTERVAL); // Check every 10 hours
 };
 
 // Start the scheduler
-startScheduler().catch(console.error);
+startScheduler().catch((error) => {
+  console.error("Failed to start scheduler:", error);
+});
 
 // Start the server
 app.listen(5000, () => {

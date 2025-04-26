@@ -37,11 +37,11 @@ def parse_list_arg(arg):
     except (json.JSONDecodeError, TypeError):
         return [str(arg)] # Fallback to treating it as a single-item list
 
-def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[""], job_type=[""], listed_at=86400, existing_urns=None):
+def fetch_jobs(keywords, location, limit=100, offset=0, experience=[""], remote=[""], job_type=[""], listed_at=86400, existing_urns=None):
     # existingUrns = set(json.loads(existing_urns)) if existing_urns else set()
     jobs_with_links = []
     retries = 0
-    while len(jobs_with_links) < 10:
+    while len(jobs_with_links) < 100:
         try:
             jobs = api.search_jobs(
                 keywords=keywords, # strings separated by OR
@@ -82,7 +82,6 @@ def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[
                     listed_at_timestamp = job_details.get("listedAt")
                     posted_date = datetime.fromtimestamp(listed_at_timestamp / 1000, timezone.utc).strftime('%Y-%m-%d')
 
-
                     # Append job details with link
                     jobs_with_links.append({
                         "urn": job_urn,
@@ -95,9 +94,9 @@ def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[
                         "skills": skills_list
                     })
                     existing_urns.append(job_urn)
-                    if len(jobs_with_links) >= 10:
+                    if len(jobs_with_links) >= 100:
                         break
-            offset += 10
+            offset += 100
             retries += 1 
             time.sleep(1)
 
@@ -112,7 +111,7 @@ def fetch_jobs(keywords, location, limit=10, offset=0, experience=[""], remote=[
 if __name__ == "__main__":
     keywords = sys.argv[1]
     location = sys.argv[2]
-    limit = int(sys.argv[3]) if len(sys.argv) > 3 else 10
+    limit = int(sys.argv[3]) if len(sys.argv) > 3 else 100
     offset = int(sys.argv[4]) if len(sys.argv) > 0 else 0
     experience = parse_list_arg(sys.argv[5])
     remote = parse_list_arg(sys.argv[6])
