@@ -17,7 +17,7 @@ import Navbar from "@/components/globals/navbar";
 import api from "@/lib/api";
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
-import { BACKEND_URL } from "@/app/config";
+import { BACKEND_URL } from "@/lib/config";
 
 export default function SignUp() {
   const router = useRouter();
