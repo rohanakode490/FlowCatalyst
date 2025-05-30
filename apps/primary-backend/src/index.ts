@@ -279,3 +279,5 @@ app.use("/api/v1/ai", aiRouter);
 app.listen(4000, () => {
   console.log(`Server is working on http://localhost:4000`);
 });
+
+export default app;
