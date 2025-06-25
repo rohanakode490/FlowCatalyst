@@ -65,8 +65,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-400 text-sm">
-            © {new Date().getFullYear()} FlowCatalyst. Built with ❤️ by Rohan
-            Akode
+            ©2025 FlowCatalyst. Built with ❤️ by Rohan Akode
           </p>
           <div className="flex gap-6">
             <a

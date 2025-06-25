@@ -187,7 +187,7 @@ app.post(
 );
 
 // Python scraper execution
-const runPythonScraper = (
+const runLinkedinScraper = (
   keywords: string[],
   location: string,
   limit: number,
@@ -199,7 +199,12 @@ const runPythonScraper = (
   existingUrns: string[],
 ): Promise<any[]> => {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, "scraper.py");
+    const scriptPath = path.join(
+      __dirname,
+      "..",
+      "linkedin-scraper",
+      "linkedin-scraper.py",
+    );
     // const pythonCommand =
     //   "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
     // "python3";
@@ -324,7 +329,7 @@ const executeScrapingFlow = async (triggerId: string) => {
         : `${trigger.metadata?.state}, ${trigger.metadata?.country}`;
 
     // Execute Python scraper
-    const jobs = await runPythonScraper(
+    const jobs = await runLinkedinScraper(
       trigger.metadata?.keywords,
       location,
       trigger.metadata?.limit || 10,
