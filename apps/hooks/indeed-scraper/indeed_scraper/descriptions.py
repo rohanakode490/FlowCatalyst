@@ -159,7 +159,8 @@ def scrape_job_description(
             
         driver.get(normalized_url)
         random_delay(2.0, 3.0)
-        driver.uc_gui_click_captcha()  # Attempt CAPTCHA handling
+        # driver.uc_gui_click_captcha()  # Attempt CAPTCHA handling
+        driver.uc_gui_handle_captcha(frame="iframe")
         
         # For URLs that redirect, extract job ID from the redirected URL
         if not job_id_match and "pagead" in job_url:

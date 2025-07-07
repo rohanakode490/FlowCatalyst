@@ -180,10 +180,10 @@ def main(
 def scrape_command(
     query: str = typer.Argument(..., help="Job title to search for or path to a JSON file with job configs"),
     location: str = typer.Option("", "--location", "-l", help="Location to search in"),
-    search_radius: int = typer.Option(
-        config.default_search_radius, "--radius", "-r", 
-        help="Search radius in miles"
-    ),
+    # search_radius: int = typer.Option(
+    #     config.default_search_radius, "--radius", "-r", 
+    #     help="Search radius in miles"
+    # ),
     max_pages: int = typer.Option(
         config.default_max_pages, "--pages", "-p", 
         help="Maximum number of pages to scrape"
@@ -285,7 +285,7 @@ def scrape_command(
         scrape_job = ScrapeJob(
             job_title=query,
             location=location,
-            search_radius=search_radius,
+            # search_radius=search_radius,
             max_pages=max_pages,
             days_ago=days_ago,
             work_setting=work_setting.lower() if work_setting else None,

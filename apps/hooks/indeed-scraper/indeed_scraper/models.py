@@ -178,7 +178,7 @@ class ScrapeJob(BaseModel):
     """Configuration for a scrape job."""
     job_title: str
     location: Optional[str] = None
-    search_radius: int = 25
+    # search_radius: int = 25
     max_pages: int = 3
     days_ago: int = 7
     work_setting: Optional[str] = None

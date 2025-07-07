@@ -71,13 +71,21 @@ def setup_browser(headless: bool = True, proxy: Optional[str] = None):
         SeleniumBase Driver instance
     """
     try:
+        if not headless and not os.getenv("DISPLAY"):
+            logger.warning("DISPLAY environment variable not set for non-headless mode. Setting to :99")
+            os.environ["DISPLAY"] = ":99"
+        
         driver = Driver(
             browser="chrome",
             headless2=headless,
-            incognito=True,
+            incognito=False,
             proxy=proxy,
             uc=True,
-            disable_js=False
+            undetectable=True,
+            # devtools=True,
+            agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+            # disable_js=False,
+            # driver_version="138.0.7204.49"
         )
         logger.info(f"Browser initialized (headless={headless}, proxy={proxy})")
         yield driver
@@ -157,7 +165,8 @@ def navigate_to_next_page(driver: Driver) -> bool:
 
         random_delay()
         # Attempt CAPTCHA handling
-        driver.uc_gui_click_captcha()
+        driver.uc_gui_handle_captcha(frame="iframe")
+        # driver.uc_gui_click_captcha()
         random_delay()
         return True
 
@@ -178,7 +187,9 @@ def handle_possible_captcha(driver: Driver, input_prompt: Callable = input) -> b
     """
     try:
         # Try automated CAPTCHA handling
-        driver.uc_gui_click_captcha()
+        random_delay(5.0, 7.0)
+        driver.uc_gui_handle_captcha(frame="iframe")
+        # driver.uc_gui_click_captcha()
         logger.info("Attempted automated CAPTCHA handling")
         time.sleep(2)  # Wait for page to stabilize
         return True

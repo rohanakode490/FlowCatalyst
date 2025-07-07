@@ -38,7 +38,7 @@ class ScraperConfig(BaseSettings):
     captcha_detection_threshold: int = Field(999, description="Consecutive failures before manual CAPTCHA prompt (high to rely on automated handling)")
     
     # Scraper settings
-    default_search_radius: int = Field(25, description="Default search radius in miles")
+    # default_search_radius: int = Field(25, description="Default search radius in miles")
     default_max_pages: int = Field(3, description="Default number of pages to scrape")
     default_days_ago: int = Field(7, description="Default days ago for job posting filter")
     min_delay_seconds: float = Field(5.0, description="Minimum delay between requests to avoid CAPTCHAs")
