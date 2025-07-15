@@ -295,7 +295,7 @@ const getScraperParams = (
       ? `${metadata.state}, ${metadata.country || "USA"}`
       : metadata.country || "USA";
 
-  if (scraperType === "indeed") {
+  if (scraperType === "INDEED_JOBS") {
     return {
       scraper: runIndeedScraper,
       params: [
@@ -328,7 +328,7 @@ const getScraperParams = (
 };
 
 // Core scraping and storage logic
-const executeScrapingFlow = async (triggerId: string) => {
+const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
   try {
     const trigger = await prismaClient.trigger.findUnique({
       where: { id: triggerId },
@@ -340,7 +340,7 @@ const executeScrapingFlow = async (triggerId: string) => {
       return [];
     }
 
-    const scraperType = trigger.metadata?.type? || "INDEED_JOBS"; // Default to indeed
+    // const scraperType = trigger.metadata?.type? || "INDEED_JOBS"; // Default to indeed
     const { scraper, params } = getScraperParams(trigger, scraperType);
 
     const jobs = await scraper(...params);
@@ -409,7 +409,7 @@ const executeScrapingFlow = async (triggerId: string) => {
 
 // POST route to handle job search requests
 app.post("/schedule", async (req, res) => {
-  const { triggerId, userId } = req.body;
+  const { triggerId, scraperType, userId } = req.body;
   try {
     if (!triggerId || !userId) {
       throw new Error("Missing triggerId or userId");
@@ -447,13 +447,17 @@ app.post("/schedule", async (req, res) => {
       }
     });
 
-    const job_list = await executeScrapingFlow(triggerId);
+    const job_list = await executeScrapingFlow(triggerId, scraperType);
     res.json({ success: true, jobs: job_list });
   } catch (error) {
     console.error("Scheduling error", { error, triggerId, userId });
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
+
+function isObjectWithType(value: any): value is { type: string } {
+  return value !== null && typeof value === "object" && "type" in value;
+}
 
 // Background worker to check for due jobs
 const startScheduler = async () => {
@@ -480,7 +484,11 @@ const startScheduler = async () => {
 
       for (const job of dueJobs) {
         try {
-          await executeScrapingFlow(job.triggerId);
+          const result = isObjectWithType(job.trigger.metadata)
+            ? job.trigger.metadata.type
+            : "";
+          await executeScrapingFlow(job.triggerId, result);
+
           await prismaClient.jobSchedule.update({
             where: { id: job.id },
             data: {

@@ -9,11 +9,11 @@ import axios from "axios";
 const router = Router();
 
 router.post("/", authMiddleware, async (req, res) => {
-  const body = req.body;
+  const { scraperType, zapData } = req.body;
   //@ts-ignore
   const id = req.id;
-  const parsedData = ZapCreateSchema.safeParse(body);
-  console.log("bdy", body);
+  const parsedData = ZapCreateSchema.safeParse(zapData);
+  console.log("bdy", scraperType, zapData);
 
   if (!parsedData.success) {
     return res.status(411).json({
@@ -62,9 +62,11 @@ router.post("/", authMiddleware, async (req, res) => {
         return { ZapId: zap.id, TriggerId: trigger.id };
       },
     );
+    //TODO: ADD SCRAPERTYPE BELOW
     if (parsedData.data.triggerMetadata.keywords !== undefined) {
       await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
         triggerId: ID.TriggerId,
+        scraperType: scraperType,
         userId: id,
       });
     }

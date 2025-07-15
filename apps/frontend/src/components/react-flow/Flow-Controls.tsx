@@ -54,11 +54,15 @@ export const FlowControls = ({
               Authorization: `Bearer ${token}`,
             },
           })
-        : await api.post("/zap", zapData, {
-            headers: {
-              Authorization: `Bearer ${token}`,
+        : await api.post(
+            "/zap",
+            { scraperType: triggerNode.data.metadata.type, zapData: zapData },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             },
-          });
+          );
       // Redirect to the dashboard after saving
       if (response.data.zapId || response.data.success) {
         router.push("/workflows");
