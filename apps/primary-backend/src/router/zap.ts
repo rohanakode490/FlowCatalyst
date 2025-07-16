@@ -62,7 +62,6 @@ router.post("/", authMiddleware, async (req, res) => {
         return { ZapId: zap.id, TriggerId: trigger.id };
       },
     );
-    //TODO: ADD SCRAPERTYPE BELOW
     if (parsedData.data.triggerMetadata.keywords !== undefined) {
       await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
         triggerId: ID.TriggerId,

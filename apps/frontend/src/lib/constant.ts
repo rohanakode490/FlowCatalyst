@@ -109,7 +109,6 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
         { value: "T", label: "Temporary" },
         { value: "I", label: "Internship" },
         { value: "V", label: "Volunteer" },
-        { value: "O", label: "Other" },
       ],
       required: false,
     },
@@ -121,7 +120,58 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
         { value: "86400", label: "Last 24 Hours" },
         { value: "604800", label: "Last 7 Days" },
         { value: "2592000", label: "Last 30 Days" },
-        { value: "0", label: "All Time" },
+      ],
+      required: false,
+    },
+  ],
+  indeedtrigger: [
+    {
+      type: "tag-input",
+      label: "Keywords",
+      name: "keywords",
+      placeholder: "Add keywords...",
+      required: true,
+    },
+    {
+      type: "country-state",
+      label: "Location",
+      name: "location",
+      placeholder: "Enter location (e.g., India)",
+      required: true,
+    },
+    {
+      type: "multi-select",
+      label: "Remote/Onsite/Hybrid",
+      name: "remote",
+      options: [
+        { value: "Onsite", label: "Onsite" },
+        { value: "Remote", label: "Remote" },
+        { value: "Hybrid", label: "Hybrid" },
+      ],
+      required: false,
+    },
+    {
+      type: "multi-select",
+      label: "Job Type",
+      name: "job_type",
+      options: [
+        { value: "fulltime", label: "Full-time" },
+        { value: "contract", label: "Contract" },
+        { value: "parttime", label: "Part-time" },
+        { value: "temporary", label: "Temporary" },
+        { value: "internship", label: "Internship" },
+        { value: "volunteer", label: "Volunteer" },
+      ],
+      required: false,
+    },
+    {
+      type: "select",
+      label: "Posted Within",
+      name: "listed_at",
+      options: [
+        { value: "24", label: "Last 24 Hours" },
+        { value: "168", label: "Last 7 Days" },
+        { value: "720", label: "Last 30 Days" },
       ],
       required: false,
     },
@@ -213,3 +263,5 @@ export const LINKEDIN_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
     "emailBodyTemplate",
   ],
 };
+
+export const INDEED_TRIGGER_FIELDS_MAP: Record<string, string[]> = {};

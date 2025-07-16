@@ -484,10 +484,11 @@ const startScheduler = async () => {
 
       for (const job of dueJobs) {
         try {
-          const result = isObjectWithType(job.trigger.metadata)
+          const scraperType = isObjectWithType(job.trigger.metadata)
             ? job.trigger.metadata.type
             : "";
-          await executeScrapingFlow(job.triggerId, result);
+          console.log("scraperType", scraperType);
+          await executeScrapingFlow(job.triggerId, scraperType);
 
           await prismaClient.jobSchedule.update({
             where: { id: job.id },
