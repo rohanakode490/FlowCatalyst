@@ -13,6 +13,17 @@ const linkedinJobSchema = z.object({
   listed_at: z.string().optional(),
 });
 
+const indeedTriggerSchema = z.object({
+  keywords: z
+    .array(z.string().min(1, "Keyword cannot be empty"))
+    .min(1, "Please add at least one keyword"),
+  country: z.string().min(1, "Please select a country"),
+  state: z.string().optional(),
+  remote: z.array(z.string()).optional(),
+  job_type: z.array(z.string()).optional(),
+  listed_at: z.string().optional(),
+});
+
 // Actions
 const slackActionSchema = z.object({
   channelName: z.string().min(1, "Channel name is required"),
@@ -39,6 +50,7 @@ const solanaActionSchema = z.object({
 // Map schemas to trigger/action names
 export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {
   linkedinjobfetchingtrigger: linkedinJobSchema,
+  indeedtrigger: indeedTriggerSchema,
 };
 
 export const ACTION_SCHEMAS: Record<string, z.ZodSchema<any>> = {

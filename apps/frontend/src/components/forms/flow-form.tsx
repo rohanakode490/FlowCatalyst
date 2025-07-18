@@ -16,6 +16,7 @@ import { useParams } from "next/navigation";
 import {
   GITHUB_TRIGGER_FIELDS_MAP,
   LINKEDIN_TRIGGER_FIELDS_MAP,
+  INDEED_TRIGGER_FIELDS_MAP,
 } from "@/lib/constant";
 import { TagInput } from "@/components/globals/Tag-Input";
 import { MultiSelect } from "../globals/Multi-Select";
@@ -333,11 +334,13 @@ function DynamicForm({
         ];
     } else if (triggerType === "linkedin") {
       fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
+    } else if (triggerType === "indeed") {
+      fields = INDEED_TRIGGER_FIELDS_MAP["indeed"];
     }
     if (fields !== undefined) {
       setDynamicFields(fields.map((field) => `${field}`));
     }
-  }, [triggerData, triggerName]);
+  }, [triggerData, triggerName, triggerType]);
 
   // Fetch countries on mount
   useEffect(() => {

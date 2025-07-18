@@ -11,6 +11,7 @@ export interface Zap {
   trigggerId: string;
   userId: number;
   createdAt: Date;
+  isActive: boolean;
   actions: {
     id: string;
     zapId: string;
@@ -55,4 +56,11 @@ export interface FormField {
   validation?: {
     isNumberOrPlaceholder?: boolean;
   };
+}
+
+export interface Webhook {
+  id: string;
+  name: string;
+  image?: string;
+  metadata?: Record<string, any>;
 }

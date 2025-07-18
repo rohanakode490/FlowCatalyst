@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import toast from "react-hot-toast";
 
 interface FlowControlsProps {
   onAlignNodes: () => void;
@@ -30,7 +31,7 @@ export const FlowControls = ({
 
       // Validate that a trigger and at least one action are present
       if (!triggerNode || actionNodes.length === 0) {
-        alert("A flow must have at least one trigger and one action.");
+        toast.error("A flow must have at least one trigger and one action.");
         return;
       }
 
