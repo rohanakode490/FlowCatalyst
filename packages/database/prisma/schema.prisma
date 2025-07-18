@@ -34,6 +34,7 @@ model Zap {
   id        String   @id @default(uuid())
   userId    Int
   triggerId String
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Date
   trigger   Trigger? //one trigger per zap
   actions   Action[] //many actions per zap

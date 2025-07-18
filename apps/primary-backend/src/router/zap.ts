@@ -28,6 +28,7 @@ router.post("/", authMiddleware, async (req, res) => {
         const zap = await prismaClient.zap.create({
           data: {
             userId: id,
+            isActive: true,
             triggerId: "", // Temporary triggerId
             actions: {
               create: parsedData.data.actions.map((r, index) => ({
@@ -253,6 +254,37 @@ router.delete("/:zapId", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Failed to delete Zap:", error);
     res.status(500).json({ message: "Failed to delete Zap" });
+  }
+});
+
+router.patch("/:zapId", authMiddleware, async (req, res) => {
+  const { zapId } = req.params;
+  const { isActive } = req.body;
+
+  //@ts-ignore
+  const userId = req.id;
+
+  if (typeof isActive !== "boolean") {
+    return res.status(400).json({ message: "isActive must be a boolean" });
+  }
+
+  try {
+    const zap = await prismaClient.zap.findFirst({
+      where: { id: zapId, userId },
+    });
+
+    if (!zap) {
+      return res.status(404).json({ message: "Zap not found" });
+    }
+
+    await prismaClient.zap.update({
+      where: { id: zapId },
+      data: { isActive },
+    });
+    res.json({ success: true, message: `Zap Updated to ${isActive}` });
+  } catch (error) {
+    console.error("Failed to update Zap:", error);
+    res.status(500).json({ message: "Failed to update Zap" });
   }
 });
 
