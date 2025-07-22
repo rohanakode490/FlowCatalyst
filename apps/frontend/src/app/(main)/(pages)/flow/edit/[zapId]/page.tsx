@@ -6,16 +6,18 @@ import Heading from "@/components/globals/heading";
 import { ReactFlowProvider } from "@xyflow/react";
 import api from "@/lib/api";
 import Flow from "@/components/react-flow/Flow";
+import useStore from "@/lib/store";
 
 export default function EditZapPage() {
   const params = useParams();
   const zapId = params.zapId as string;
   const router = useRouter();
-  const [initialNodes, setInitialNodes] = useState<any[]>([]);
-  const [initialEdges, setInitialEdges] = useState<any[]>([]);
+  const {
+    flow: { setNodes, setEdges, setTriggerName, setOriginalTriggerMetadata },
+    ui: { addToast },
+  } = useStore();
+
   const [loading, setLoading] = useState(true);
-  const [triggerData, setTriggerData] = useState<Record<string, any>>({});
-  const [originalEventType, setOriginalEventType] = useState<any[]>([]);
 
   // Fetch the saved Zap structure
   useEffect(() => {
@@ -67,21 +69,67 @@ export default function EditZapPage() {
           source: `${index + 1}`,
           target: `${index + 2}`,
         }));
-        setInitialNodes(nodes);
-        setInitialEdges(edges);
 
-        setTriggerData(trigger.metadata);
-        setOriginalEventType(nodes);
+        setNodes(nodes);
+        setEdges(edges);
+        setTriggerName(trigger.metadata || {});
+        setOriginalTriggerMetadata(trigger.metadata || {});
       } catch (error) {
         console.error("Failed to fetch Zap:", error);
+        addToast("Failed to load Zap.", "error");
         router.push("/workflows"); // Redirect to the dashboard if the fetch fails
       } finally {
         setLoading(false);
       }
     };
-
-    fetchZap();
-  }, [zapId, router]);
+    if (zapId) {
+      fetchZap();
+    } else {
+      // Initialize default nodes and edges if the zapId does not exists.
+      const defaultNodes = [
+        {
+          id: "1",
+          type: "customNode",
+          position: { x: 0, y: 0 },
+          data: {
+            name: "Trigger",
+            image: "/logo.png",
+            configured: false,
+            action: false,
+          },
+        },
+        {
+          id: "2",
+          type: "customNode",
+          position: { x: 0, y: 200 },
+          data: {
+            name: "Action",
+            image: "/logo.png",
+            configured: false,
+            action: true,
+          },
+        },
+      ];
+      const defaultEdges = [
+        {
+          id: "e1-2",
+          type: "buttonEdge",
+          source: "1",
+          target: "2",
+          data: { onAddNode: () => {} }, // Will be set in Flow.tsx
+        },
+      ];
+      setNodes(defaultNodes);
+      setEdges(defaultEdges);
+    }
+  }, [
+    zapId,
+    router,
+    setNodes,
+    setEdges,
+    setTriggerName,
+    setOriginalTriggerMetadata,
+  ]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -90,16 +138,7 @@ export default function EditZapPage() {
   return (
     <Heading heading="Edit Zap">
       <ReactFlowProvider>
-        {!loading && (
-          <Flow
-            initialNodes={initialNodes}
-            initialEdges={initialEdges}
-            triggerData={triggerData}
-            setTriggerData={setTriggerData}
-            zapId={zapId}
-            originalEventType={originalEventType}
-          />
-        )}
+        {!loading && <Flow zapId={zapId} />}
       </ReactFlowProvider>
     </Heading>
   );

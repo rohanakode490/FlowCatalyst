@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import WebhookSelector from "@/components/react-flow/Webhook-Selecter";
 import api from "@/lib/api";
+import useStore from "../../lib/store";
 
 interface NodeConfigDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectWebhook: (webhook: any) => void;
-  isAction: boolean;
-  setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
+  isAction: boolean | undefined;
   handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
@@ -24,14 +24,17 @@ export const NodeConfigDialog = ({
   onClose,
   onSelectWebhook,
   isAction,
-  setTriggerName,
   handleTriggerTypeChange,
 }: NodeConfigDialogProps) => {
   const [hasLinkedInTrigger, setHasLinkedInTrigger] = useState(false);
 
+  const {
+    flow: { setTriggerName },
+  } = useStore();
+
   // Check for existing LinkedIn trigger
   useEffect(() => {
-    if (!isOpen || isAction) return;
+    if (!isOpen || isAction === true) return;
 
     const checkLinkedInTrigger = async () => {
       try {
@@ -61,14 +64,14 @@ export const NodeConfigDialog = ({
             onSelectWebhook(webhook);
             if (
               handleTriggerTypeChange &&
-              !isAction &&
+              isAction === false &&
               webhook.metadata.githubEventType !== undefined
             ) {
               setTriggerName(webhook.metadata);
               handleTriggerTypeChange(webhook.metadata.githubEventType);
             }
           }}
-          type={isAction ? "action" : "trigger"}
+          type={isAction === true ? "action" : "trigger"}
           handleTriggerTypeChange={handleTriggerTypeChange}
           hasLinkedInTrigger={hasLinkedInTrigger}
         />

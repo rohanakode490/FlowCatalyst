@@ -1,18 +1,22 @@
 import { Node, Edge, useNodesState, useEdgesState } from "@xyflow/react";
 // Define types for the helper functions
-type NodeType = Node<{
+export type NodeType = Node<{
+  id?: string;
   name: string;
   image: string;
   configured: boolean;
   action: boolean;
-  metadata?: Record<string, any>;
+  metadata: Record<string, any>;
 }>;
 
-type EdgeType = Edge;
+export type EdgeType = Edge;
 
-type SetNodesType = ReturnType<typeof useNodesState>[1];
-type SetEdgesType = ReturnType<typeof useEdgesState>[1];
-type FitViewType = (options?: { padding?: number; duration?: number }) => void;
+export type SetNodesType = ReturnType<typeof useNodesState>[1];
+export type SetEdgesType = ReturnType<typeof useEdgesState>[1];
+export type FitViewType = (options?: {
+  padding?: number;
+  duration?: number;
+}) => void;
 
 /**
  * Align nodes vertically with equal spacing.
@@ -73,6 +77,7 @@ export const addNodeBelow = (
       image: "/logo.png",
       configured: false,
       action: true,
+      metadata: {},
     },
   };
 

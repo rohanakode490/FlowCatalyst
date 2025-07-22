@@ -1,7 +1,14 @@
-import { Edge, Node } from "@xyflow/react";
+import {
+  Edge,
+  Node,
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Connection,
+} from "@xyflow/react";
 import { FormField, Webhook, Zap } from "@/lib/types";
 import { z } from "zod";
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import { immer } from "zustand/middleware/immer";
 import api from "./api";
 import axios from "axios";
@@ -9,8 +16,15 @@ import {
   GITHUB_TRIGGER_FIELDS_MAP,
   LINKEDIN_TRIGGER_FIELDS_MAP,
 } from "./constant";
+import {
+  EdgeType,
+  NodeType,
+  SetEdgesType,
+  SetNodesType,
+} from "@/components/react-flow/Flow-Helpers";
+import { metadata } from "@/app/layout";
 
-interface Country {
+export interface Country {
   country: string;
   iso2: string;
   iso3: string;
@@ -28,16 +42,21 @@ interface ToastMessage {
 }
 
 interface FlowState {
-  nodes: Node[];
-  edges: Edge[];
-  selectedNodeId: string | null;
-  triggerName: Record<string, any>;
-  setNodes: (nodes: Node[]) => void;
-  setEdges: (edges: Edge[]) => void;
+  nodes: NodeType[];
+  edges: EdgeType[];
+  selectedNodeId: string;
+  triggerName: any; //Record<string, any>;
+  originalTriggerMetadata: Record<string, any>;
+  onNodesChange: (changes: any) => void;
+  onEdgesChange: (changes: any) => void;
+  onConnect: (connection: Connection) => void;
+  setNodes: SetNodesType;
+  setEdges: SetEdgesType;
   setSelectedNodeId: (id: string | null) => void;
   setTriggerName: (triggerName: Record<string, any>) => void;
+  setOriginalTriggerMetadata: (metadata: Record<string, any>) => void;
   addNode: (node: Node) => void;
-  addEdge: (edge: Edge) => void;
+  addFlowEdge: (edge: Edge) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   saveZap: (zapId?: string, scraperType?: string) => Promise<string | void>;
 }
@@ -62,6 +81,7 @@ interface UserState {
   isAuthenticated: boolean;
   userLoading: boolean;
   fetchUser: () => Promise<void>;
+  setUserId: (userId: string) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
 }
 
@@ -83,6 +103,12 @@ interface FormState {
   setErrors: (errors: Record<string, string>) => void;
   setActiveInput: (input: string | null) => void;
   setDynamicFields: (fields: string[]) => void;
+  setCountries: (countries: Country[]) => void;
+  setStates: (states: State[]) => void;
+  setLoadingCountries: (loading: boolean) => void;
+  setLoadingStates: (loading: boolean) => void;
+  setCountryError: (error: string) => void;
+  setStateError: (error: string) => void;
   setFormStatus: (status: "idle" | "submitting" | "success" | "error") => void;
   cacheFormData: (nodeId: string, data: Record<string, any>) => void;
   fetchCountries: () => Promise<void>;
@@ -91,7 +117,7 @@ interface FormState {
     fields: FormField[],
     schema: z.ZodSchema<any>,
     triggerType: "github" | "linkedin" | undefined,
-    onSubmit: (data: Record<string, any>) => Promise<void>,
+    onSubmit: (data: Record<string, any>) => void,
     onClose: () => void,
   ) => Promise<void>;
 }
@@ -128,18 +154,131 @@ interface AppState {
   ui: UIState;
 }
 
-const useStore = create<AppState>()(
+const initialNodes = [
+  {
+    id: "1",
+    type: "customNode",
+    position: { x: 0, y: 0 },
+    data: {
+      name: "Trigger",
+      image:
+        "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
+      configured: false,
+      action: false,
+      metadata: {},
+      onOpenDialog: () => console.log("Open dialog"),
+      canDelete: true,
+      onDelete: (id: string) => console.log(`Delete node ${id}`),
+      onWebhookSelect: () => console.log("Webhook select"),
+      onFormSubmit: () => console.log("Form submit"),
+    },
+  },
+  {
+    id: "2",
+    type: "customNode",
+    position: { x: 0, y: 300 },
+    data: {
+      name: "Action",
+      image:
+        "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
+      configured: false,
+      action: true,
+      metadata: {},
+      onOpenDialog: () => console.log("Open dialog"),
+      canDelete: true,
+      onDelete: (id: string) => console.log(`Delete node ${id}`),
+      onWebhookSelect: () => console.log("Webhook select"),
+      onFormSubmit: () => console.log("Form submit"),
+    },
+  },
+];
+
+const initialEdges = [
+  {
+    id: "e2-2",
+    type: "buttonEdge",
+    source: "1",
+    target: "2",
+    data: { onAddNode: () => console.log("AddNode") },
+  },
+];
+
+const validateNumberOrPlaceholder = (
+  value: string | undefined | null,
+): boolean => {
+  if (value === undefined || value === null) {
+    return false;
+  }
+  // Check if the value is a valid number
+  if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+    return true;
+  }
+  // Check if the value is exactly the placeholder {{trigger.Amount}}
+  return value.trim() === "{{trigger.Amount}}";
+};
+
+const useStore = createWithEqualityFn<AppState>()(
   immer((set, get) => ({
     flow: {
-      nodes: [],
-      edges: [],
-      selectedNodeId: null,
+      nodes: initialNodes,
+      edges: initialEdges,
+      selectedNodeId: "",
       triggerName: [],
-      setNodes: (nodes: Node[]) =>
+      originalTriggerMetadata: {},
+      onNodesChange: (changes) => {
+        set((state) => {
+          state.flow.nodes = applyNodeChanges(changes, get().flow.nodes);
+        });
+      },
+      onEdgesChange: (changes) => {
+        set((state) => {
+          state.flow.edges = applyEdgeChanges(changes, get().flow.edges);
+        });
+      },
+      onConnect: (connection) => {
+        const edges = get().flow.edges;
+        // Check if the source node already has an outgoing edge
+        const hasOutgoingEdge = edges.some(
+          (edge) => edge.source === connection.source,
+        );
+        // Check if the target node already has an incoming edge
+        const hasIncomingEdge = edges.some(
+          (edge) => edge.target === connection.target,
+        );
+
+        if (hasOutgoingEdge) {
+          set((state) => {
+            state.ui.addToast(
+              "Source node already has an outgoing edge!",
+              "error",
+            );
+          });
+          return;
+        }
+
+        if (hasIncomingEdge) {
+          set((state) => {
+            state.ui.addToast(
+              "Target node already has an incoming edge!",
+              "error",
+            );
+          });
+          return;
+        }
+
+        // If checks pass, add the new edge
+        set((state) => {
+          state.flow.edges = addEdge(
+            { ...connection, type: "buttonEdge" },
+            get().flow.edges,
+          );
+        });
+      },
+      setNodes: (nodes) =>
         set((state) => {
           state.flow.nodes = nodes;
         }),
-      setEdges: (edges: Edge[]) =>
+      setEdges: (edges) =>
         set((state) => {
           state.flow.edges = edges;
         }),
@@ -151,11 +290,15 @@ const useStore = create<AppState>()(
         set((state) => {
           state.flow.triggerName = triggerName;
         }),
-      addNode: (node: any) =>
+      setOriginalTriggerMetadata: (metadata) =>
+        set((state) => {
+          state.flow.originalTriggerMetadata = metadata;
+        }),
+      addNode: (node) =>
         set((state) => {
           state.flow.nodes.push(node);
         }),
-      addEdge: (edge: any) =>
+      addFlowEdge: (edge) =>
         set((state) => {
           state.flow.edges.push(edge);
         }),
@@ -332,6 +475,11 @@ const useStore = create<AppState>()(
           });
         }
       },
+      setUserId: (userId) => {
+        set((state) => {
+          state.user.userId = userId;
+        });
+      },
       setAuthenticated: (isAuthenticated) =>
         set((state) => {
           state.user.isAuthenticated = isAuthenticated;
@@ -366,6 +514,30 @@ const useStore = create<AppState>()(
       setDynamicFields: (fields) =>
         set((state) => {
           state.form.dynamicFields = fields;
+        }),
+      setCountries: (countries) =>
+        set((state) => {
+          state.form.countries = countries;
+        }),
+      setStates: (states) =>
+        set((state) => {
+          state.form.states = states;
+        }),
+      setLoadingCountries: (loading) =>
+        set((state) => {
+          state.form.loadingCountries = loading;
+        }),
+      setLoadingStates: (loading) =>
+        set((state) => {
+          state.form.loadingStates = loading;
+        }),
+      setCountryError: (error) =>
+        set((state) => {
+          state.form.countryError = error;
+        }),
+      setStateError: (error) =>
+        set((state) => {
+          state.form.stateError = error;
         }),
       setFormStatus: (status) =>
         set((state) => {
@@ -444,9 +616,14 @@ const useStore = create<AppState>()(
         const updatedFormData = { ...formData };
 
         let allowedFields: string[] = [];
+        // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
-          if (!updatedFormData.githubEventType) {
-            updatedFormData.githubEventType = "issue_comment";
+          // Ensure githubEventType has a default value if it's empty
+          if (
+            updatedFormData.githubEventType === undefined ||
+            updatedFormData.githubEventType === ""
+          ) {
+            updatedFormData.githubEventType = "issue_comment"; // Default value
           }
           allowedFields =
             GITHUB_TRIGGER_FIELDS_MAP[
@@ -474,6 +651,7 @@ const useStore = create<AppState>()(
           }
         }
 
+        // Check if proper dynamic fields are assigned
         for (const field of fields) {
           if (
             field.name === "githubEventType" ||
@@ -481,6 +659,7 @@ const useStore = create<AppState>()(
           )
             continue;
           const value = updatedFormData[field.name];
+          // Validate placeholders for fields that support them
           if (typeof value === "string") {
             const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
             const isValid = placeholders.every((p) =>
@@ -496,6 +675,7 @@ const useStore = create<AppState>()(
               return;
             }
           }
+          // Validate number/placeholder fields
           if (field.validation?.isNumberOrPlaceholder) {
             const isValid =
               value &&
@@ -513,6 +693,7 @@ const useStore = create<AppState>()(
           }
         }
 
+        // Validate the amount field
         if (
           fields.some((f) => f.name === "Amount") &&
           !updatedFormData.Amount
@@ -525,9 +706,43 @@ const useStore = create<AppState>()(
           return;
         }
 
+        // Replace placeholders with actual values
+        const processedData = { ...updatedFormData };
+        for (const key in processedData) {
+          const value = processedData[key];
+
+          // If the field is a number/placeholder field
+          if (
+            fields.find((f) => f.name === key)?.validation
+              ?.isNumberOrPlaceholder
+          ) {
+            if (
+              typeof value === "string" &&
+              validateNumberOrPlaceholder(value)
+            ) {
+              // If the value contains a placeholder, save it as is
+              processedData[key] = value;
+            } else if (!isNaN(parseFloat(value))) {
+              processedData[key] = value;
+            } else {
+              // If the value is invalid, set it to 0
+              processedData[key] = "0";
+            }
+          }
+        }
+
+        // Skip validation if schema is for github-webhook which is only a link
+        if (!schema) {
+          onSubmit(processedData);
+          onClose();
+          set((state) => {
+            state.ui.addToast("Saved successfully!", "success");
+          });
+          return;
+        }
         try {
-          const validatedData = schema.parse(updatedFormData);
-          await onSubmit(validatedData);
+          const validatedData = schema.parse(processedData);
+          onSubmit(validatedData);
           set((state) => {
             state.form.formStatus = "success";
             state.ui.addToast("Saved successfully!", "success");

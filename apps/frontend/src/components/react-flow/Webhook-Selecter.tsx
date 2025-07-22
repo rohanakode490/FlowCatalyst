@@ -1,49 +1,45 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
-import useWebhook from "@/hooks/Webhook";
+import useStore from "@/lib/store";
+
+// Define restricted triggers
+const RESTRICTED_TRIGGERS = ["LinkedIn", "Indeed"];
 
 interface WebhookSelectorProps {
   onSelect: (webhook: any) => void;
   type: "action" | "trigger";
   handleTriggerTypeChange?: (triggerId: string) => void;
-  hasLinkedInTrigger?: boolean;
 }
 
 function WebhookSelector({
   onSelect,
   type,
   handleTriggerTypeChange,
-  hasLinkedInTrigger,
 }: WebhookSelectorProps) {
-  const { webhooks, setWebhooks } = useWebhook();
+  const {
+    webhook: { webhooks, fetchWebhooks },
+    ui: { addToast },
+  } = useStore();
 
   // Fetch available actions or triggers based on the type
   useEffect(() => {
-    const endpoint =
-      type === "action" ? "/action/available" : "/trigger/available";
-    api
-      .get(endpoint)
-      .then((response) => {
-        setWebhooks(
-          type === "action"
-            ? response.data.availableActions
-            : response.data.availableTriggers,
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to fetch webhooks:", error);
-      });
-  }, [type]);
+    fetchWebhooks(type);
+  }, [type, fetchWebhooks]);
+
+  // Check if a trigger is restricted
+  const isTriggerRestricted = (webhookName: string) => {
+    if (type !== "trigger" || !RESTRICTED_TRIGGERS.includes(webhookName)) {
+      return false;
+    }
+    // For other restricted triggers, assume only one is allowed (extend logic as needed)
+    return false;
+  };
 
   // Handle trigger selection
   const handleTriggerSelect = (webhook: any) => {
-    if (
-      type === "trigger" &&
-      webhook.name === "LinkedIn" &&
-      hasLinkedInTrigger
-    ) {
-      alert("You can only have one LinkedIn trigger!");
+    if (isTriggerRestricted(webhook.name)) {
+      addToast(`You can only have one ${webhook.name} trigger!`, "error");
       return;
     }
     onSelect(webhook);
@@ -59,17 +55,11 @@ function WebhookSelector({
             key={webhook.id}
             onClick={() => handleTriggerSelect(webhook)}
             className={`flex flex-row items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              type === "trigger" &&
-              webhook.name === "LinkedIn" &&
-              hasLinkedInTrigger
+              isTriggerRestricted(webhook.name)
                 ? "opacity-50 cursor-not-allowed" // Visual indication
                 : ""
             }`}
-            disabled={
-              type === "trigger" &&
-              webhook.name === "LinkedIn" &&
-              hasLinkedInTrigger // Actual disable
-            }
+            disabled={isTriggerRestricted(webhook.name)}
           >
             <img src={webhook.image} alt={webhook.name} className="w-9 h-9" />
             <span className="text-sm">{webhook.name}</span>

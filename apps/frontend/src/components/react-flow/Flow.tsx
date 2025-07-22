@@ -1,19 +1,7 @@
 "use client";
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  useReactFlow,
-} from "@xyflow/react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useReactFlow } from "@xyflow/react";
 import useWebhook from "@/hooks/Webhook";
 import { FlowControls } from "./Flow-Controls";
 import { NodeConfigDialog } from "./Node-Config-Dialog";
@@ -25,81 +13,42 @@ import "@xyflow/react/dist/style.css";
 import { ChatInterface } from "../chat-interface/AI-ChatInterface";
 import { X } from "lucide-react";
 import userWebhook from "@/hooks/User";
+import useStore from "@/lib/store";
+import { useShallow } from "zustand/shallow";
 
 const VERTICAL_SPACING = 200;
 
-const initialNodes = [
-  {
-    id: "1",
-    type: "customNode",
-    position: { x: 0, y: 0 },
-    data: {
-      name: "Trigger",
-      image:
-        "https://res.cloudinary.com/dmextegpu/image/upload/v1738394735/webhook_cpzcgw.png",
-      configured: false,
-      action: false,
-      onOpenDialog: () => console.log("Open dialog"),
-      canDelete: true,
-      onDelete: (id: string) => console.log(`Delete node ${id}`),
-    },
-  },
-  {
-    id: "2",
-    type: "customNode",
-    position: { x: 0, y: 300 },
-    data: {
-      name: "Action",
-      image:
-        "https://res.cloudinary.com/dmextegpu/image/upload/v1738418144/icons8-process-500_mi2vrh.png",
-      configured: false,
-      action: true,
-      onOpenDialog: () => console.log("Open dialog"),
-      canDelete: true,
-      onDelete: (id: string) => console.log(`Delete node ${id}`),
-    },
-  },
-];
-
-const initialEdges = [
-  {
-    id: "e2-2",
-    type: "buttonEdge",
-    source: "1",
-    target: "2",
-    data: { onAddNode: () => console.log("AddNode") },
-  },
-];
-
 interface FlowProps {
-  initialNodes?: any[];
-  initialEdges?: any[];
-  triggerData?: Record<string, any> | undefined;
-  setTriggerData?: Dispatch<SetStateAction<Record<string, any>>>;
   zapId?: string;
-  originalEventType?: any[];
 }
 
-export default function Flow({
-  initialNodes: propNodes,
-  initialEdges: propEdges,
-  triggerData,
-  setTriggerData,
-  zapId,
-  originalEventType,
-}: FlowProps) {
+export default function Flow({ zapId }: FlowProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const { fitView } = useReactFlow();
+  const {
+    flow: {
+      nodes,
+      edges,
+      selectedNodeId,
+      onNodesChange,
+      onEdgesChange,
+      onConnect,
+      setNodes,
+      setEdges,
+      setTriggerName,
+      originalTriggerMetadata,
+      updateNodeData,
+      setSelectedNodeId,
+    },
+    ui: { addToast },
+  } = useStore(
+    useShallow((state) => ({
+      flow: state.flow,
+      ui: state.ui,
+    })),
+  );
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(
-    propNodes || initialNodes,
-  );
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    propEdges || initialEdges,
-  );
-  const [selectedNodeId, setSelectedNodeId] = useState(""); // Track selected node
-  const [triggerName, setTriggerName] = useState<Record<string, any>>({});
   const [showChat, setShowChat] = useState(false);
 
   const { isDialogOpen, handleWebhookSelect, openDialog, closeDialog } =
@@ -113,34 +62,6 @@ export default function Flow({
     setMounted(true);
   }, []);
 
-  const onConnect = useCallback(
-    (connection: any) => {
-      // Check if the source node already has an outgoing edge
-      const hasOutgoingEdge = edges.some(
-        (edge) => edge.source === connection.source,
-      );
-      // Check if the target node already has an incoming edge
-      const hasIncomingEdge = edges.some(
-        (edge) => edge.target === connection.target,
-      );
-
-      if (hasOutgoingEdge) {
-        alert("Source node already has an outgoing edge!");
-        return;
-      }
-
-      if (hasIncomingEdge) {
-        alert("Target node already has an incoming edge!");
-        return;
-      }
-
-      // If checks pass, add the new edge
-      const edge = { ...connection, type: "buttonEdge" };
-      setEdges((eds) => addEdge(edge, eds));
-    },
-    [edges, setEdges],
-  );
-
   // Handle node click
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: any) => {
@@ -149,54 +70,37 @@ export default function Flow({
         openDialog(); // Open the dialog for unconfigured nodes
       }
     },
-    [openDialog],
+    [openDialog, setSelectedNodeId],
   );
 
   // Handle webhook selection
   const handleWebhookSelectForNode = useCallback(
-    (nodeId: any, webhook: any) => {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id === nodeId) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                id: webhook.id,
-                name: webhook.name,
-                image: webhook.image,
-                configured: true,
-                metadata: webhook.metadata || {},
-              },
-            };
-          }
-          return node;
-        }),
-      );
-      handleWebhookSelect(webhook); // Update selected webhook
+    (nodeId: string, webhook: any) => {
+      updateNodeData(nodeId, {
+        id: webhook.id,
+        name: webhook.name,
+        image: webhook.image,
+        configured: true,
+        metadata: webhook.metadata || {},
+      });
+      if (!webhook.action) {
+        setTriggerName(webhook.metadata || {});
+      }
+      handleWebhookSelect(webhook);
     },
-    [setNodes, handleWebhookSelect],
+    [updateNodeData, setTriggerName, handleWebhookSelect],
   );
 
   // Handle form submission
   const handleFormSubmit = useCallback(
     (nodeId: string, formData: Record<string, any>) => {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id === nodeId) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                metadata: formData,
-              },
-            };
-          }
-          return node;
-        }),
-      );
+      updateNodeData(nodeId, { metadata: formData });
+      if (!nodes.find((node) => node.id === nodeId)?.data.action) {
+        setTriggerName(formData);
+      }
+      addToast("Configuration saved!", "success");
     },
-    [setNodes],
+    [updateNodeData, setTriggerName, addToast, nodes],
   );
 
   // Handle changing the webhook
@@ -211,15 +115,17 @@ export default function Flow({
 
   // Get the selected node's data
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+
   useEffect(() => {
     if (
       selectedNode !== undefined &&
       selectedNode.data.action === false &&
-      selectedNode.data.configured === true
+      selectedNode.data.configured === true &&
+      selectedNode.data.metadata !== undefined
     ) {
       setTriggerName(selectedNode.data.metadata);
     }
-  }, [selectedNode, triggerName]);
+  }, [selectedNode, setTriggerName]);
 
   useEffect(() => {
     const savedChatVisibility = localStorage.getItem("showChat");
@@ -286,19 +192,49 @@ export default function Flow({
   }, [edges, nodes, setNodes, setEdges]);
 
   // Handle trigger type changes
-  const handleTriggerTypeChange = (triggerTypeId: string) => {
-    if (originalEventType !== undefined) {
+  // const handleTriggerTypeChange = (triggerTypeId: string) => {
+  //   if (originalEventType !== undefined) {
+  //     if (
+  //       triggerTypeId !== originalEventType[0].data.metadata?.githubEventType
+  //     ) {
+  //       return;
+  //     }
+  //     if (setTriggerData !== undefined) {
+  //       setTriggerData(originalEventType[0].data.metadata.githubEventType);
+  //       setNodes(originalEventType);
+  //     }
+  //   }
+  // };
+
+  const handleTriggerTypeChange = useCallback(
+    (triggerTypeId: string) => {
       if (
-        triggerTypeId !== originalEventType[0].data.metadata?.githubEventType
+        originalTriggerMetadata?.githubEventType &&
+        triggerTypeId !== originalTriggerMetadata.githubEventType
       ) {
-        return;
+        setTriggerName({
+          githubEventType: originalTriggerMetadata.githubEventType,
+        });
+        setNodes((nds) =>
+          nds.map((node) =>
+            node.id === "1"
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    metadata: {
+                      githubEventType: originalTriggerMetadata.githubEventType,
+                    },
+                  },
+                }
+              : node,
+          ),
+        );
+        addToast("Reverted to original GitHub event type", "info");
       }
-      if (setTriggerData !== undefined) {
-        setTriggerData(originalEventType[0].data.metadata.githubEventType);
-        setNodes(originalEventType);
-      }
-    }
-  };
+    },
+    [originalTriggerMetadata, setTriggerName, setNodes, addToast],
+  );
 
   const handleWorkflowGenerated = (newNodes: any, newEdges: any) => {
     setNodes(newNodes);
@@ -368,8 +304,6 @@ export default function Flow({
             onAlignNodes={() =>
               alignNodesVertically(setNodes, fitView, VERTICAL_SPACING)
             }
-            nodes={nodes}
-            edges={edges}
             zapId={zapId}
           />
         </div>
@@ -377,13 +311,9 @@ export default function Flow({
         {selectedNode && !isDialogOpen && (
           <Sidebar
             selectedNode={selectedNode}
-            selectedNodeId={selectedNodeId}
-            triggerName={triggerName}
-            setTriggerName={setTriggerName}
             onClose={() => setSelectedNodeId("")}
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
-            triggerData={triggerData}
             handleTriggerTypeChange={handleTriggerTypeChange}
           />
         )}
@@ -391,7 +321,6 @@ export default function Flow({
       <NodeConfigDialog
         isOpen={isDialogOpen}
         onClose={handleDialogClose}
-        setTriggerName={setTriggerName}
         onSelectWebhook={(webhook) =>
           handleWebhookSelectForNode(selectedNodeId, webhook)
         }

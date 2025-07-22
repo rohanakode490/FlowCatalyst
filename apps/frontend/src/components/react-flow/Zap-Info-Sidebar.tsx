@@ -1,41 +1,32 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ACTION_FORM_FIELDS, TRIGGER_FORM_FIELDS } from "@/lib/constant";
 import DynamicForm from "@/components/forms/flow-form";
 import { ACTION_SCHEMAS, TRIGGER_SCHEMAS } from "@/lib/schema";
+import useStore from "@/lib/store";
 
 interface SidebarProps {
   selectedNode: any;
-  selectedNodeId: string;
-  triggerName?: Record<string, any>;
-  setTriggerName: Dispatch<SetStateAction<Record<string, any>>>;
   onClose: () => void;
   openDialog: () => void;
   onFormSubmit: (nodeId: string, formData: Record<string, any>) => void;
-  triggerData?: Record<string, any>;
   handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
 export const Sidebar = ({
   selectedNode,
-  selectedNodeId,
-  triggerName,
-  setTriggerName,
   onClose,
   openDialog,
   onFormSubmit,
-  triggerData,
   handleTriggerTypeChange,
 }: SidebarProps) => {
   const isResizing = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const {
+    flow: { selectedNodeId, triggerName },
+  } = useStore();
 
   const formFields = selectedNode.data.action
     ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || []
@@ -86,11 +77,8 @@ export const Sidebar = ({
     };
   }, []);
 
-  function findtype(triggerData: any, triggerName: any) {
-    if (
-      triggerData?.hasOwnProperty("githubEventType") ||
-      triggerName?.hasOwnProperty("githubEventType")
-    ) {
+  function findtype(triggerName: any) {
+    if (triggerName?.hasOwnProperty("githubEventType")) {
       return "github";
     } else {
       return "linkedin";
@@ -118,11 +106,8 @@ export const Sidebar = ({
           initialData={initialData}
           onSubmit={(formData) => onFormSubmit(selectedNodeId, formData)}
           schema={schema}
-          triggerType={findtype(triggerData, triggerName)}
-          triggerData={triggerData}
-          triggerName={triggerName}
+          triggerType={findtype(triggerName)}
           onClose={onClose}
-          setTriggerName={setTriggerName}
           handleTriggerTypeChange={handleTriggerTypeChange}
         />
         <div className="border-t">
