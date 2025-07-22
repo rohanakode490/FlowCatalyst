@@ -55,20 +55,25 @@ const router = Router();
 //   }
 // });
 
-router.get("/hasLinkedInTrigger", authMiddleware, async (req, res) => {
+router.get("/hasTrigger", authMiddleware, async (req, res) => {
   //@ts-ignore
   const userId = req.id;
+  const triggerType = req.query.type as string;
+
+  if (!triggerType) {
+    return res.status(400).json({ message: "Trigger type is required" });
+  }
 
   try {
-    const linkedinTrigger = await prismaClient.trigger.findFirst({
+    const Trigger = await prismaClient.trigger.findFirst({
       where: {
         userId: userId,
         type: {
-          name: "LinkedIn Trigger",
+          name: triggerType,
         },
       },
     });
-    res.status(200).json({ hasLinkedInTrigger: !!linkedinTrigger });
+    res.status(200).json({ hasLinkedInTrigger: !!Trigger });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error in fetching" });

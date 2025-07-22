@@ -22,7 +22,6 @@ import {
   SetEdgesType,
   SetNodesType,
 } from "@/components/react-flow/Flow-Helpers";
-import { metadata } from "@/app/layout";
 
 export interface Country {
   country: string;
@@ -65,12 +64,11 @@ interface WebhookState {
   webhooks: Webhook[];
   selectedWebhook: Webhook | null;
   isDialogOpen: boolean;
-  hasLinkedInTrigger: boolean;
   setWebhooks: (webhooks: Webhook[]) => void;
   setSelectedWebhook: (webhook: Webhook | null) => void;
   setIsDialogOpen: (open: boolean) => void;
   fetchWebhooks: (type: "action" | "trigger") => Promise<void>;
-  checkLinkedInTrigger: () => Promise<void>;
+  checkRestrictedTrigger: (triggerType: string) => Promise<boolean>;
 }
 
 interface UserState {
@@ -384,7 +382,6 @@ const useStore = createWithEqualityFn<AppState>()(
       webhooks: [],
       selectedWebhook: null,
       isDialogOpen: false,
-      hasLinkedInTrigger: false,
       setWebhooks: (webhooks) =>
         set((state) => {
           state.webhook.webhooks = webhooks;
@@ -416,25 +413,25 @@ const useStore = createWithEqualityFn<AppState>()(
           });
         }
       },
-      checkLinkedInTrigger: async () => {
+      checkRestrictedTrigger: async (triggerType) => {
         try {
           const token = localStorage.getItem("token");
           const response = await api.get(
-            "/trigger-response/hasLinkedInTrigger",
+            `/trigger-response/hasTrigger?type=${encodeURIComponent(triggerType)}`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
             },
           );
-          set((state) => {
-            state.webhook.hasLinkedInTrigger = response.data.hasLinkedInTrigger;
-          });
+          return response.data.hasTrigger;
         } catch (error) {
-          console.error("Failed to check LinkedIn trigger:", error);
+          console.error(`Failed to check trigger ${triggerType}:`, error);
           set((state) => {
-            state.ui.addToast("Failed to check LinkedIn trigger.", "error");
+            state.ui.addToast(
+              `Failed to check trigger ${triggerType}.`,
+              "error",
+            );
           });
+          return false;
         }
       },
     },

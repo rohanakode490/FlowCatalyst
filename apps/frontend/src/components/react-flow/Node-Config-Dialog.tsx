@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import WebhookSelector from "@/components/react-flow/Webhook-Selecter";
-import api from "@/lib/api";
 import useStore from "../../lib/store";
 
 interface NodeConfigDialogProps {
@@ -26,32 +25,9 @@ export const NodeConfigDialog = ({
   isAction,
   handleTriggerTypeChange,
 }: NodeConfigDialogProps) => {
-  const [hasLinkedInTrigger, setHasLinkedInTrigger] = useState(false);
-
   const {
     flow: { setTriggerName },
   } = useStore();
-
-  // Check for existing LinkedIn trigger
-  useEffect(() => {
-    if (!isOpen || isAction === true) return;
-
-    const checkLinkedInTrigger = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.get(`/trigger-response/hasLinkedInTrigger`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setHasLinkedInTrigger(response.data.hasLinkedInTrigger);
-      } catch (error) {
-        console.error("Failed to check LinkedIn trigger:", error);
-      }
-    };
-
-    checkLinkedInTrigger();
-  }, [isOpen, isAction]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -73,7 +49,6 @@ export const NodeConfigDialog = ({
           }}
           type={isAction === true ? "action" : "trigger"}
           handleTriggerTypeChange={handleTriggerTypeChange}
-          hasLinkedInTrigger={hasLinkedInTrigger}
         />
       </DialogContent>
     </Dialog>

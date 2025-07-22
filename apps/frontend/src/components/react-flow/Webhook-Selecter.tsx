@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import api from "@/lib/api";
 import useStore from "@/lib/store";
 
 // Define restricted triggers
