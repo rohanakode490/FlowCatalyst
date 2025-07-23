@@ -11,8 +11,8 @@ export type NodeType = Node<{
 
 export type EdgeType = Edge;
 
-export type SetNodesType = ReturnType<typeof useNodesState>[1];
-export type SetEdgesType = ReturnType<typeof useEdgesState>[1];
+export type SetNodesType = (nodes: NodeType[] | ((prev: NodeType[]) => NodeType[])) => void; // ReturnType<typeof useNodesState>[1];
+export type SetEdgesType = (edges: EdgeType[] | ((prev: EdgeType[]) => EdgeType[])) => void; // ReturnType<typeof useEdgesState>[1];
 export type FitViewType = (options?: {
   padding?: number;
   duration?: number;
@@ -68,7 +68,7 @@ export const addNodeBelow = (
   const newNodeId = `${Date.now()}`;
   const newY = sourceNode.position.y + VERTICAL_SPACING;
 
-  const newNode: NodeType = {
+  const newNode = {
     id: newNodeId,
     type: "customNode",
     position: { x: 1, y: newY },
@@ -78,6 +78,11 @@ export const addNodeBelow = (
       configured: false,
       action: true,
       metadata: {},
+      onOpenDialog: () => console.log("Open dialog"),
+      canDelete: true,
+      onDelete: (id: string) => console.log(`Delete node ${id}`),
+      onWebhookSelect: () => console.log("Webhook select"),
+      onFormSubmit: () => console.log("Form submit"),
     },
   };
 
@@ -104,12 +109,14 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
+          data: { onAddNode: () => {} },
       },
       {
         id: `e${newNodeId}-${targetNode.id}`,
         type: "buttonEdge",
         source: newNodeId,
         target: targetNode.id,
+          data: { onAddNode: () => {} },
       },
     ]);
   } else {
@@ -120,6 +127,7 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
+          data: { onAddNode: () => {} },
       },
     ]);
   }

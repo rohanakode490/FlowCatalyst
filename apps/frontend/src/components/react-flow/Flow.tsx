@@ -16,7 +16,7 @@ import userWebhook from "@/hooks/User";
 import useStore from "@/lib/store";
 import { useShallow } from "zustand/shallow";
 
-const VERTICAL_SPACING = 200;
+export const VERTICAL_SPACING = 200;
 
 interface FlowProps {
   zapId?: string;
@@ -37,6 +37,7 @@ export default function Flow({ zapId }: FlowProps) {
       setNodes,
       setEdges,
       setTriggerName,
+      addNode,
       originalTriggerMetadata,
       updateNodeData,
       setSelectedNodeId,
@@ -114,6 +115,7 @@ export default function Flow({ zapId }: FlowProps) {
   }, [closeDialog]);
 
   // Get the selected node's data
+  console.log("nodes", nodes);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
   useEffect(() => {
@@ -177,16 +179,17 @@ export default function Flow({ zapId }: FlowProps) {
       data: {
         ...edge.data,
         onAddNode: () =>
-          addNodeBelow(
-            userSubscription,
-            edge.source,
-            nodes,
-            edges,
-            setNodes,
-            setEdges,
-            VERTICAL_SPACING,
-            () => alignNodesVertically(setNodes, fitView, VERTICAL_SPACING),
-          ),
+          addNode(edge.source)
+          // addNodeBelow(
+          //   userSubscription,
+          //   edge.source,
+          //   nodes,
+          //   edges,
+          //   setNodes,
+          //   setEdges,
+          //   VERTICAL_SPACING,
+          //   () => alignNodesVertically(setNodes, fitView, VERTICAL_SPACING),
+          // ),
       },
     }));
   }, [edges, nodes, setNodes, setEdges]);

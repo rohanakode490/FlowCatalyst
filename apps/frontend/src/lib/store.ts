@@ -17,11 +17,14 @@ import {
   LINKEDIN_TRIGGER_FIELDS_MAP,
 } from "./constant";
 import {
+  addNodeBelow,
+  alignNodesVertically,
   EdgeType,
   NodeType,
   SetEdgesType,
   SetNodesType,
 } from "@/components/react-flow/Flow-Helpers";
+import { VERTICAL_SPACING } from "@/components/react-flow/Flow";
 
 export interface Country {
   country: string;
@@ -36,7 +39,7 @@ interface State {
 
 interface ToastMessage {
   id: string;
-  message: string;
+  message: string | JSX.Element;
   type: "success" | "error" | "info";
 }
 
@@ -49,13 +52,13 @@ interface FlowState {
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   onConnect: (connection: Connection) => void;
-  setNodes: SetNodesType;
-  setEdges: SetEdgesType;
+  setNodes: (nodes: NodeType[] | ((prev: NodeType[]) => NodeType[])) => void;
+  setEdges: (edges: EdgeType[] | ((prev: EdgeType[]) => EdgeType[])) => void;
   setSelectedNodeId: (id: string | null) => void;
   setTriggerName: (triggerName: Record<string, any>) => void;
   setOriginalTriggerMetadata: (metadata: Record<string, any>) => void;
-  addNode: (node: Node) => void;
-  addFlowEdge: (edge: Edge) => void;
+  addNode: (sourceNodeId: string) => void;
+  addFlowEdge: (edge: EdgeType) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   saveZap: (zapId?: string, scraperType?: string) => Promise<string | void>;
 }
@@ -152,6 +155,7 @@ interface AppState {
   ui: UIState;
 }
 
+
 const initialNodes = [
   {
     id: "1",
@@ -225,12 +229,18 @@ const useStore = createWithEqualityFn<AppState>()(
       originalTriggerMetadata: {},
       onNodesChange: (changes) => {
         set((state) => {
-          state.flow.nodes = applyNodeChanges(changes, get().flow.nodes);
+          state.flow.nodes = applyNodeChanges(
+            changes,
+            get().flow.nodes,
+          ) as NodeType[];
         });
       },
       onEdgesChange: (changes) => {
         set((state) => {
-          state.flow.edges = applyEdgeChanges(changes, get().flow.edges);
+          state.flow.edges = applyEdgeChanges(
+            changes,
+            get().flow.edges,
+          ) as EdgeType[];
         });
       },
       onConnect: (connection) => {
@@ -269,16 +279,18 @@ const useStore = createWithEqualityFn<AppState>()(
           state.flow.edges = addEdge(
             { ...connection, type: "buttonEdge" },
             get().flow.edges,
-          );
+          ) as EdgeType[];
         });
       },
       setNodes: (nodes) =>
         set((state) => {
-          state.flow.nodes = nodes;
+          state.flow.nodes =
+            typeof nodes === "function" ? nodes(state.flow.nodes) : nodes;
         }),
       setEdges: (edges) =>
         set((state) => {
-          state.flow.edges = edges;
+          state.flow.edges =
+            typeof edges === "function" ? edges(state.flow.edges) : edges;
         }),
       setSelectedNodeId: (id: any) =>
         set((state) => {
@@ -292,9 +304,26 @@ const useStore = createWithEqualityFn<AppState>()(
         set((state) => {
           state.flow.originalTriggerMetadata = metadata;
         }),
-      addNode: (node) =>
+      addNode: (sourceNodeId: string) =>
         set((state) => {
-          state.flow.nodes.push(node);
+          const result = addNodeBelow(
+            state.user.userSubscription,
+            sourceNodeId,
+            state.flow.nodes,
+            state.flow.edges,
+            (nodes) => state.flow.nodes = typeof nodes === "function" ? nodes(state.flow.nodes) : nodes,
+            (edges) => state.flow.edges = typeof edges === "function" ? edges(state.flow.edges) : edges,
+            VERTICAL_SPACING,
+              alignNodesVertically
+          );
+          if (result === 0) {
+            state.ui.addToast(
+              "Free plan allows only 3 nodes. Upgrade to SuperGrok at https://x.ai/grok.",
+              "error",
+            );
+          } else if (result === -1) {
+            state.ui.addToast("Invalid source node.", "error");
+          }
         }),
       addFlowEdge: (edge) =>
         set((state) => {
@@ -324,8 +353,8 @@ const useStore = createWithEqualityFn<AppState>()(
           return;
         }
         // Extract trigger and actions from nodes
-        const triggerNode = nodes.find((node: Node) => !node.data.action);
-        const actionNodes = nodes.filter((node: Node) => node.data.action);
+        const triggerNode = nodes.find((node: NodeType) => !node.data.action);
+        const actionNodes = nodes.filter((node: NodeType) => node.data.action);
 
         // Validate that a trigger and at least one action are present
         if (!triggerNode || actionNodes.length === 0) {

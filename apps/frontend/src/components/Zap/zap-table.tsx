@@ -15,11 +15,16 @@ import { Button } from "../ui/button";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { ConfirmationDialog } from "./Confirmation-Dialog";
+import useStore from "@/lib/store";
 
 //TODO: 1. Add functionality to the switch
 
 export default function ZapTable({ zaps }: { zaps: Zap[] }) {
   const [zapToDelete, setZapToDelete] = useState<string | null>(null);
+  const {
+    zap: { toggleZap },
+    ui: { addToast },
+  } = useStore();
 
   // Function to handle Zap deletion
   const handleDeleteZap = async (zapId: string) => {
@@ -47,7 +52,18 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
       setZapToDelete(null); // Close the confirmation dialog
     }
   };
-  console.log("zap", zaps);
+  // console.log("zap", zaps);
+
+  // Function to handle Zap toggle
+  const handleToggleZap = async (zapId: string, isActive: boolean) => {
+    try {
+      await toggleZap(zapId, isActive);
+    } catch (error) {
+      console.error("Failed to toggle Zap:", error);
+      addToast("Failed to toggle Zap status.", "error");
+    }
+  };
+
   return (
     <>
       <Table>
@@ -109,7 +125,12 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
                   .replace(",", "")}
               </TableCell>
               <TableCell className="text-right">
-                <Switch />
+                <Switch
+                  checked={zap.isActive}
+                  onCheckedChange={(checked) =>
+                    handleToggleZap(zap.id, checked)
+                  }
+                />
               </TableCell>
               <TableCell>
                 <Link href={`/flow/edit/${zap.id}`}>
