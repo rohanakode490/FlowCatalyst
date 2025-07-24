@@ -68,8 +68,8 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
     },
     {
       type: "country-state",
-      label: "Location",
-      name: "location",
+      label: "country",
+      name: "country",
       placeholder: "Enter location (e.g., India)",
       required: true,
     },
@@ -134,8 +134,8 @@ export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
     },
     {
       type: "country-state",
-      label: "Location",
-      name: "location",
+      label: "country",
+      name: "country",
       placeholder: "Enter location (e.g., India)",
       required: true,
     },
@@ -255,7 +255,8 @@ export const LINKEDIN_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
   linkedin: [
     "title",
     "company",
-    "location",
+    "country",
+    "state",
     "company_url",
     "job_link",
     "posted_date",

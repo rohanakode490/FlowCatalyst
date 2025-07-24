@@ -117,7 +117,7 @@ interface FormState {
   submitForm: (
     fields: FormField[],
     schema: z.ZodSchema<any>,
-    triggerType: "github" | "linkedin" | undefined,
+    triggerType: "github" | "linkedin" | "indeed" | undefined,
     onSubmit: (data: Record<string, any>) => void,
     onClose: () => void,
   ) => Promise<void>;
@@ -154,7 +154,6 @@ interface AppState {
   zap: ZapState;
   ui: UIState;
 }
-
 
 const initialNodes = [
   {
@@ -311,10 +310,14 @@ const useStore = createWithEqualityFn<AppState>()(
             sourceNodeId,
             state.flow.nodes,
             state.flow.edges,
-            (nodes) => state.flow.nodes = typeof nodes === "function" ? nodes(state.flow.nodes) : nodes,
-            (edges) => state.flow.edges = typeof edges === "function" ? edges(state.flow.edges) : edges,
+            (nodes) =>
+              (state.flow.nodes =
+                typeof nodes === "function" ? nodes(state.flow.nodes) : nodes),
+            (edges) =>
+              (state.flow.edges =
+                typeof edges === "function" ? edges(state.flow.edges) : edges),
             VERTICAL_SPACING,
-              alignNodesVertically
+            alignNodesVertically,
           );
           if (result === 0) {
             state.ui.addToast(
@@ -667,7 +670,7 @@ const useStore = createWithEqualityFn<AppState>()(
             });
             return;
           }
-          if (!updatedFormData.country) {
+          if (!updatedFormData.country?.length) {
             set((state) => {
               state.form.errors.country = "Country is required";
               state.form.formStatus = "error";

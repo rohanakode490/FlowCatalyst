@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "next-themes";
@@ -21,7 +21,6 @@ import {
 import { TagInput } from "@/components/globals/Tag-Input";
 import { MultiSelect } from "../globals/Multi-Select";
 import { useDebounce } from "@/hooks/use-debounce";
-import axios from "axios";
 import useStore, { Country } from "@/lib/store";
 import { useShallow } from "zustand/shallow";
 
@@ -30,7 +29,7 @@ interface DynamicFormProps {
   initialData: Record<string, any>;
   onSubmit: (data: Record<string, any>) => void;
   schema: z.ZodSchema<any>;
-  triggerType?: "github" | "linkedin";
+  triggerType?: "github" | "linkedin" | "indeed";
   onClose: () => void;
   handleTriggerTypeChange?: (trigger: string) => void;
 }
@@ -81,16 +80,21 @@ function DynamicForm({
     })),
   );
 
+  // console.log("formData", formData);
+  // useEffect(() => {
+  //   console.log("Updated formData:", formData);
+  //   console.log("Error:", errors);
+  // }, [formData]);
+
   // Initialize formData with node metadata and default githubEventType
   useEffect(() => {
-    if (
-      triggerType === "github" &&
-      initialData !== undefined &&
-      !initialData.githubEventType
-    ) {
-      initialData.githubEventType = "issue_comment";
-    }
-    setFormData(initialData);
+    const tmpData = {
+      ...initialData,
+      ...(triggerType === "github" && !initialData.githubEventType
+        ? { githubEventType: "issue_comment" }
+        : {}),
+    };
+    setFormData(tmpData);
   }, [initialData, triggerType, setFormData]);
 
   // Fetch countries on mount
@@ -98,71 +102,60 @@ function DynamicForm({
     fetchCountries();
   }, [fetchCountries]);
 
-  // Fetch states when country changes
-  useEffect(() => {
-    if (formData.country) {
-      fetchStates(formData.country);
-    }
-  }, [formData.country, fetchStates]);
 
   // Handle input changes
-  const handleInputChange = (fieldName: string, value: any) => {
-    setFormData((prev: Record<string, any>) => ({
-      ...prev,
-      [fieldName]: value,
-    }));
-
-    // Clear errors when the user starts typing
-    if (errors[fieldName]) {
-      setErrors({ ...errors, [fieldName]: "" });
-    }
-
-    // Update dynamic fields when the event type changes
-    if (fieldName === "githubEventType") {
-      const fields = GITHUB_TRIGGER_FIELDS_MAP[value || "issue_comment"];
-      // setDynamicFields(fields.map((field) => `${field}`));
-      setDynamicFields(fields.map((field: string) => `{{trigger.${field}}}`));
-
-      // Update triggerName with the new githubEventType
-      setTriggerName((prev: Record<string, any>) => {
-        if (prev.githubEventType === value) {
-          return prev; // No change, return previous state
-        }
-        return {
-          ...prev,
-          githubEventType: value,
-        };
+  const handleInputChange = useCallback(
+    (fieldName: string, value: any) => {
+      console.log("fieldName: ", fieldName, "\nvalue: ", value);
+      setFormData({
+        ...formData,
+        [fieldName]: value,
       });
 
-      if (handleTriggerTypeChange !== undefined) {
-        handleTriggerTypeChange(value);
+      // Clear errors when the user starts typing
+      if (errors[fieldName]) {
+        setErrors({ ...errors, [fieldName]: "" });
       }
-    } else {
-      const fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-      setDynamicFields(fields.map((field) => `${field}`));
-    }
-  };
 
-  // const validatePlaceholder = (value: string, allowedFields: string[]) => {
-  //   const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
-  //   return placeholders.every((placeholder) => {
-  //     const key = placeholder.replace(/{{trigger\.([^}]+)}}/, "$1");
-  //     return allowedFields.includes(key);
-  //   });
-  // };
-  //
-  // const validateNumberOrPlaceholder = (value: string | undefined | null) => {
-  //   if (value === undefined || value === null) {
-  //     return false;
-  //   }
-  //
-  //   // Check if the value is a valid number
-  //   if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
-  //     return true;
-  //   }
-  //   // Check if the value is exactly the placeholder {{trigger.Amount}}
-  //   return value.trim() === "{{trigger.Amount}}";
-  // };
+      // Update dynamic fields when the event type changes
+      if (fieldName === "githubEventType") {
+        const fields = GITHUB_TRIGGER_FIELDS_MAP[value || "issue_comment"];
+        // setDynamicFields(fields.map((field) => `${field}`));
+        setDynamicFields(fields.map((field: string) => `{{trigger.${field}}}`));
+
+        // Update triggerName with the new githubEventType
+        setTriggerName((prev: Record<string, any>) => {
+          if (prev.githubEventType === value) {
+            return prev; // No change, return previous state
+          }
+          return {
+            ...prev,
+            githubEventType: value,
+          };
+        });
+
+        if (handleTriggerTypeChange !== undefined) {
+          handleTriggerTypeChange(value);
+        }
+      } else if (triggerType === "linkedin") {
+        const fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
+        setDynamicFields(fields.map((field) => `${field}`));
+      } else if (triggerType === "indeed") {
+        const fields = INDEED_TRIGGER_FIELDS_MAP["indeed"];
+        setDynamicFields(fields.map((field) => `${field}`));
+      }
+    },
+    [
+      formData,
+      errors,
+      setFormData,
+      setErrors,
+      setDynamicFields,
+      setTriggerName,
+      triggerType,
+      handleTriggerTypeChange,
+    ],
+  );
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -170,154 +163,11 @@ function DynamicForm({
     // Use store's submitForm action
     submitForm(
       fields,
-      // formData: updatedFormData,
       schema,
       triggerType,
       onSubmit,
       onClose,
-      // onSubmit: (validatedData) => {
-      //   onSubmit(validatedData);
-      //   onClose();
-      //   toast.success("Saved successfully!");
-      // },
-      // onError: (newErrors) => {
-      //   setErrors(newErrors);
-      //   toast.error("Please fix the errors before submitting.");
-      // },
     );
-    // const updatedFormData = { ...formData };
-    //
-    // let allowedFields: string[] = [];
-    // // Check if triggerName or triggerData has githubEventType
-    // if (triggerType === "github") {
-    //   // Ensure githubEventType has a default value if it's empty
-    //   if (
-    //     updatedFormData.githubEventType === undefined ||
-    //     updatedFormData.githubEventType === ""
-    //   ) {
-    //     updatedFormData.githubEventType = "issue_comment"; // Default value
-    //   }
-    //
-    //   // Update triggerName only if the githubEventType has changed
-    //   if (updatedFormData.githubEventType !== triggerName?.githubEventType) {
-    //     setTriggerName((prev: Record<string, any>) => ({
-    //       ...prev,
-    //       githubEventType: updatedFormData.githubEventType,
-    //     }));
-    //   }
-    //   // Validate placeholders and number/placeholder fields if githubEventType is present
-    //   if (triggerName?.githubEventType) {
-    //     allowedFields = GITHUB_TRIGGER_FIELDS_MAP[triggerName?.githubEventType];
-    //   }
-    // } else {
-    //   allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-    //   if (
-    //     updatedFormData.keywords !== undefined &&
-    //     !updatedFormData.keywords?.length
-    //   ) {
-    //     setErrors({ keywords: "At least one keyword is required" });
-    //     return;
-    //   }
-    //   if (updatedFormData.country !== undefined && !updatedFormData.country) {
-    //     setErrors({ location: "Country is required" });
-    //     return;
-    //   }
-    // }
-    //
-    // // Check if proper dynamic fields are assigned
-    // for (const field of fields) {
-    //   const value = updatedFormData[field.name];
-    //
-    //   // Skip validation for fields that do not support placeholders
-    //   if (field.name === "githubEventType" || field.name === "githubwebhook") {
-    //     continue;
-    //   }
-    //
-    //   // Validate placeholders for fields that support them
-    //   if (
-    //     typeof value === "string" &&
-    //     !validatePlaceholder(value, allowedFields)
-    //   ) {
-    //     setErrors({
-    //       ...errors,
-    //       [field.name]: `Invalid placeholder for ${field.name}. Allowed fields: ${allowedFields.join(", ")}`,
-    //     });
-    //     toast.error("Invalid input field");
-    //     return;
-    //   }
-    //
-    //   // Validate number/placeholder fields
-    //   if (
-    //     field.validation?.isNumberOrPlaceholder &&
-    //     !validateNumberOrPlaceholder(value)
-    //   ) {
-    //     setErrors({
-    //       ...errors,
-    //       [field.name]: `Invalid value for ${field.name}. It must be a number or contain a valid placeholder.`,
-    //     });
-    //     toast.error("Invalid input field");
-    //     return;
-    //   }
-    // }
-    //
-    // // Validate the amount field
-    // if (
-    //   fields.some((obj) => obj.name.includes("Amount")) &&
-    //   updatedFormData.Amount === ""
-    // ) {
-    //   setErrors({ ...errors, Amount: "Amount is required" });
-    //   toast.error("Amount is required");
-    //   return;
-    // }
-    //
-    // // Replace placeholders with actual values
-    // const processedData = { ...updatedFormData };
-    // for (const key in processedData) {
-    //   const value = processedData[key];
-    //
-    //   // If the field is a number/placeholder field
-    //   if (
-    //     fields.find((f) => f.name === key)?.validation?.isNumberOrPlaceholder
-    //   ) {
-    //     if (typeof value === "string" && validateNumberOrPlaceholder(value)) {
-    //       // If the value contains a placeholder, save it as is
-    //       processedData[key] = value;
-    //     } else if (!isNaN(parseFloat(value))) {
-    //       processedData[key] = value;
-    //     } else {
-    //       // If the value is invalid, set it to 0
-    //       processedData[key] = "0";
-    //     }
-    //   }
-    // }
-    //
-    // // Skip validation if schema is for github-webhook which is only a link
-    // if (!schema) {
-    //   onSubmit(processedData);
-    //   onClose();
-    //   toast.success("Saved successfully!");
-    //   return;
-    // }
-    //
-    // // Validate form data using Zod schema
-    // try {
-    //   const validatedData = schema.parse(processedData);
-    //   onSubmit(validatedData);
-    //   onClose();
-    //   toast.success("Saved successfully!");
-    // } catch (error) {
-    //   if (error instanceof z.ZodError) {
-    //     // Map Zod errors to the errors state
-    //     const newErrors: Record<string, string> = {};
-    //     error.errors.forEach((err) => {
-    //       newErrors[err.path[0]] = `${err.message} ${err.path[0]}`;
-    //     });
-    //     setErrors(newErrors);
-    //     toast.error("Please fix the errors before submitting.");
-    //   } else {
-    //     toast.error("Failed to save. Please try again.");
-    //   }
-    // }
   };
   // Handle adding a trigger field to the active input
   const handleAddTriggerField = (field: string) => {
@@ -340,16 +190,21 @@ function DynamicForm({
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      const User = await api.get("/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUserId(User.data.id);
+      try {
+        const token = localStorage.getItem("token");
+        const response = await api.get("/user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserId(response.data.id);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        toast.error("Failed to load user data.");
+      }
     };
-    fetchUser();
-  }, [userId]);
+    if (!userId) {
+      fetchUser();
+    }
+  }, [userId, setUserId]);
 
   // Update dynamic fields based on the last saved trigger type
   useEffect(() => {
@@ -369,41 +224,35 @@ function DynamicForm({
     }
   }, [triggerName, triggerType]);
 
-  useEffect(() => {
-    if (formData.country) {
-      debouncedFetchStates(formData.country);
-    }
-  }, [formData.country]);
+  // useEffect(() => {
+  //   if (formData.country) {
+  //     debouncedFetchStates(formData.country);
+  //   }
+  // }, [formData.country]);
 
-  // Debounced fetch states when country changes
+  // Debounced fetch states using store's fetchStates
   const debouncedFetchStates = useDebounce(async (countryName: string) => {
-    if (!countryName) return;
-
-    try {
-      setLoadingStates(true);
-      const response = await axios.post(
-        "https://countriesnow.space/api/v0.1/countries/states",
-        {
-          country: countryName,
-        },
-      );
-
-      setStates(response.data.data.states || []);
-      setStateError("");
-    } catch (error) {
-      setStateError("Failed to load states");
-      console.error("State fetch error:", error);
-    } finally {
-      setLoadingStates(false);
-    }
+    fetchStates(countryName);
   }, 300);
 
   // Handle country change
   const handleCountryChange = (countryName: string) => {
-    handleInputChange("country", countryName);
-    handleInputChange("state", "");
+    // console.log("HERE I AM WITH:  ", countryName);
+    // handleInputChange("country", countryName);
+    // handleInputChange("state", "");
+    // setFormData({ ...formData, state: "" });
     debouncedFetchStates(countryName);
   };
+
+  // Fetch states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      debouncedFetchStates(formData.country);
+    } else {
+      setStates([]);
+      setStateError("");
+    }
+  }, [formData.country]);
 
   // Render fields based on their type and conditions
   const renderField = (field: FormField) => {
@@ -555,7 +404,10 @@ function DynamicForm({
               <select
                 id="country"
                 value={formData.country || ""}
-                onChange={(e) => handleCountryChange(e.target.value)}
+                onChange={(e) => {
+                  handleInputChange(field.name, e.target.value)
+                  handleCountryChange(e.target.value)
+                }}
                 className={`mt-1 block w-full p-2 border rounded-md ${
                   isDarkMode
                     ? "bg-[#1f2937] border-[#374151] text-white"

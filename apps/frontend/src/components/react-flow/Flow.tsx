@@ -115,7 +115,7 @@ export default function Flow({ zapId }: FlowProps) {
   }, [closeDialog]);
 
   // Get the selected node's data
-  console.log("nodes", nodes);
+  // console.log("nodes", nodes);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
   useEffect(() => {

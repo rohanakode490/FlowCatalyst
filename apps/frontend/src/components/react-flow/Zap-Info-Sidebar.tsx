@@ -38,6 +38,7 @@ export const Sidebar = ({
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;
+  // console.log("selectedNode", selectedNode)
 
   // Handle mouse move for resizing
   useEffect(() => {
