@@ -87,7 +87,7 @@ interface UserState {
 }
 
 interface FormState {
-  formData: Record<string, any>;
+  formData: Record<string, any>[];
   errors: Record<string, string>;
   activeInput: string | null;
   dynamicFields: string[];
@@ -100,7 +100,7 @@ interface FormState {
   isSubmitting: boolean;
   formStatus: "idle" | "submitting" | "success" | "error";
   cachedFormData: Record<string, Record<string, any>>;
-  setFormData: (data: Record<string, any>) => void;
+  setFormData: (data: Record<string, any>[]) => void;
   setErrors: (errors: Record<string, string>) => void;
   setActiveInput: (input: string | null) => void;
   setDynamicFields: (fields: string[]) => void;
@@ -115,6 +115,7 @@ interface FormState {
   fetchCountries: () => Promise<void>;
   fetchStates: (country: string) => Promise<void>;
   submitForm: (
+    nodeId: string,
     fields: FormField[],
     schema: z.ZodSchema<any>,
     triggerType: "github" | "linkedin" | "indeed" | undefined,
@@ -515,7 +516,7 @@ const useStore = createWithEqualityFn<AppState>()(
         }),
     },
     form: {
-      formData: {},
+      formData: [],
       errors: {},
       activeInput: null,
       dynamicFields: [],
@@ -633,18 +634,21 @@ const useStore = createWithEqualityFn<AppState>()(
           });
         }
       },
-      submitForm: async (fields, schema, triggerType, onSubmit, onClose) => {
+      submitForm: async (nodeId, fields, schema, triggerType, onSubmit, onClose) => {
         set((state) => {
           state.form.isSubmitting = true;
           state.form.formStatus = "submitting";
+          state.form.errors = {}
         });
         const {
           form: { formData },
           flow: { triggerName },
         } = get();
-        const updatedFormData = { ...formData };
+        const nodeData = formData.find((node: any)=> node.id===nodeId)?.data || {};
+        const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
+        
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
           // Ensure githubEventType has a default value if it's empty
@@ -655,31 +659,33 @@ const useStore = createWithEqualityFn<AppState>()(
             updatedFormData.githubEventType = "issue_comment"; // Default value
           }
           allowedFields =
-            GITHUB_TRIGGER_FIELDS_MAP[
-              updatedFormData.githubEventType ||
-                triggerName?.githubEventType ||
-                "issue_comment"
-            ];
+          GITHUB_TRIGGER_FIELDS_MAP[
+            updatedFormData.githubEventType ||
+            triggerName?.githubEventType ||
+            "issue_comment"
+          ];
         } else if (triggerType === "linkedin") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-          if (!updatedFormData.keywords?.length) {
-            set((state) => {
-              state.form.errors.keywords = "At least one keyword is required";
-              state.form.formStatus = "error";
-              state.ui.addToast("At least one keyword is required", "error");
-            });
-            return;
-          }
-          if (!updatedFormData.country?.length) {
-            set((state) => {
-              state.form.errors.country = "Country is required";
-              state.form.formStatus = "error";
-              state.ui.addToast("Country is required", "error");
-            });
-            return;
+          if (nodeId==='0') { //Trigger Node
+            if (!updatedFormData.keywords?.length) {
+              set((state) => {
+                state.form.errors.keywords = "At least one keyword is required";
+                state.form.formStatus = "error";
+                state.ui.addToast("At least one keyword is required", "error");
+              });
+              return;
+            }
+            if (!updatedFormData.country?.length) {
+              set((state) => {
+                state.form.errors.country = "Country is required";
+                state.form.formStatus = "error";
+                state.ui.addToast("Country is required", "error");
+              });
+              return;
+            }
           }
         }
-
+      
         // Check if proper dynamic fields are assigned
         for (const field of fields) {
           if (
@@ -688,9 +694,12 @@ const useStore = createWithEqualityFn<AppState>()(
           )
             continue;
           const value = updatedFormData[field.name];
+          console.log("allowed", allowedFields)
+          console.log("val", value, field.name, updatedFormData)
           // Validate placeholders for fields that support them
           if (typeof value === "string") {
             const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
+            console.log("placeholders", placeholders)
             const isValid = placeholders.every((p) =>
               allowedFields.includes(p.replace(/{{trigger\.([^}]+)}}/, "$1")),
             );
@@ -721,7 +730,7 @@ const useStore = createWithEqualityFn<AppState>()(
             }
           }
         }
-
+     
         // Validate the amount field
         if (
           fields.some((f) => f.name === "Amount") &&
@@ -734,7 +743,7 @@ const useStore = createWithEqualityFn<AppState>()(
           });
           return;
         }
-
+       
         // Replace placeholders with actual values
         const processedData = { ...updatedFormData };
         for (const key in processedData) {

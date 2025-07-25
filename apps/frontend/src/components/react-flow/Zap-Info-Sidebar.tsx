@@ -28,6 +28,10 @@ export const Sidebar = ({
     flow: { selectedNodeId, triggerName },
   } = useStore();
 
+  useEffect(() => {
+    console.log("triggerName", triggerName)
+  }, [triggerName])
+  
   const formFields = selectedNode.data.action
     ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || []
     : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || [];
@@ -38,7 +42,6 @@ export const Sidebar = ({
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;
-  // console.log("selectedNode", selectedNode)
 
   // Handle mouse move for resizing
   useEffect(() => {
@@ -110,6 +113,7 @@ export const Sidebar = ({
           triggerType={findtype(triggerName)}
           onClose={onClose}
           handleTriggerTypeChange={handleTriggerTypeChange}
+          nodeId={selectedNode.id}
         />
         <div className="border-t">
           <Button

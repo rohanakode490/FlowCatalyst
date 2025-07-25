@@ -32,6 +32,7 @@ interface DynamicFormProps {
   triggerType?: "github" | "linkedin" | "indeed";
   onClose: () => void;
   handleTriggerTypeChange?: (trigger: string) => void;
+  nodeId: string;
 }
 
 function DynamicForm({
@@ -42,6 +43,7 @@ function DynamicForm({
   triggerType,
   onClose,
   handleTriggerTypeChange,
+  nodeId
 }: DynamicFormProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -80,22 +82,27 @@ function DynamicForm({
     })),
   );
 
-  // console.log("formData", formData);
-  // useEffect(() => {
-  //   console.log("Updated formData:", formData);
-  //   console.log("Error:", errors);
-  // }, [formData]);
+  useEffect(() => {
+    console.log("initialData:", initialData);
+    console.log("formData:", formData);
+    console.log("triggertype", triggerType)
+  }, [formData, initialData]);
+
+  // Get current node's data
+  const nodeData = formData.find((node:any) => node.id === nodeId)?.data || {};
 
   // Initialize formData with node metadata and default githubEventType
   useEffect(() => {
-    const tmpData = {
-      ...initialData,
-      ...(triggerType === "github" && !initialData.githubEventType
-        ? { githubEventType: "issue_comment" }
-        : {}),
-    };
-    setFormData(tmpData);
-  }, [initialData, triggerType, setFormData]);
+    if (!formData.find((node: any) => node.id === nodeId)) {
+      const tmpData = {
+        ...initialData,
+        ...(triggerType === "github" && !initialData.githubEventType
+          ? { githubEventType: "issue_comment" }
+          : {}),
+      };
+      setFormData([...(formData as []), { id:nodeId, data: tmpData }]);
+    }
+  }, [nodeId, initialData, formData, triggerType, setFormData]);
 
   // Fetch countries on mount
   useEffect(() => {
@@ -106,11 +113,15 @@ function DynamicForm({
   // Handle input changes
   const handleInputChange = useCallback(
     (fieldName: string, value: any) => {
-      console.log("fieldName: ", fieldName, "\nvalue: ", value);
-      setFormData({
-        ...formData,
+      const newNodeData = {
+        ...nodeData,
         [fieldName]: value,
-      });
+      };
+      setFormData(
+        formData.map((node: any) =>
+          node.id === nodeId ? { id:nodeId, data: newNodeData } : node
+        )
+      );
 
       // Clear errors when the user starts typing
       if (errors[fieldName]) {
@@ -146,6 +157,7 @@ function DynamicForm({
       }
     },
     [
+      nodeData,
       formData,
       errors,
       setFormData,
@@ -162,6 +174,7 @@ function DynamicForm({
     e.preventDefault();
     // Use store's submitForm action
     submitForm(
+      nodeId,
       fields,
       schema,
       triggerType,
@@ -172,7 +185,7 @@ function DynamicForm({
   // Handle adding a trigger field to the active input
   const handleAddTriggerField = (field: string) => {
     if (activeInput) {
-      const currentValue = formData[activeInput] || "";
+      const currentValue = nodeData[activeInput] || "";
       handleInputChange(activeInput, `${currentValue} {{trigger.${field}}}`);
     }
   };
@@ -224,12 +237,6 @@ function DynamicForm({
     }
   }, [triggerName, triggerType]);
 
-  // useEffect(() => {
-  //   if (formData.country) {
-  //     debouncedFetchStates(formData.country);
-  //   }
-  // }, [formData.country]);
-
   // Debounced fetch states using store's fetchStates
   const debouncedFetchStates = useDebounce(async (countryName: string) => {
     fetchStates(countryName);
@@ -237,22 +244,18 @@ function DynamicForm({
 
   // Handle country change
   const handleCountryChange = (countryName: string) => {
-    // console.log("HERE I AM WITH:  ", countryName);
-    // handleInputChange("country", countryName);
-    // handleInputChange("state", "");
-    // setFormData({ ...formData, state: "" });
     debouncedFetchStates(countryName);
   };
 
   // Fetch states when country changes
   useEffect(() => {
-    if (formData.country) {
-      debouncedFetchStates(formData.country);
+    if (nodeData.country) {
+      debouncedFetchStates(nodeData.country);
     } else {
       setStates([]);
       setStateError("");
     }
-  }, [formData.country]);
+  }, [nodeData.country]);
 
   // Render fields based on their type and conditions
   const renderField = (field: FormField) => {
@@ -269,7 +272,7 @@ function DynamicForm({
             <Input
               type={field.type}
               id={field.name}
-              value={formData[field.name] || ""}
+              value={nodeData[field.name] || ""}
               placeholder={field.placeholder}
               className="mt-1 flex-1"
               onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -306,7 +309,7 @@ function DynamicForm({
             <select
               id={field.name}
               value={
-                formData[field.name] ||
+                nodeData[field.name] ||
                 (field.name === "githubEventType" ? "issue_comment" : "")
               }
               onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -372,7 +375,7 @@ function DynamicForm({
           <MultiSelect
             key={field.name}
             options={field.options || []}
-            selected={formData[field.name] || []}
+            selected={nodeData[field.name] || []}
             onChange={(selected) => handleInputChange(field.name, selected)}
             label={field.label}
             required={field.required}
@@ -382,7 +385,7 @@ function DynamicForm({
         return (
           <TagInput
             key={field.name}
-            tags={formData[field.name] || []}
+            tags={nodeData[field.name] || []}
             onTagsChange={(tags) => handleInputChange(field.name, tags)}
             placeholder={field.placeholder}
             label={field.label}
@@ -403,7 +406,7 @@ function DynamicForm({
               </Label>
               <select
                 id="country"
-                value={formData.country || ""}
+                value={nodeData.country || ""}
                 onChange={(e) => {
                   handleInputChange(field.name, e.target.value)
                   handleCountryChange(e.target.value)
@@ -435,7 +438,7 @@ function DynamicForm({
             </div>
 
             {/* State Select */}
-            {formData.country && (
+            {nodeData.country && (
               <div className="flex flex-col gap-2">
                 <Label
                   htmlFor="state"
@@ -445,7 +448,7 @@ function DynamicForm({
                 </Label>
                 <select
                   id="state"
-                  value={formData.state || ""}
+                  value={nodeData.state || ""}
                   onChange={(e) => handleInputChange("state", e.target.value)}
                   className={`mt-1 block w-full p-2 border rounded-md ${
                     isDarkMode
