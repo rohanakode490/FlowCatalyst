@@ -96,12 +96,12 @@ export default function EditZapPage() {
             image: "/logo.png",
             configured: false,
             action: false,
-      metadata: {},
-      onOpenDialog: () => console.log("Open dialog"),
-      canDelete: true,
-      onDelete: (id: string) => console.log(`Delete node ${id}`),
-      onWebhookSelect: () => console.log("Webhook select"),
-      onFormSubmit: () => console.log("Form submit"),
+            metadata: {},
+            onOpenDialog: () => console.log("Open dialog"),
+            canDelete: true,
+            onDelete: (id: string) => console.log(`Delete node ${id}`),
+            onWebhookSelect: () => console.log("Webhook select"),
+            onFormSubmit: () => console.log("Form submit"),
           },
         },
         {
@@ -113,12 +113,12 @@ export default function EditZapPage() {
             image: "/logo.png",
             configured: false,
             action: true,
-      metadata: {},
-      onOpenDialog: () => console.log("Open dialog"),
-      canDelete: true,
-      onDelete: (id: string) => console.log(`Delete node ${id}`),
-      onWebhookSelect: () => console.log("Webhook select"),
-      onFormSubmit: () => console.log("Form submit"),
+            metadata: {},
+            onOpenDialog: () => console.log("Open dialog"),
+            canDelete: true,
+            onDelete: (id: string) => console.log(`Delete node ${id}`),
+            onWebhookSelect: () => console.log("Webhook select"),
+            onFormSubmit: () => console.log("Form submit"),
           },
         },
       ];
@@ -128,7 +128,7 @@ export default function EditZapPage() {
           type: "buttonEdge",
           source: "1",
           target: "2",
-          data: { onAddNode: () => {} }, // Will be set in Flow.tsx
+          data: { onAddNode: () => { } }, // Will be set in Flow.tsx
         },
       ];
       setNodes(defaultNodes);

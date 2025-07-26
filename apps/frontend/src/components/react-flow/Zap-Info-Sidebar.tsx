@@ -19,7 +19,6 @@ export const Sidebar = ({
   onClose,
   openDialog,
   onFormSubmit,
-  handleTriggerTypeChange,
 }: SidebarProps) => {
   const isResizing = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -31,7 +30,7 @@ export const Sidebar = ({
   useEffect(() => {
     console.log("triggerName", triggerName)
   }, [triggerName])
-  
+
   const formFields = selectedNode.data.action
     ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || []
     : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || [];
@@ -112,7 +111,6 @@ export const Sidebar = ({
           schema={schema}
           triggerType={findtype(triggerName)}
           onClose={onClose}
-          handleTriggerTypeChange={handleTriggerTypeChange}
           nodeId={selectedNode.id}
         />
         <div className="border-t">

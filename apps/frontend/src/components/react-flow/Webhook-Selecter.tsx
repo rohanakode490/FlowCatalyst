@@ -8,15 +8,14 @@ const RESTRICTED_TRIGGERS = ["LinkedIn", "Indeed"];
 interface WebhookSelectorProps {
   onSelect: (webhook: any) => void;
   type: "action" | "trigger";
-  handleTriggerTypeChange?: (triggerId: string) => void;
 }
 
 function WebhookSelector({
   onSelect,
   type,
-  handleTriggerTypeChange,
 }: WebhookSelectorProps) {
   const {
+    flow: { setTriggerName, handleTriggerTypeChange },
     webhook: { webhooks, fetchWebhooks },
     ui: { addToast },
   } = useStore();
@@ -43,7 +42,9 @@ function WebhookSelector({
     }
     onSelect(webhook);
     if (type === "trigger" && handleTriggerTypeChange) {
-      handleTriggerTypeChange(webhook.id);
+      console.log("webhook", webhook)
+      setTriggerName(webhook.metadata);
+      handleTriggerTypeChange(webhook.name, webhook.metadata);
     }
   };
   return (
@@ -53,11 +54,10 @@ function WebhookSelector({
           <Button
             key={webhook.id}
             onClick={() => handleTriggerSelect(webhook)}
-            className={`flex flex-row items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              isTriggerRestricted(webhook.name)
+            className={`flex flex-row items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${isTriggerRestricted(webhook.name)
                 ? "opacity-50 cursor-not-allowed" // Visual indication
                 : ""
-            }`}
+              }`}
             disabled={isTriggerRestricted(webhook.name)}
           >
             <img src={webhook.image} alt={webhook.name} className="w-9 h-9" />

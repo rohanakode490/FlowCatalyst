@@ -38,7 +38,6 @@ export default function Flow({ zapId }: FlowProps) {
       setEdges,
       setTriggerName,
       addNode,
-      originalTriggerMetadata,
       updateNodeData,
       setSelectedNodeId,
     },
@@ -180,16 +179,16 @@ export default function Flow({ zapId }: FlowProps) {
         ...edge.data,
         onAddNode: () =>
           addNode(edge.source)
-          // addNodeBelow(
-          //   userSubscription,
-          //   edge.source,
-          //   nodes,
-          //   edges,
-          //   setNodes,
-          //   setEdges,
-          //   VERTICAL_SPACING,
-          //   () => alignNodesVertically(setNodes, fitView, VERTICAL_SPACING),
-          // ),
+        // addNodeBelow(
+        //   userSubscription,
+        //   edge.source,
+        //   nodes,
+        //   edges,
+        //   setNodes,
+        //   setEdges,
+        //   VERTICAL_SPACING,
+        //   () => alignNodesVertically(setNodes, fitView, VERTICAL_SPACING),
+        // ),
       },
     }));
   }, [edges, nodes, setNodes, setEdges]);
@@ -209,35 +208,35 @@ export default function Flow({ zapId }: FlowProps) {
   //   }
   // };
 
-  const handleTriggerTypeChange = useCallback(
-    (triggerTypeId: string) => {
-      if (
-        originalTriggerMetadata?.githubEventType &&
-        triggerTypeId !== originalTriggerMetadata.githubEventType
-      ) {
-        setTriggerName({
-          githubEventType: originalTriggerMetadata.githubEventType,
-        });
-        setNodes((nds) =>
-          nds.map((node) =>
-            node.id === "1"
-              ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    metadata: {
-                      githubEventType: originalTriggerMetadata.githubEventType,
-                    },
-                  },
-                }
-              : node,
-          ),
-        );
-        addToast("Reverted to original GitHub event type", "info");
-      }
-    },
-    [originalTriggerMetadata, setTriggerName, setNodes, addToast],
-  );
+  // const handleTriggerTypeChange = useCallback(
+  //   (triggerTypeId: string) => {
+  //     if (
+  //       originalTriggerMetadata?.githubEventType &&
+  //       triggerTypeId !== originalTriggerMetadata.githubEventType
+  //     ) {
+  //       setTriggerName({
+  //         githubEventType: originalTriggerMetadata.githubEventType,
+  //       });
+  //       setNodes((nds) =>
+  //         nds.map((node) =>
+  //           node.id === "1"
+  //             ? {
+  //                 ...node,
+  //                 data: {
+  //                   ...node.data,
+  //                   metadata: {
+  //                     githubEventType: originalTriggerMetadata.githubEventType,
+  //                   },
+  //                 },
+  //               }
+  //             : node,
+  //         ),
+  //       );
+  //       addToast("Reverted to original GitHub event type", "info");
+  //     }
+  //   },
+  //   [originalTriggerMetadata, setTriggerName, setNodes, addToast],
+  // );
 
   const handleWorkflowGenerated = (newNodes: any, newEdges: any) => {
     setNodes(newNodes);
@@ -317,7 +316,6 @@ export default function Flow({ zapId }: FlowProps) {
             onClose={() => setSelectedNodeId("")}
             openDialog={() => handleOpenDialog()}
             onFormSubmit={handleFormSubmit}
-            handleTriggerTypeChange={handleTriggerTypeChange}
           />
         )}
       </div>
@@ -328,7 +326,6 @@ export default function Flow({ zapId }: FlowProps) {
           handleWebhookSelectForNode(selectedNodeId, webhook)
         }
         isAction={selectedNode?.data.action}
-        handleTriggerTypeChange={handleTriggerTypeChange}
       />
     </div>
   );

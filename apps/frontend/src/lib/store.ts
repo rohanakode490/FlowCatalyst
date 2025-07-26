@@ -49,6 +49,7 @@ interface FlowState {
   selectedNodeId: string;
   triggerName: any; //Record<string, any>;
   originalTriggerMetadata: Record<string, any>;
+  currentTriggerType: string;
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   onConnect: (connection: Connection) => void;
@@ -57,7 +58,9 @@ interface FlowState {
   setSelectedNodeId: (id: string | null) => void;
   setTriggerName: (triggerName: Record<string, any>) => void;
   setOriginalTriggerMetadata: (metadata: Record<string, any>) => void;
+  setCurrentTriggerType: (triggerType: string) => void;
   addNode: (sourceNodeId: string) => void;
+  handleTriggerTypeChange: (triggerTypeId: string, triggerMetadata: Record<string, any>) => void;
   addFlowEdge: (edge: EdgeType) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   saveZap: (zapId?: string, scraperType?: string) => Promise<string | void>;
@@ -100,6 +103,7 @@ interface FormState {
   isSubmitting: boolean;
   formStatus: "idle" | "submitting" | "success" | "error";
   cachedFormData: Record<string, Record<string, any>>;
+
   setFormData: (data: Record<string, any>[]) => void;
   setErrors: (errors: Record<string, string>) => void;
   setActiveInput: (input: string | null) => void;
@@ -227,6 +231,7 @@ const useStore = createWithEqualityFn<AppState>()(
       selectedNodeId: "",
       triggerName: [],
       originalTriggerMetadata: {},
+      currentTriggerType: "",
       onNodesChange: (changes) => {
         set((state) => {
           state.flow.nodes = applyNodeChanges(
@@ -296,13 +301,119 @@ const useStore = createWithEqualityFn<AppState>()(
         set((state) => {
           state.flow.selectedNodeId = id;
         }),
-      setTriggerName: (triggerName) =>
+      setTriggerName: (dataOrFn) =>
         set((state) => {
-          state.flow.triggerName = triggerName;
+          const newTriggerName = typeof dataOrFn === "function" ? dataOrFn(state.flow.triggerName) : dataOrFn;
+          state.flow.triggerName = newTriggerName;
         }),
       setOriginalTriggerMetadata: (metadata) =>
         set((state) => {
           state.flow.originalTriggerMetadata = metadata;
+        }),
+      setCurrentTriggerType: (triggerType) =>
+        set((state) => {
+          state.flow.currentTriggerType = triggerType
+        }),
+      handleTriggerTypeChange: (triggerTypeId, triggerMetadata) =>
+        set((state) => {
+          const { flow: { originalTriggerMetadata, nodes, currentTriggerType }, form: { formData } } = state;
+          let newNodes = nodes;
+          let newFormData = formData;
+          let newCurrentTriggerType = currentTriggerType;
+          let toastMessage = "";
+          let toastType: "success" | "info" | "error" = "info";
+
+          // Determine if the selected trigger is new or reverting to the original
+          const isOriginalTrigger = originalTriggerMetadata && triggerTypeId === currentTriggerType;
+          const metadataToUse = isOriginalTrigger ? originalTriggerMetadata : triggerMetadata;
+
+          if (triggerTypeId === "GithubTrigger") {
+            // newTriggerName = metadataToUse.githubEventType ? metadataToUse : { githubEventType: "issue_comment" };
+            newNodes = nodes.map((node) =>
+              node.id === "1"
+                ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    metadata: metadataToUse,
+                    configured: isOriginalTrigger ? true : false
+                  },
+                }
+                : node
+            );
+            newFormData = formData.map((node) =>
+              node.id === "1"
+                ? { ...node, data: metadataToUse }
+                : node
+            );
+            toastMessage = isOriginalTrigger
+              ? "Reverted to original GitHub event type"
+              : "Switched to GitHub trigger";
+          } else if (triggerTypeId === "LinkedinTrigger") {
+            // newTriggerName = metadataToUse.type === "LINKEDIN_JOBS"
+            newNodes = nodes.map((node) =>
+              node.id === "1"
+                ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    metadata: metadataToUse,
+                    configured: isOriginalTrigger ? true : false
+                  },
+                }
+                : node
+            );
+            newFormData = formData.map((node) =>
+              node.id === "1"
+                ? { ...node, data: metadataToUse }
+                : node
+            );
+
+            toastMessage = isOriginalTrigger
+              ? "Reverted to original LinkedIn settings"
+              : "Switched to LinkedIn trigger";
+          } else if (triggerTypeId === "indeed") {
+            // newTriggerName = { query: originalTriggerMetadata.query, location: originalTriggerMetadata.location };
+            newNodes = nodes.map((node) =>
+              node.id === "1"
+                ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    metadata: metadataToUse,
+                    configured: isOriginalTrigger ? true : false,
+                  },
+                }
+                : node
+            );
+            newFormData = formData.map((node) =>
+              node.id === "1"
+                ? { nodeid: "1", data: { ...node.data, metadataToUse } }
+                : node
+            );
+            toastMessage = isOriginalTrigger
+              ? "Reverted to original Indeed settings"
+              : "Switched to Indeed trigger";
+            state.ui.addToast("Reverted to original Indeed settings", "info");
+          }
+          else {
+            toastMessage = "Unknown trigger type selected";
+            toastType = "error";
+          }
+
+          // Update current trigger type if it's a new trigger
+          if (!isOriginalTrigger) {
+            newCurrentTriggerType = triggerTypeId;
+          }
+
+          if (toastMessage) {
+            state.ui.addToast(toastMessage, toastType);
+          }
+
+          return {
+            flow: { ...state.flow, nodes: newNodes, currentTriggerType: newCurrentTriggerType },
+            form: { ...state.form, formData: newFormData },
+          };
         }),
       addNode: (sourceNodeId: string) =>
         set((state) => {
@@ -312,11 +423,11 @@ const useStore = createWithEqualityFn<AppState>()(
             state.flow.nodes,
             state.flow.edges,
             (nodes) =>
-              (state.flow.nodes =
-                typeof nodes === "function" ? nodes(state.flow.nodes) : nodes),
+            (state.flow.nodes =
+              typeof nodes === "function" ? nodes(state.flow.nodes) : nodes),
             (edges) =>
-              (state.flow.edges =
-                typeof edges === "function" ? edges(state.flow.edges) : edges),
+            (state.flow.edges =
+              typeof edges === "function" ? edges(state.flow.edges) : edges),
             VERTICAL_SPACING,
             alignNodesVertically,
           );
@@ -644,11 +755,11 @@ const useStore = createWithEqualityFn<AppState>()(
           form: { formData },
           flow: { triggerName },
         } = get();
-        const nodeData = formData.find((node: any)=> node.id===nodeId)?.data || {};
+        const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
-        
+
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
           // Ensure githubEventType has a default value if it's empty
@@ -659,14 +770,14 @@ const useStore = createWithEqualityFn<AppState>()(
             updatedFormData.githubEventType = "issue_comment"; // Default value
           }
           allowedFields =
-          GITHUB_TRIGGER_FIELDS_MAP[
+            GITHUB_TRIGGER_FIELDS_MAP[
             updatedFormData.githubEventType ||
             triggerName?.githubEventType ||
             "issue_comment"
-          ];
+            ];
         } else if (triggerType === "linkedin") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-          if (nodeId==='0') { //Trigger Node
+          if (nodeId === '0') { //Trigger Node
             if (!updatedFormData.keywords?.length) {
               set((state) => {
                 state.form.errors.keywords = "At least one keyword is required";
@@ -685,7 +796,7 @@ const useStore = createWithEqualityFn<AppState>()(
             }
           }
         }
-      
+
         // Check if proper dynamic fields are assigned
         for (const field of fields) {
           if (
@@ -730,7 +841,7 @@ const useStore = createWithEqualityFn<AppState>()(
             }
           }
         }
-     
+
         // Validate the amount field
         if (
           fields.some((f) => f.name === "Amount") &&
@@ -743,7 +854,7 @@ const useStore = createWithEqualityFn<AppState>()(
           });
           return;
         }
-       
+
         // Replace placeholders with actual values
         const processedData = { ...updatedFormData };
         for (const key in processedData) {

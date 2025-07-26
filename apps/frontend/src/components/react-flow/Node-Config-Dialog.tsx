@@ -23,10 +23,9 @@ export const NodeConfigDialog = ({
   onClose,
   onSelectWebhook,
   isAction,
-  handleTriggerTypeChange,
 }: NodeConfigDialogProps) => {
   const {
-    flow: { setTriggerName },
+    flow: { setTriggerName, handleTriggerTypeChange },
   } = useStore();
 
   return (
@@ -44,11 +43,10 @@ export const NodeConfigDialog = ({
               webhook.metadata.githubEventType !== undefined
             ) {
               setTriggerName(webhook.metadata);
-              handleTriggerTypeChange(webhook.metadata.githubEventType);
+              handleTriggerTypeChange(webhook.name, webhook.metadata);
             }
           }}
           type={isAction === true ? "action" : "trigger"}
-          handleTriggerTypeChange={handleTriggerTypeChange}
         />
       </DialogContent>
     </Dialog>

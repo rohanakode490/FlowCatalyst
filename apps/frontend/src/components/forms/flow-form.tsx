@@ -31,7 +31,6 @@ interface DynamicFormProps {
   schema: z.ZodSchema<any>;
   triggerType?: "github" | "linkedin" | "indeed";
   onClose: () => void;
-  handleTriggerTypeChange?: (trigger: string) => void;
   nodeId: string;
 }
 
@@ -42,7 +41,6 @@ function DynamicForm({
   schema,
   triggerType,
   onClose,
-  handleTriggerTypeChange,
   nodeId
 }: DynamicFormProps) {
   const { resolvedTheme } = useTheme();
@@ -50,7 +48,7 @@ function DynamicForm({
   const params = useParams();
   const zapId = params.zapId as string;
   const {
-    flow: { triggerName, setTriggerName },
+    flow: { triggerName, setTriggerName, handleTriggerTypeChange },
     form: {
       formData,
       errors,
@@ -89,7 +87,7 @@ function DynamicForm({
   }, [formData, initialData]);
 
   // Get current node's data
-  const nodeData = formData.find((node:any) => node.id === nodeId)?.data || {};
+  const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
 
   // Initialize formData with node metadata and default githubEventType
   useEffect(() => {
@@ -100,7 +98,7 @@ function DynamicForm({
           ? { githubEventType: "issue_comment" }
           : {}),
       };
-      setFormData([...(formData as []), { id:nodeId, data: tmpData }]);
+      setFormData([...(formData as []), { id: nodeId, data: tmpData }]);
     }
   }, [nodeId, initialData, formData, triggerType, setFormData]);
 
@@ -119,7 +117,7 @@ function DynamicForm({
       };
       setFormData(
         formData.map((node: any) =>
-          node.id === nodeId ? { id:nodeId, data: newNodeData } : node
+          node.id === nodeId ? { id: nodeId, data: newNodeData } : node
         )
       );
 
@@ -140,13 +138,12 @@ function DynamicForm({
             return prev; // No change, return previous state
           }
           return {
-            ...prev,
             githubEventType: value,
           };
         });
 
         if (handleTriggerTypeChange !== undefined) {
-          handleTriggerTypeChange(value);
+          handleTriggerTypeChange("GithubTrigger", value);
         }
       } else if (triggerType === "linkedin") {
         const fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
@@ -225,7 +222,7 @@ function DynamicForm({
     if (triggerType === "github") {
       fields =
         GITHUB_TRIGGER_FIELDS_MAP[
-          triggerName?.githubEventType || "issue_comment"
+        triggerName?.githubEventType || "issue_comment"
         ];
     } else if (triggerType === "linkedin") {
       fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
@@ -313,11 +310,10 @@ function DynamicForm({
                 (field.name === "githubEventType" ? "issue_comment" : "")
               }
               onChange={(e) => handleInputChange(field.name, e.target.value)}
-              className={`mt-1 block w-full p-2 border rounded-md ${
-                isDarkMode
-                  ? "bg-[#1f2937] border-[#374151] text-white"
-                  : "bg-white border-[#d1d5db] text-[#111827]"
-              }`}
+              className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
+                ? "bg-[#1f2937] border-[#374151] text-white"
+                : "bg-white border-[#d1d5db] text-[#111827]"
+                }`}
             >
               {field.options?.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -411,11 +407,10 @@ function DynamicForm({
                   handleInputChange(field.name, e.target.value)
                   handleCountryChange(e.target.value)
                 }}
-                className={`mt-1 block w-full p-2 border rounded-md ${
-                  isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
-                }`}
+                className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
+                  ? "bg-[#1f2937] border-[#374151] text-white"
+                  : "bg-white border-[#d1d5db] text-[#111827]"
+                  }`}
                 disabled={loadingCountries}
               >
                 <option value="">Select Country</option>
@@ -450,11 +445,10 @@ function DynamicForm({
                   id="state"
                   value={nodeData.state || ""}
                   onChange={(e) => handleInputChange("state", e.target.value)}
-                  className={`mt-1 block w-full p-2 border rounded-md ${
-                    isDarkMode
-                      ? "bg-[#1f2937] border-[#374151] text-white"
-                      : "bg-white border-[#d1d5db] text-[#111827]"
-                  }`}
+                  className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
+                    ? "bg-[#1f2937] border-[#374151] text-white"
+                    : "bg-white border-[#d1d5db] text-[#111827]"
+                    }`}
                   disabled={loadingStates}
                 >
                   <option value="">Select State</option>
