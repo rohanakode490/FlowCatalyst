@@ -23,6 +23,7 @@ model User {
   githubId           String?        @unique
   dodoCustomerId     String?        @unique
   cashfreeCustomerId String?        @unique
+  googleAccessToken  String?        @unique
   subscriptions      Subscription[]
   sessions           Session[]
   zaps               Zap[]

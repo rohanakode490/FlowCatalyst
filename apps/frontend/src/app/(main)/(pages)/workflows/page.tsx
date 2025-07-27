@@ -7,15 +7,20 @@ import { CirclePlus } from "lucide-react";
 import GetZaps from "@/components/Zap/get-zaps";
 import ZapTable from "@/components/Zap/zap-table";
 import { useRouter, useSearchParams } from "next/navigation";
+import useStore from "@/lib/store";
 
 // Move the searchParams logic into a separate component
 function WorkflowsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user: { setAccessToken } } = useStore();
 
   useEffect(() => {
     const token = searchParams.get("token");
-
+    const access_token = searchParams.get("access_token")
+    if (access_token && typeof access_token === "string") {
+      setAccessToken(access_token);
+    }
     if (token) {
       localStorage.setItem("token", token);
       router.replace("/workflows");

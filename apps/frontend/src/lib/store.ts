@@ -1,6 +1,4 @@
 import {
-  Edge,
-  Node,
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
@@ -21,8 +19,6 @@ import {
   alignNodesVertically,
   EdgeType,
   NodeType,
-  SetEdgesType,
-  SetNodesType,
 } from "@/components/react-flow/Flow-Helpers";
 import { VERTICAL_SPACING } from "@/components/react-flow/Flow";
 
@@ -84,9 +80,11 @@ interface UserState {
   userSubscription: string;
   isAuthenticated: boolean;
   userLoading: boolean;
+  accessToken: string;
   fetchUser: () => Promise<void>;
   setUserId: (userId: string) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
+  setAccessToken: (token: string) => void;
 }
 
 interface FormState {
@@ -586,6 +584,7 @@ const useStore = createWithEqualityFn<AppState>()(
       userSubscription: "free",
       isAuthenticated: false,
       userLoading: true,
+      accessToken: "",
       fetchUser: async () => {
         try {
           const token = localStorage.getItem("token");
@@ -621,10 +620,17 @@ const useStore = createWithEqualityFn<AppState>()(
           state.user.userId = userId;
         });
       },
-      setAuthenticated: (isAuthenticated) =>
+      setAuthenticated: (isAuthenticated) => {
+
         set((state) => {
           state.user.isAuthenticated = isAuthenticated;
-        }),
+        })
+      },
+      setAccessToken: (token) => {
+        set((state) => {
+          state.user.accessToken = token;
+        })
+      }
     },
     form: {
       formData: [],

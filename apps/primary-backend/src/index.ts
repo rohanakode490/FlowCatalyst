@@ -84,7 +84,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: "http://localhost:4000/auth/google/callback",
-      scope: ["profile", "email"],
+      scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.readonly"],
     },
     async (
       accessToken: string,
@@ -107,7 +107,10 @@ passport.use(
           // If user exists, update Google ID
           await prismaClient.user.update({
             where: { email },
-            data: { googleId: profile.id },
+            data: {
+              googleId: profile.id,
+              googleAccessToken: accessToken,
+            },
           });
         } else {
           const pass = GeneratePassword();
@@ -118,6 +121,7 @@ passport.use(
               email,
               googleId: profile.id,
               password: pass,
+              googleAccessToken: accessToken,
             },
           });
           await createFreeSubscription(prismaClient, user.id);
@@ -203,7 +207,7 @@ app.get(
     next();
   },
   passport.authenticate("google", {
-    scope: ["profile", "email"],
+    scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.readonly"],
     session: false,
   }),
 );
@@ -212,7 +216,9 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req: any, res) => {
-    const token = jwt.sign({ id: req.user.id }, JWT_PASSWORD, {
+
+    const user = req.user;
+    const token = jwt.sign({ id: user.id }, JWT_PASSWORD, {
       expiresIn: "10h",
     });
 
@@ -227,7 +233,7 @@ app.get(
     res.header("auth", token);
 
     // res.redirect("http://localhost:3000/workflows");
-    res.redirect(`http://localhost:3000/workflows?token=${token}`);
+    res.redirect(`http://localhost:3000/workflows?token=${token}&access_token=${user.googleAccessToken}`);
   },
 );
 
