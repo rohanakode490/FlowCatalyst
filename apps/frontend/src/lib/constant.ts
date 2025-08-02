@@ -237,6 +237,28 @@ export const ACTION_FORM_FIELDS: Record<string, FormField[]> = {
       },
     },
   ],
+  googlesheets: [
+    {
+      type: "select",
+      label: "Select Sheet",
+      name: "sheetid",
+      placeholder: "",
+      options: [],
+      required: true,
+    },
+    {
+      type: "select",
+      label: "Sheet Operation",
+      name: "sheetOperation", //Add row, col or create new sheet,
+      placeholder: "",
+      options: [
+        { value: "1", label: "Add Row" },
+        { value: "2", label: "Add Col" },
+        { value: "3", label: "Create a New Sheet" }
+      ],
+      required: true,
+    },
+  ],
 };
 
 export const GITHUB_TRIGGER_FIELDS_MAP: Record<string, string[]> = {

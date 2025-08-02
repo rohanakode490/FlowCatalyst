@@ -116,6 +116,7 @@ router.get("/", authMiddleware, async (req, res) => {
     select: {
       name: true,
       email: true,
+      googleRefreshToken: true,
     },
   });
 

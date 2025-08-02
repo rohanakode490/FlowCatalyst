@@ -5,6 +5,7 @@ import { ACTION_FORM_FIELDS, TRIGGER_FORM_FIELDS } from "@/lib/constant";
 import DynamicForm from "@/components/forms/flow-form";
 import { ACTION_SCHEMAS, TRIGGER_SCHEMAS } from "@/lib/schema";
 import useStore from "@/lib/store";
+import api from "@/lib/api";
 
 interface SidebarProps {
   selectedNode: any;
@@ -27,17 +28,13 @@ export const Sidebar = ({
     flow: { selectedNodeId, triggerName },
   } = useStore();
 
-  useEffect(() => {
-    console.log("triggerName", triggerName)
-  }, [triggerName])
-
   const formFields = selectedNode.data.action
-    ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || []
+    ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
     : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || [];
 
   const schema = selectedNode.data.action
-    ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase()]
-    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()];
+    ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
+    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()] || [];
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;
@@ -80,11 +77,26 @@ export const Sidebar = ({
     };
   }, []);
 
-  function findtype(triggerName: any) {
+  function findTriggerType(triggerName: any) {
     if (triggerName?.hasOwnProperty("githubEventType")) {
       return "github";
-    } else {
+    } else if (
+      triggerName?.hasOwnProperty("type") &&
+      triggerName["type"] === "LINKEDIN_JOBS"
+    ) {
       return "linkedin";
+    } else if (triggerName?.hasOwnProperty("type") && triggerName["type"] === "INDEED_JOBS") {
+      return "indeed";
+    }
+  }
+
+  function findActionType(selectedNode: any) {
+    if (selectedNode.data.action) {
+      const name = selectedNode.data.name.toLowerCase().replace(" ", "");
+      return name;
+    }
+    else {
+      return "";
     }
   }
 
@@ -109,7 +121,8 @@ export const Sidebar = ({
           initialData={initialData}
           onSubmit={(formData) => onFormSubmit(selectedNodeId, formData)}
           schema={schema}
-          triggerType={findtype(triggerName)}
+          triggerType={findTriggerType(triggerName)}
+          actionType={findActionType(selectedNode)}
           onClose={onClose}
           nodeId={selectedNode.id}
         />

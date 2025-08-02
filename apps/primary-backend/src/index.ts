@@ -22,6 +22,7 @@ import { aiRouter } from "./router/ai";
 import { createFreeSubscription } from "./utis/subscription";
 import helmet from "helmet";
 import GeneratePassword from "./utis/password-generater";
+import { spreadsheetsRouter } from "./router/spreadsheets";
 
 dotenv.config();
 
@@ -109,7 +110,7 @@ passport.use(
             where: { email },
             data: {
               googleId: profile.id,
-              googleAccessToken: accessToken,
+              googleRefreshToken: refreshToken,
             },
           });
         } else {
@@ -121,7 +122,7 @@ passport.use(
               email,
               googleId: profile.id,
               password: pass,
-              googleAccessToken: accessToken,
+              googleRefreshToken: refreshToken,
             },
           });
           await createFreeSubscription(prismaClient, user.id);
@@ -233,7 +234,7 @@ app.get(
     res.header("auth", token);
 
     // res.redirect("http://localhost:3000/workflows");
-    res.redirect(`http://localhost:3000/workflows?token=${token}&access_token=${user.googleAccessToken}`);
+    res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}&refresh_token=${user.googleRefreshToken}`);
   },
 );
 
@@ -263,9 +264,11 @@ app.get(
     res.header("auth", token);
 
     // res.redirect("http://localhost:3000/workflows");
-    res.redirect(`http://localhost:3000/workflows?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}`);
   },
 );
+
+app.use("/api/v1/sheets", spreadsheetsRouter)
 
 app.use("/api/v1/user", userRouter);
 

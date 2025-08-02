@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { CopyIcon } from "lucide-react";
 import { HOOKS_URL } from "@/lib/config";
 import api from "@/lib/api";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   GITHUB_TRIGGER_FIELDS_MAP,
   LINKEDIN_TRIGGER_FIELDS_MAP,
@@ -30,6 +30,7 @@ interface DynamicFormProps {
   onSubmit: (data: Record<string, any>) => void;
   schema: z.ZodSchema<any>;
   triggerType?: "github" | "linkedin" | "indeed";
+  actionType?: string;
   onClose: () => void;
   nodeId: string;
 }
@@ -40,15 +41,18 @@ function DynamicForm({
   onSubmit,
   schema,
   triggerType,
+  actionType,
   onClose,
-  nodeId
+  nodeId,
 }: DynamicFormProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const params = useParams();
+  const router = useRouter();
   const zapId = params.zapId as string;
   const {
     flow: { triggerName, setTriggerName, handleTriggerTypeChange },
+    user: { refreshToken },
     form: {
       formData,
       errors,
@@ -60,18 +64,19 @@ function DynamicForm({
       setActiveInput,
       countries,
       states,
+      spreadsheets,
       loadingCountries,
       loadingStates,
       countryError,
       stateError,
       setStates,
-      setLoadingStates,
       setStateError,
       fetchCountries,
       fetchStates,
+      fetchSpreadsheets,
       submitForm,
     },
-    user: { userId, setUserId },
+    user: { userId, setUserId, fetchUser },
   } = useStore(
     useShallow((state) => ({
       form: state.form,
@@ -79,12 +84,14 @@ function DynamicForm({
       user: state.user,
     })),
   );
-
   useEffect(() => {
+    console.log("actionType", actionType)
     console.log("initialData:", initialData);
     console.log("formData:", formData);
-    console.log("triggertype", triggerType)
-  }, [formData, initialData]);
+    console.log("triggertype", triggerType);
+    console.log("fields", fields)
+    console.log("sheets", spreadsheets)
+  }, [formData, initialData, actionType]);
 
   // Get current node's data
   const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
@@ -105,8 +112,10 @@ function DynamicForm({
   // Fetch countries on mount
   useEffect(() => {
     fetchCountries();
-  }, [fetchCountries]);
-
+    if (actionType === "googlesheets" && refreshToken) {
+      fetchSpreadsheets();
+    }
+  }, [fetchCountries, fetchSpreadsheets, actionType, refreshToken]);
 
   // Handle input changes
   const handleInputChange = useCallback(
@@ -117,8 +126,8 @@ function DynamicForm({
       };
       setFormData(
         formData.map((node: any) =>
-          node.id === nodeId ? { id: nodeId, data: newNodeData } : node
-        )
+          node.id === nodeId ? { id: nodeId, data: newNodeData } : node,
+        ),
       );
 
       // Clear errors when the user starts typing
@@ -170,14 +179,7 @@ function DynamicForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Use store's submitForm action
-    submitForm(
-      nodeId,
-      fields,
-      schema,
-      triggerType,
-      onSubmit,
-      onClose,
-    );
+    submitForm(nodeId, fields, schema, triggerType, onSubmit, onClose);
   };
   // Handle adding a trigger field to the active input
   const handleAddTriggerField = (field: string) => {
@@ -198,19 +200,23 @@ function DynamicForm({
     return `${HOOKS_URL}/github-webhook/${eventType}/${userId}/${zapId || ""}`;
   };
 
+  // Set default sheetid if available
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUserId(response.data.id);
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        toast.error("Failed to load user data.");
-      }
-    };
+    if (actionType === "googlesheets" && spreadsheets?.length > 0 && !nodeData.sheetid) {
+      const formattedOptions = spreadsheets.map(({ spreadsheetId, title }) => ({
+        value: spreadsheetId,
+        label: title,
+      }));
+      fields.forEach((field) => {
+
+        if (field.name === "sheetid") {
+          field.options = formattedOptions;
+        }
+      });
+    }
+  }, [actionType, spreadsheets, nodeData.sheetid, handleInputChange]);
+
+  useEffect(() => {
     if (!userId) {
       fetchUser();
     }
@@ -315,6 +321,8 @@ function DynamicForm({
                 : "bg-white border-[#d1d5db] text-[#111827]"
                 }`}
             >
+
+              <option value="">Select an Option</option>
               {field.options?.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -404,8 +412,8 @@ function DynamicForm({
                 id="country"
                 value={nodeData.country || ""}
                 onChange={(e) => {
-                  handleInputChange(field.name, e.target.value)
-                  handleCountryChange(e.target.value)
+                  handleInputChange(field.name, e.target.value);
+                  handleCountryChange(e.target.value);
                 }}
                 className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
                   ? "bg-[#1f2937] border-[#374151] text-white"
@@ -476,6 +484,22 @@ function DynamicForm({
         return null;
     }
   };
+
+  // Render form or connect button for sheets action
+  if (actionType === "googlesheets" && !refreshToken) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-sm text-red-500">Please connect your Google Sheets account to proceed.</p>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push("/connections")}
+        >
+          Connect Google Sheets
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto">

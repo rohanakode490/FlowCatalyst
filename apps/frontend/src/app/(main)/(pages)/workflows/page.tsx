@@ -13,13 +13,13 @@ import useStore from "@/lib/store";
 function WorkflowsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user: { setAccessToken } } = useStore();
+  const { user: { setRefreshToken } } = useStore();
 
   useEffect(() => {
     const token = searchParams.get("token");
-    const access_token = searchParams.get("access_token")
-    if (access_token && typeof access_token === "string") {
-      setAccessToken(access_token);
+    const refresh_token = searchParams.get("refresh_token")
+    if (refresh_token && typeof refresh_token === "string") {
+      setRefreshToken(refresh_token);
     }
     if (token) {
       localStorage.setItem("token", token);

@@ -39,6 +39,12 @@ interface ToastMessage {
   type: "success" | "error" | "info";
 }
 
+interface Spreadsheet {
+  spreadsheetId: string;
+  title: string;
+  sheets: string[];
+}
+
 interface FlowState {
   nodes: NodeType[];
   edges: EdgeType[];
@@ -56,7 +62,7 @@ interface FlowState {
   setOriginalTriggerMetadata: (metadata: Record<string, any>) => void;
   setCurrentTriggerType: (triggerType: string) => void;
   addNode: (sourceNodeId: string) => void;
-  handleTriggerTypeChange: (triggerTypeId: string, triggerMetadata: Record<string, any>) => void;
+  handleTriggerTypeChange: (triggerTypeId: string, trigg: Record<string, any>) => void;
   addFlowEdge: (edge: EdgeType) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   saveZap: (zapId?: string, scraperType?: string) => Promise<string | void>;
@@ -80,11 +86,11 @@ interface UserState {
   userSubscription: string;
   isAuthenticated: boolean;
   userLoading: boolean;
-  accessToken: string;
+  refreshToken: string;
   fetchUser: () => Promise<void>;
   setUserId: (userId: string) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
-  setAccessToken: (token: string) => void;
+  setRefreshToken: (token: string) => void;
 }
 
 interface FormState {
@@ -94,28 +100,34 @@ interface FormState {
   dynamicFields: string[];
   countries: Country[];
   states: State[];
+  spreadsheets: Spreadsheet[];
   loadingCountries: boolean;
   loadingStates: boolean;
+  loadingSpreadsheets: boolean;
   countryError: string;
   stateError: string;
+  spreadsheetError: string;
   isSubmitting: boolean;
   formStatus: "idle" | "submitting" | "success" | "error";
   cachedFormData: Record<string, Record<string, any>>;
-
   setFormData: (data: Record<string, any>[]) => void;
   setErrors: (errors: Record<string, string>) => void;
   setActiveInput: (input: string | null) => void;
   setDynamicFields: (fields: string[]) => void;
   setCountries: (countries: Country[]) => void;
   setStates: (states: State[]) => void;
+  setSpreadsheets: (spreadsheets: Spreadsheet[]) => void;
   setLoadingCountries: (loading: boolean) => void;
   setLoadingStates: (loading: boolean) => void;
+  setLoadingSpreadsheets: (loading: boolean) => void;
   setCountryError: (error: string) => void;
   setStateError: (error: string) => void;
+  setSpreadsheetError: (error: string) => void;
   setFormStatus: (status: "idle" | "submitting" | "success" | "error") => void;
   cacheFormData: (nodeId: string, data: Record<string, any>) => void;
   fetchCountries: () => Promise<void>;
   fetchStates: (country: string) => Promise<void>;
+  fetchSpreadsheets: () => Promise<void>;
   submitForm: (
     nodeId: string,
     fields: FormField[],
@@ -584,7 +596,7 @@ const useStore = createWithEqualityFn<AppState>()(
       userSubscription: "free",
       isAuthenticated: false,
       userLoading: true,
-      accessToken: "",
+      refreshToken: "",
       fetchUser: async () => {
         try {
           const token = localStorage.getItem("token");
@@ -598,13 +610,15 @@ const useStore = createWithEqualityFn<AppState>()(
           const response = await api.get("/user", {
             headers: { Authorization: `Bearer ${token}` },
           });
+          console.log("user", response.data.user)
           set((state) => {
             state.user.userId = response.data.id;
-            state.user.name = response.data.name || "";
-            state.user.email = response.data.email || "";
-            state.user.userSubscription = response.data.subscription || "free";
+            state.user.name = response.data.user.name || "";
+            state.user.email = response.data.user.email || "";
+            state.user.userSubscription = response.data.user.subscription || "free";
             state.user.isAuthenticated = true;
             state.user.userLoading = false;
+            state.user.refreshToken = response.data.user.googleRefreshToken || "";
           });
         } catch (error) {
           console.error("Failed to fetch user:", error);
@@ -626,9 +640,9 @@ const useStore = createWithEqualityFn<AppState>()(
           state.user.isAuthenticated = isAuthenticated;
         })
       },
-      setAccessToken: (token) => {
+      setRefreshToken: (token) => {
         set((state) => {
-          state.user.accessToken = token;
+          state.user.refreshToken = token;
         })
       }
     },
@@ -639,10 +653,13 @@ const useStore = createWithEqualityFn<AppState>()(
       dynamicFields: [],
       countries: [],
       states: [],
+      spreadsheets: [],
       loadingCountries: false,
       loadingStates: false,
+      loadingSpreadsheets: false,
       countryError: "",
       stateError: "",
+      spreadsheetError: "",
       isSubmitting: false,
       formStatus: "idle",
       cachedFormData: {},
@@ -670,6 +687,10 @@ const useStore = createWithEqualityFn<AppState>()(
         set((state) => {
           state.form.states = states;
         }),
+      setSpreadsheets: (spreadsheets) =>
+        set((state) => {
+          state.form.spreadsheets = spreadsheets;
+        }),
       setLoadingCountries: (loading) =>
         set((state) => {
           state.form.loadingCountries = loading;
@@ -678,6 +699,10 @@ const useStore = createWithEqualityFn<AppState>()(
         set((state) => {
           state.form.loadingStates = loading;
         }),
+      setLoadingSpreadsheets: (loading) =>
+        set((state) => {
+          state.form.loadingSpreadsheets = loading;
+        }),
       setCountryError: (error) =>
         set((state) => {
           state.form.countryError = error;
@@ -685,6 +710,10 @@ const useStore = createWithEqualityFn<AppState>()(
       setStateError: (error) =>
         set((state) => {
           state.form.stateError = error;
+        }),
+      setSpreadsheetError: (error) =>
+        set((state) => {
+          state.form.spreadsheetError = error;
         }),
       setFormStatus: (status) =>
         set((state) => {
@@ -751,6 +780,36 @@ const useStore = createWithEqualityFn<AppState>()(
           });
         }
       },
+      fetchSpreadsheets: async () => {
+        try {
+          set((state) => {
+            state.form.loadingSpreadsheets = true;
+            state.form.spreadsheetError = "";
+          });
+
+          const { user: { refreshToken } } = get();
+
+          const token = localStorage.getItem("token");
+          const response = await api.post("/sheets/list",
+            { refresh_token: refreshToken },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          set((state) => {
+            state.form.spreadsheets = response.data.spreadsheets || [];
+          });
+        } catch (error) {
+          console.error("Spreadsheet fetch error:", error);
+          set((state) => {
+            state.form.spreadsheetError = "Failed to load spreadsheets";
+            state.ui.addToast("Failed to load spreadsheets.", "error");
+          });
+        } finally {
+          set((state) => {
+            state.form.loadingSpreadsheets = false;
+          });
+        }
+      },
       submitForm: async (nodeId, fields, schema, triggerType, onSubmit, onClose) => {
         set((state) => {
           state.form.isSubmitting = true;
@@ -759,6 +818,7 @@ const useStore = createWithEqualityFn<AppState>()(
         });
         const {
           form: { formData },
+          user: { refreshToken },
           flow: { triggerName },
         } = get();
         const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
@@ -781,7 +841,7 @@ const useStore = createWithEqualityFn<AppState>()(
             triggerName?.githubEventType ||
             "issue_comment"
             ];
-        } else if (triggerType === "linkedin") {
+        } else if (triggerType === "linkedin" || triggerType === "indeed") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
           if (nodeId === '0') { //Trigger Node
             if (!updatedFormData.keywords?.length) {
@@ -816,7 +876,6 @@ const useStore = createWithEqualityFn<AppState>()(
           // Validate placeholders for fields that support them
           if (typeof value === "string") {
             const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
-            console.log("placeholders", placeholders)
             const isValid = placeholders.every((p) =>
               allowedFields.includes(p.replace(/{{trigger\.([^}]+)}}/, "$1")),
             );
@@ -859,6 +918,11 @@ const useStore = createWithEqualityFn<AppState>()(
             state.ui.addToast("Amount is required", "error");
           });
           return;
+        }
+
+        // If sheets schema add refreshToken
+        if (updatedFormData.hasOwnProperty("sheetid") && refreshToken) {
+          updatedFormData.refreshToken = refreshToken
         }
 
         // Replace placeholders with actual values

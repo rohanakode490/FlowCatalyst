@@ -177,66 +177,10 @@ export default function Flow({ zapId }: FlowProps) {
       ...edge,
       data: {
         ...edge.data,
-        onAddNode: () =>
-          addNode(edge.source)
-        // addNodeBelow(
-        //   userSubscription,
-        //   edge.source,
-        //   nodes,
-        //   edges,
-        //   setNodes,
-        //   setEdges,
-        //   VERTICAL_SPACING,
-        //   () => alignNodesVertically(setNodes, fitView, VERTICAL_SPACING),
-        // ),
+        onAddNode: () => addNode(edge.source),
       },
     }));
   }, [edges, nodes, setNodes, setEdges]);
-
-  // Handle trigger type changes
-  // const handleTriggerTypeChange = (triggerTypeId: string) => {
-  //   if (originalEventType !== undefined) {
-  //     if (
-  //       triggerTypeId !== originalEventType[0].data.metadata?.githubEventType
-  //     ) {
-  //       return;
-  //     }
-  //     if (setTriggerData !== undefined) {
-  //       setTriggerData(originalEventType[0].data.metadata.githubEventType);
-  //       setNodes(originalEventType);
-  //     }
-  //   }
-  // };
-
-  // const handleTriggerTypeChange = useCallback(
-  //   (triggerTypeId: string) => {
-  //     if (
-  //       originalTriggerMetadata?.githubEventType &&
-  //       triggerTypeId !== originalTriggerMetadata.githubEventType
-  //     ) {
-  //       setTriggerName({
-  //         githubEventType: originalTriggerMetadata.githubEventType,
-  //       });
-  //       setNodes((nds) =>
-  //         nds.map((node) =>
-  //           node.id === "1"
-  //             ? {
-  //                 ...node,
-  //                 data: {
-  //                   ...node.data,
-  //                   metadata: {
-  //                     githubEventType: originalTriggerMetadata.githubEventType,
-  //                   },
-  //                 },
-  //               }
-  //             : node,
-  //         ),
-  //       );
-  //       addToast("Reverted to original GitHub event type", "info");
-  //     }
-  //   },
-  //   [originalTriggerMetadata, setTriggerName, setNodes, addToast],
-  // );
 
   const handleWorkflowGenerated = (newNodes: any, newEdges: any) => {
     setNodes(newNodes);
@@ -247,16 +191,6 @@ export default function Flow({ zapId }: FlowProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* <FlowControls */}
-      {/*   onAlignNodes={() => */}
-      {/*     alignNodesVertically(setNodes, fitView, VERTICAL_SPACING) */}
-      {/*   } */}
-      {/*   nodes={nodes} */}
-      {/*   edges={edges} */}
-      {/* /> */}
-      {/* <div className="mb-4 mx-"> */}
-      {/* <ChatInterface onWorkflowGenerated={handleWorkflowGenerated} /> */}
-      {/* </div> */}
       <div className="flex w-[90vw] h-[90vh] overflow-hidden">
         <FlowCanvas
           nodes={nodesWithHandlers}
