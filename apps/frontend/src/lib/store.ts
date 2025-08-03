@@ -871,8 +871,6 @@ const useStore = createWithEqualityFn<AppState>()(
           )
             continue;
           const value = updatedFormData[field.name];
-          console.log("allowed", allowedFields)
-          console.log("val", value, field.name, updatedFormData)
           // Validate placeholders for fields that support them
           if (typeof value === "string") {
             const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
@@ -951,7 +949,7 @@ const useStore = createWithEqualityFn<AppState>()(
         }
 
         // Skip validation if schema is for github-webhook which is only a link
-        if (!schema) {
+        if (Array.isArray(schema)) {
           onSubmit(processedData);
           onClose();
           set((state) => {

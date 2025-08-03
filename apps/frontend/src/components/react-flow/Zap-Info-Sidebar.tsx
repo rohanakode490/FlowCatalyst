@@ -5,7 +5,6 @@ import { ACTION_FORM_FIELDS, TRIGGER_FORM_FIELDS } from "@/lib/constant";
 import DynamicForm from "@/components/forms/flow-form";
 import { ACTION_SCHEMAS, TRIGGER_SCHEMAS } from "@/lib/schema";
 import useStore from "@/lib/store";
-import api from "@/lib/api";
 
 interface SidebarProps {
   selectedNode: any;
@@ -30,11 +29,11 @@ export const Sidebar = ({
 
   const formFields = selectedNode.data.action
     ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
-    : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase()] || [];
+    : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase().replace(" ", "")] || [];
 
   const schema = selectedNode.data.action
     ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
-    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase()] || [];
+    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] || [];
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;

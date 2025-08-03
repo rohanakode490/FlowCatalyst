@@ -49,7 +49,7 @@ const solanaActionSchema = z.object({
 
 const googleSheetsActionSchema = z.object({
   sheetid: z.string().min(1, "Invalid Id"),
-  operation: z.enum(["1", "2", "3"], {
+  sheetOperation: z.enum(["1", "2", "3"], {
     errorMap: () => ({ message: "Invalid operation" }),
   }),
   refreshToken: z.string().min(1, "Google Sheets authentication required"),
@@ -57,7 +57,7 @@ const googleSheetsActionSchema = z.object({
 
 // Map schemas to trigger/action names
 export const TRIGGER_SCHEMAS: Record<string, z.ZodSchema<any>> = {
-  linkedinjobfetchingtrigger: linkedinJobSchema,
+  linkedintrigger: linkedinJobSchema,
   indeedtrigger: indeedTriggerSchema,
 };
 
@@ -65,5 +65,5 @@ export const ACTION_SCHEMAS: Record<string, z.ZodSchema<any>> = {
   slack: slackActionSchema,
   email: emailActionSchema,
   solana: solanaActionSchema,
-  googlesheet: googleSheetsActionSchema,
+  googlesheets: googleSheetsActionSchema,
 };
