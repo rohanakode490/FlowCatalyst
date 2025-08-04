@@ -13,7 +13,6 @@ router.post("/", authMiddleware, async (req, res) => {
   //@ts-ignore
   const id = req.id;
   const parsedData = ZapCreateSchema.safeParse(zapData);
-  console.log("bdy", scraperType, zapData);
 
   if (!parsedData.success) {
     return res.status(411).json({
@@ -49,7 +48,6 @@ router.post("/", authMiddleware, async (req, res) => {
             zapId: zap.id,
           },
         });
-        console.log("trigger", trigger);
         // Update the zap with the correct triggerId
         await prismaClient.zap.update({
           where: {

@@ -42,7 +42,6 @@ function WebhookSelector({
     }
     onSelect(webhook);
     if (type === "trigger" && handleTriggerTypeChange) {
-      console.log("webhook", webhook)
       setTriggerName(webhook.metadata);
       handleTriggerTypeChange(webhook.name, webhook.metadata);
     }
@@ -55,8 +54,8 @@ function WebhookSelector({
             key={webhook.id}
             onClick={() => handleTriggerSelect(webhook)}
             className={`flex flex-row items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${isTriggerRestricted(webhook.name)
-                ? "opacity-50 cursor-not-allowed" // Visual indication
-                : ""
+              ? "opacity-50 cursor-not-allowed" // Visual indication
+              : ""
               }`}
             disabled={isTriggerRestricted(webhook.name)}
           >

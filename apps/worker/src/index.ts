@@ -74,7 +74,6 @@ async function main() {
         return;
       }
 
-      console.log("Ok");
       if (currentAction?.type.name === "Email") {
         console.log("Started Working");
         try {

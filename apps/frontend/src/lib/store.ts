@@ -62,7 +62,10 @@ interface FlowState {
   setOriginalTriggerMetadata: (metadata: Record<string, any>) => void;
   setCurrentTriggerType: (triggerType: string) => void;
   addNode: (sourceNodeId: string) => void;
-  handleTriggerTypeChange: (triggerTypeId: string, trigg: Record<string, any>) => void;
+  handleTriggerTypeChange: (
+    triggerTypeId: string,
+    trigg: Record<string, any>,
+  ) => void;
   addFlowEdge: (edge: EdgeType) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   saveZap: (zapId?: string, scraperType?: string) => Promise<string | void>;
@@ -313,7 +316,10 @@ const useStore = createWithEqualityFn<AppState>()(
         }),
       setTriggerName: (dataOrFn) =>
         set((state) => {
-          const newTriggerName = typeof dataOrFn === "function" ? dataOrFn(state.flow.triggerName) : dataOrFn;
+          const newTriggerName =
+            typeof dataOrFn === "function"
+              ? dataOrFn(state.flow.triggerName)
+              : dataOrFn;
           state.flow.triggerName = newTriggerName;
         }),
       setOriginalTriggerMetadata: (metadata) =>
@@ -322,11 +328,14 @@ const useStore = createWithEqualityFn<AppState>()(
         }),
       setCurrentTriggerType: (triggerType) =>
         set((state) => {
-          state.flow.currentTriggerType = triggerType
+          state.flow.currentTriggerType = triggerType;
         }),
       handleTriggerTypeChange: (triggerTypeId, triggerMetadata) =>
         set((state) => {
-          const { flow: { originalTriggerMetadata, nodes, currentTriggerType }, form: { formData } } = state;
+          const {
+            flow: { originalTriggerMetadata, nodes, currentTriggerType },
+            form: { formData },
+          } = state;
           let newNodes = nodes;
           let newFormData = formData;
           let newCurrentTriggerType = currentTriggerType;
@@ -334,8 +343,11 @@ const useStore = createWithEqualityFn<AppState>()(
           let toastType: "success" | "info" | "error" = "info";
 
           // Determine if the selected trigger is new or reverting to the original
-          const isOriginalTrigger = originalTriggerMetadata && triggerTypeId === currentTriggerType;
-          const metadataToUse = isOriginalTrigger ? originalTriggerMetadata : triggerMetadata;
+          const isOriginalTrigger =
+            originalTriggerMetadata && triggerTypeId === currentTriggerType;
+          const metadataToUse = isOriginalTrigger
+            ? originalTriggerMetadata
+            : triggerMetadata;
 
           if (triggerTypeId === "GithubTrigger") {
             // newTriggerName = metadataToUse.githubEventType ? metadataToUse : { githubEventType: "issue_comment" };
@@ -346,15 +358,13 @@ const useStore = createWithEqualityFn<AppState>()(
                   data: {
                     ...node.data,
                     metadata: metadataToUse,
-                    configured: isOriginalTrigger ? true : false
+                    configured: isOriginalTrigger ? true : false,
                   },
                 }
-                : node
+                : node,
             );
             newFormData = formData.map((node) =>
-              node.id === "1"
-                ? { ...node, data: metadataToUse }
-                : node
+              node.id === "1" ? { ...node, data: metadataToUse } : node,
             );
             toastMessage = isOriginalTrigger
               ? "Reverted to original GitHub event type"
@@ -368,15 +378,13 @@ const useStore = createWithEqualityFn<AppState>()(
                   data: {
                     ...node.data,
                     metadata: metadataToUse,
-                    configured: isOriginalTrigger ? true : false
+                    configured: isOriginalTrigger ? true : false,
                   },
                 }
-                : node
+                : node,
             );
             newFormData = formData.map((node) =>
-              node.id === "1"
-                ? { ...node, data: metadataToUse }
-                : node
+              node.id === "1" ? { ...node, data: metadataToUse } : node,
             );
 
             toastMessage = isOriginalTrigger
@@ -394,19 +402,18 @@ const useStore = createWithEqualityFn<AppState>()(
                     configured: isOriginalTrigger ? true : false,
                   },
                 }
-                : node
+                : node,
             );
             newFormData = formData.map((node) =>
               node.id === "1"
                 ? { nodeid: "1", data: { ...node.data, metadataToUse } }
-                : node
+                : node,
             );
             toastMessage = isOriginalTrigger
               ? "Reverted to original Indeed settings"
               : "Switched to Indeed trigger";
             state.ui.addToast("Reverted to original Indeed settings", "info");
-          }
-          else {
+          } else {
             toastMessage = "Unknown trigger type selected";
             toastType = "error";
           }
@@ -421,7 +428,11 @@ const useStore = createWithEqualityFn<AppState>()(
           }
 
           return {
-            flow: { ...state.flow, nodes: newNodes, currentTriggerType: newCurrentTriggerType },
+            flow: {
+              ...state.flow,
+              nodes: newNodes,
+              currentTriggerType: newCurrentTriggerType,
+            },
             form: { ...state.form, formData: newFormData },
           };
         }),
@@ -610,15 +621,16 @@ const useStore = createWithEqualityFn<AppState>()(
           const response = await api.get("/user", {
             headers: { Authorization: `Bearer ${token}` },
           });
-          console.log("user", response.data.user)
           set((state) => {
             state.user.userId = response.data.id;
             state.user.name = response.data.user.name || "";
             state.user.email = response.data.user.email || "";
-            state.user.userSubscription = response.data.user.subscription || "free";
+            state.user.userSubscription =
+              response.data.user.subscription || "free";
             state.user.isAuthenticated = true;
             state.user.userLoading = false;
-            state.user.refreshToken = response.data.user.googleRefreshToken || "";
+            state.user.refreshToken =
+              response.data.user.googleRefreshToken || "";
           });
         } catch (error) {
           console.error("Failed to fetch user:", error);
@@ -635,16 +647,15 @@ const useStore = createWithEqualityFn<AppState>()(
         });
       },
       setAuthenticated: (isAuthenticated) => {
-
         set((state) => {
           state.user.isAuthenticated = isAuthenticated;
-        })
+        });
       },
       setRefreshToken: (token) => {
         set((state) => {
           state.user.refreshToken = token;
-        })
-      }
+        });
+      },
     },
     form: {
       formData: [],
@@ -787,14 +798,18 @@ const useStore = createWithEqualityFn<AppState>()(
             state.form.spreadsheetError = "";
           });
 
-          const { user: { refreshToken } } = get();
+          const {
+            user: { refreshToken },
+          } = get();
 
           const token = localStorage.getItem("token");
-          const response = await api.post("/sheets/list",
+          const response = await api.post(
+            "/sheets/list",
             { refresh_token: refreshToken },
             {
               headers: { Authorization: `Bearer ${token}` },
-            });
+            },
+          );
           set((state) => {
             state.form.spreadsheets = response.data.spreadsheets || [];
           });
@@ -810,18 +825,26 @@ const useStore = createWithEqualityFn<AppState>()(
           });
         }
       },
-      submitForm: async (nodeId, fields, schema, triggerType, onSubmit, onClose) => {
+      submitForm: async (
+        nodeId,
+        fields,
+        schema,
+        triggerType,
+        onSubmit,
+        onClose,
+      ) => {
         set((state) => {
           state.form.isSubmitting = true;
           state.form.formStatus = "submitting";
-          state.form.errors = {}
+          state.form.errors = {};
         });
         const {
           form: { formData },
           user: { refreshToken },
           flow: { triggerName },
         } = get();
-        const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
+        const nodeData =
+          formData.find((node: any) => node.id === nodeId)?.data || {};
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
@@ -843,7 +866,8 @@ const useStore = createWithEqualityFn<AppState>()(
             ];
         } else if (triggerType === "linkedin" || triggerType === "indeed") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-          if (nodeId === '0') { //Trigger Node
+          if (nodeId === "0") {
+            //Trigger Node
             if (!updatedFormData.keywords?.length) {
               set((state) => {
                 state.form.errors.keywords = "At least one keyword is required";
@@ -920,7 +944,7 @@ const useStore = createWithEqualityFn<AppState>()(
 
         // If sheets schema add refreshToken
         if (updatedFormData.hasOwnProperty("sheetid") && refreshToken) {
-          updatedFormData.refreshToken = refreshToken
+          updatedFormData.refreshToken = refreshToken;
         }
 
         // Replace placeholders with actual values
@@ -1035,6 +1059,9 @@ const useStore = createWithEqualityFn<AppState>()(
           );
           set((state) => {
             state.zap.zapStatus[zapId] = isActive;
+            state.zap.zaps = state.zap.zaps.map((zap) =>
+              zap.id === zapId ? { ...zap, isActive } : zap,
+            );
             state.ui.addToast(
               `Zap ${isActive ? "enabled" : "disabled"} successfully!`,
               "success",

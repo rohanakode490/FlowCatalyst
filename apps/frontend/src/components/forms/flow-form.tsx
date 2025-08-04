@@ -11,7 +11,6 @@ import { z } from "zod";
 import toast from "react-hot-toast";
 import { CopyIcon } from "lucide-react";
 import { HOOKS_URL } from "@/lib/config";
-import api from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
 import {
   GITHUB_TRIGGER_FIELDS_MAP,
@@ -84,14 +83,6 @@ function DynamicForm({
       user: state.user,
     })),
   );
-  useEffect(() => {
-    console.log("actionType", actionType)
-    console.log("initialData:", initialData);
-    console.log("formData:", formData);
-    console.log("triggertype", triggerType);
-    console.log("fields", fields)
-    console.log("sheets", spreadsheets)
-  }, [formData, initialData, actionType]);
 
   // Get current node's data
   const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
