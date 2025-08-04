@@ -44,6 +44,7 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
   // Function to handle Zap toggle
   const handleToggleZap = useCallback(
     async (zapId: string, isActive: boolean) => {
+      addToast("Loading...", "loading")
       try {
         await toggleZap(zapId, isActive);
       } catch (error) {

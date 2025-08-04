@@ -21,6 +21,7 @@ import {
   NodeType,
 } from "@/components/react-flow/Flow-Helpers";
 import { VERTICAL_SPACING } from "@/components/react-flow/Flow";
+import toast from "react-hot-toast";
 
 export interface Country {
   country: string;
@@ -150,18 +151,10 @@ interface ZapState {
 }
 
 interface UIState {
-  sidebarWidth: number;
-  isSidebarOpen: boolean;
-  toastMessages: ToastMessage[];
-  isModalOpen: boolean;
-  setSidebarWidth: (width: number) => void;
-  toggleSidebar: () => void;
   addToast: (
-    message: string | JSX.Element,
-    type: "success" | "error" | "info",
+    message: string,
+    type: "success" | "error" | "loading" | string,
   ) => void;
-  removeToast: (id: string) => void;
-  setModalOpen: (open: boolean) => void;
 }
 
 interface AppState {
@@ -454,7 +447,7 @@ const useStore = createWithEqualityFn<AppState>()(
           );
           if (result === 0) {
             state.ui.addToast(
-              "Free plan allows only 3 nodes. Upgrade to SuperGrok at https://x.ai/grok.",
+              "Free plan allows only 3 nodes. Upgrade to UPGRADE_URL.",
               "error",
             );
           } else if (result === -1) {
@@ -482,7 +475,7 @@ const useStore = createWithEqualityFn<AppState>()(
           //TODO: ADD UPGRADE_URL
           set((state) => {
             state.ui.addToast(
-              `Free plan allows only 5 Zaps. Upgrade to SuperGrok at UPGRADE_URL.`,
+              `Free plan allows only 5 Zaps. Upgrade to at UPGRADE_URL.`,
               "error",
             );
           });
@@ -1076,37 +1069,17 @@ const useStore = createWithEqualityFn<AppState>()(
       },
     },
     ui: {
-      sidebarWidth: 384,
-      isSidebarOpen: true,
-      toastMessages: [],
-      isModalOpen: false,
-      setSidebarWidth: (width) =>
-        set((state) => {
-          state.ui.sidebarWidth = width;
-          localStorage.setItem("sidebarWidth", width.toString());
-        }),
-      toggleSidebar: () =>
-        set((state) => {
-          state.ui.isSidebarOpen = !state.ui.isSidebarOpen;
-        }),
-      addToast: (message, type) =>
-        set((state) => {
-          state.ui.toastMessages.push({
-            id: Date.now().toString(),
-            message,
-            type,
-          });
-        }),
-      removeToast: (id) =>
-        set((state) => {
-          state.ui.toastMessages = state.ui.toastMessages.filter(
-            (t: any) => t.id !== id,
-          );
-        }),
-      setModalOpen: (open) =>
-        set((state) => {
-          state.ui.isModalOpen = open;
-        }),
+      addToast: (message, type) => {
+        if (type === "success") {
+          return toast.success(message);
+        } else if (type === "error") {
+          return toast.error(message);
+        } else if (type === "loading") {
+          return toast.loading(message);
+        } else {
+          return toast(message); // Fallback for other types 
+        }
+      },
     },
   })),
 );
