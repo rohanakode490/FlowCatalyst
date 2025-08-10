@@ -76,10 +76,6 @@ RUN chown -R worker:worker /app
 # Switch to non-root user
 USER worker
 
-# Ensure Kafka is reachable before starting
-# HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-#     CMD nc -zv ${KAFKA_BROKERS:-localhost} 9092 || exit 1
-
 # Run Prisma migrations & start the app
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
 

@@ -110,7 +110,7 @@ passport.use(
             where: { email },
             data: {
               googleId: profile.id,
-              googleRefreshToken: refreshToken,
+              // googleRefreshToken: refreshToken,
             },
           });
         } else {
@@ -122,7 +122,7 @@ passport.use(
               email,
               googleId: profile.id,
               password: pass,
-              googleRefreshToken: refreshToken,
+              // googleRefreshToken: refreshToken,
             },
           });
           await createFreeSubscription(prismaClient, user.id);
@@ -234,7 +234,7 @@ app.get(
     res.header("auth", token);
 
     // res.redirect("http://localhost:3000/workflows");
-    res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}&refresh_token=${user.googleRefreshToken}`);
+    res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}`);
   },
 );
 

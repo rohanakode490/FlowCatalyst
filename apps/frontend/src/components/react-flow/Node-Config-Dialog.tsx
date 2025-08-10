@@ -37,14 +37,14 @@ export const NodeConfigDialog = ({
         <WebhookSelector
           onSelect={(webhook) => {
             onSelectWebhook(webhook);
-            if (
-              handleTriggerTypeChange &&
-              isAction === false &&
-              webhook.metadata.githubEventType !== undefined
-            ) {
-              setTriggerName(webhook.metadata);
-              handleTriggerTypeChange(webhook.name, webhook.metadata);
-            }
+            // if (
+            //   handleTriggerTypeChange &&
+            //   isAction === false &&
+            //   webhook.metadata.githubEventType !== undefined
+            // ) {
+            //   // setTriggerName(webhook.metadata);
+            //   handleTriggerTypeChange(webhook.name, webhook.metadata);
+            // }
           }}
           type={isAction === true ? "action" : "trigger"}
         />

@@ -25,10 +25,11 @@ router.post("/list", authMiddleware, async (req, res) => {
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
             grant_type: "refresh_token",
         });
+        console.log("ACCESS", response.data)
         const access_token = response.data.access_token;
 
         const auth = new google.auth.OAuth2();
-        auth.setCredentials({ access_token: access_token, refresh_token: refresh_token });
+        auth.setCredentials({ access_token: access_token });
         const drive = google.drive({ version: "v3", auth });
         const sheets = google.sheets({ version: "v4", auth });
 

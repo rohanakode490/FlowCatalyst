@@ -15,7 +15,7 @@ function WebhookSelector({
   type,
 }: WebhookSelectorProps) {
   const {
-    flow: { setTriggerName, handleTriggerTypeChange },
+    flow: { nodes, setTriggerName, handleTriggerTypeChange },
     webhook: { webhooks, fetchWebhooks },
     ui: { addToast },
   } = useStore();
@@ -30,8 +30,12 @@ function WebhookSelector({
     if (type !== "trigger" || !RESTRICTED_TRIGGERS.includes(webhookName)) {
       return false;
     }
-    // For other restricted triggers, assume only one is allowed (extend logic as needed)
-    return false;
+    // // For other restricted triggers, assume only one is allowed (extend logic as needed)
+    // return false;
+    // Check if a node with this trigger type already exists
+    return nodes.some(
+      (node) => node.data.name === webhookName && node.data.configured
+    );
   };
 
   // Handle trigger selection
@@ -41,9 +45,11 @@ function WebhookSelector({
       return;
     }
     onSelect(webhook);
-    if (type === "trigger" && handleTriggerTypeChange) {
+    if (type === "trigger") {
+      console.log("webhook-selector", webhook)
       setTriggerName(webhook.metadata);
-      handleTriggerTypeChange(webhook.name, webhook.metadata);
+      console.log("selector", webhook.metadata)
+      // handleTriggerTypeChange(webhook.name, webhook.metadata);
     }
   };
   return (

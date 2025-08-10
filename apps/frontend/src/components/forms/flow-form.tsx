@@ -151,6 +151,8 @@ function DynamicForm({
       } else if (triggerType === "indeed") {
         const fields = INDEED_TRIGGER_FIELDS_MAP["indeed"];
         setDynamicFields(fields.map((field) => `${field}`));
+      } else {
+        setDynamicFields([])
       }
     },
     [

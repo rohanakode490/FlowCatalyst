@@ -8,11 +8,25 @@ import axios from "axios";
 
 const router = Router();
 
+function getScraperType(scraperType: string) {
+  if (scraperType.includes("Indeed")) {
+    return "INDEED_JOBS"
+  }
+  else if (scraperType.includes("Linkedin")) {
+    return "LINKEDIN_JOBS"
+  } else {
+    return ""
+  }
+}
+
 router.post("/", authMiddleware, async (req, res) => {
   const { scraperType, zapData } = req.body;
   //@ts-ignore
   const id = req.id;
+  console.log(scraperType, zapData)
   const parsedData = ZapCreateSchema.safeParse(zapData);
+  const newScraperType = getScraperType(scraperType)
+  console.log("new", newScraperType)
 
   if (!parsedData.success) {
     return res.status(411).json({
@@ -64,7 +78,7 @@ router.post("/", authMiddleware, async (req, res) => {
     if (parsedData.data.triggerMetadata.keywords !== undefined) {
       await axios.post(`${process.env.HOOKS_APP_URL}/schedule`, {
         triggerId: ID.TriggerId,
-        scraperType: scraperType,
+        scraperType: newScraperType,
         userId: id,
       });
     }

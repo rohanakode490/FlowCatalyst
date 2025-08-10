@@ -65,7 +65,8 @@ export default function Flow({ zapId }: FlowProps) {
   // Handle node click
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: any) => {
-      setSelectedNodeId(node.id); // Always set the selected node ID
+      setSelectedNodeId(node.id);
+      console.log("Node clicked:", node.id, "Configured:", node.data.configured);
       if (node.data !== undefined && !node.data.configured) {
         openDialog(); // Open the dialog for unconfigured nodes
       }
@@ -83,10 +84,12 @@ export default function Flow({ zapId }: FlowProps) {
         configured: true,
         metadata: webhook.metadata || {},
       });
-      if (!webhook.action) {
+      if (webhook.hasOwnProperty("action") && !webhook.action) {
         setTriggerName(webhook.metadata || {});
+        console.log("flow", webhook, webhook.metadata || {})
       }
       handleWebhookSelect(webhook);
+      closeDialog();
     },
     [updateNodeData, setTriggerName, handleWebhookSelect],
   );
@@ -97,6 +100,7 @@ export default function Flow({ zapId }: FlowProps) {
       updateNodeData(nodeId, { metadata: formData });
       if (!nodes.find((node) => node.id === nodeId)?.data.action) {
         setTriggerName(formData);
+        console.log("flow2", formData)
       }
       addToast("Configuration saved!", "success");
     },
@@ -116,16 +120,16 @@ export default function Flow({ zapId }: FlowProps) {
   // Get the selected node's data
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
-  useEffect(() => {
-    if (
-      selectedNode !== undefined &&
-      selectedNode.data.action === false &&
-      selectedNode.data.configured === true &&
-      selectedNode.data.metadata !== undefined
-    ) {
-      setTriggerName(selectedNode.data.metadata);
-    }
-  }, [selectedNode, setTriggerName]);
+  // useEffect(() => {
+  //   if (
+  //     selectedNode !== undefined &&
+  //     selectedNode.data.action === false &&
+  //     selectedNode.data.configured === true &&
+  //     selectedNode.data.metadata !== undefined
+  //   ) {
+  //     setTriggerName(selectedNode.data.metadata);
+  //   }
+  // }, [selectedNode, setTriggerName]);
 
   useEffect(() => {
     const savedChatVisibility = localStorage.getItem("showChat");

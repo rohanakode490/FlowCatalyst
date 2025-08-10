@@ -338,6 +338,7 @@ const useStore = createWithEqualityFn<AppState>()(
           // Determine if the selected trigger is new or reverting to the original
           const isOriginalTrigger =
             originalTriggerMetadata && triggerTypeId === currentTriggerType;
+          console.log("isOriginal", isOriginalTrigger, originalTriggerMetadata, triggerTypeId, currentTriggerType)
           const metadataToUse = isOriginalTrigger
             ? originalTriggerMetadata
             : triggerMetadata;
@@ -383,7 +384,7 @@ const useStore = createWithEqualityFn<AppState>()(
             toastMessage = isOriginalTrigger
               ? "Reverted to original LinkedIn settings"
               : "Switched to LinkedIn trigger";
-          } else if (triggerTypeId === "indeed") {
+          } else if (triggerTypeId === "IndeedTrigger") {
             // newTriggerName = { query: originalTriggerMetadata.query, location: originalTriggerMetadata.location };
             newNodes = nodes.map((node) =>
               node.id === "1"
@@ -399,7 +400,7 @@ const useStore = createWithEqualityFn<AppState>()(
             );
             newFormData = formData.map((node) =>
               node.id === "1"
-                ? { nodeid: "1", data: { ...node.data, metadataToUse } }
+                ? { id: "1", data: { ...node.data, metadataToUse } }
                 : node,
             );
             toastMessage = isOriginalTrigger
@@ -471,6 +472,7 @@ const useStore = createWithEqualityFn<AppState>()(
           zap: { zaps },
           user,
         } = get();
+        console.log("scraperType", scraperType)
         if (user.userSubscription === "free" && zaps.length >= 5) {
           //TODO: ADD UPGRADE_URL
           set((state) => {
@@ -841,6 +843,8 @@ const useStore = createWithEqualityFn<AppState>()(
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
+        console.log("triggerType", triggerType)
+        console.log("formData", formData)
 
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
@@ -859,6 +863,7 @@ const useStore = createWithEqualityFn<AppState>()(
             ];
         } else if (triggerType === "linkedin" || triggerType === "indeed") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
+          console.log("updatedFormData", updatedFormData)
           if (nodeId === "0") {
             //Trigger Node
             if (!updatedFormData.keywords?.length) {

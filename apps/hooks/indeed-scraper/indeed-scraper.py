@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
         
         jobs_formatted = format_jobs(jobs)
-        print(jobs_formatted)
+        print(json.dumps(jobs_formatted))
         # Convert DataFrame to JSON-compatible format
         # jobs_json = jobs.to_dict(orient="records")
         #

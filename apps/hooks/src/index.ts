@@ -209,6 +209,75 @@ app.post(
   },
 );
 
+// Python LinkedIn Scraper Execution
+const runLinkedinScraper = (
+  keywords: string[],
+  location: string,
+  limit: number,
+  offset: number,
+  experience: string[],
+  remote: boolean,
+  jobType: string[],
+  listed_at: string,
+  existingUrns: string[],
+): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(
+      __dirname,
+      "..",
+      "linkedin-scraper",
+      "linkedin-scraper.py",
+    );
+    // const pythonCommand =
+    //   "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+    // "python3";
+    const pythonCommand = process.env.VIRTUAL_ENV
+      ? `${process.env.VIRTUAL_ENV}/bin/python`
+      : "python";
+
+    const keywords_list = keywords.join(" OR ") || "";
+    const args = [
+      scriptPath,
+      keywords_list,
+      location,
+      limit,
+      offset,
+      JSON.stringify(experience),
+      JSON.stringify(remote),
+      JSON.stringify(jobType),
+      listed_at,
+      JSON.stringify(existingUrns),
+    ];
+
+    // console.log("args", args);
+
+    const pythonProcess = spawn(pythonCommand, args);
+    let output = "";
+
+    pythonProcess.stdout.on("data", (data: Buffer) => {
+      output += data.toString();
+    });
+
+    pythonProcess.stderr.on("data", (data: Buffer) => {
+      console.error(`Python error: ${data}`);
+      reject(data.toString());
+    });
+
+    pythonProcess.on("close", (code: number) => {
+      if (code === 0) {
+        try {
+          const result = JSON.parse(output);
+          resolve(result);
+        } catch (error) {
+          reject("Failed to parse Python output");
+        }
+      } else {
+        reject(`Python script exited with code ${code}`);
+      }
+    });
+  });
+};
+
 // Python Indeed Scraper Execution
 const runIndeedScraper = (
   searchTerm: string,
@@ -223,7 +292,7 @@ const runIndeedScraper = (
     const scriptPath = path.join(
       __dirname,
       "..",
-      "indeed",
+      "indeed-scraper",
       "indeed-scraper.py",
     );
     const pythonCommand = process.env.VIRTUAL_ENV
@@ -241,7 +310,7 @@ const runIndeedScraper = (
       hoursOld.toString(),
     ];
 
-    console.info("Running Indeed scraper", { args });
+    console.log("Running Indeed scraper", { args });
 
     const pythonProcess = spawn(pythonCommand, args);
     let output = "";
@@ -259,14 +328,8 @@ const runIndeedScraper = (
       if (code === 0) {
         try {
           const result = JSON.parse(output);
-          if (result.success) {
-            resolve(result.jobs);
-          } else {
-            console.error("Python script returned error", {
-              error: result.error,
-            });
-            reject(new Error(result.error));
-          }
+          console.log("res", result)
+          resolve(result);
         } catch (error) {
           console.error("Failed to parse Python output", { error, output });
           reject(new Error("Failed to parse Python output"));
@@ -296,6 +359,7 @@ const getScraperParams = (
       : metadata.country || "USA";
 
   if (scraperType === "INDEED_JOBS") {
+    console.log("INDEED_JOBS fetching now...");
     return {
       scraper: runIndeedScraper,
       params: [
@@ -308,10 +372,25 @@ const getScraperParams = (
         metadata.hours_old || 24 * 7,
       ] as IndeedScraperParams,
     };
-  } else {
-    // Placeholder for LinkedIn (unchanged)
+  } else if (scraperType === "LINKEDIN_JOBS") {
+    // Placeholder for LinkedIn
     return {
-      scraper: () => Promise.resolve([]), // Replace with actual LinkedIn scraper
+      scraper: runLinkedinScraper,
+      params: [
+        metadata.keywords || [],
+        location,
+        metadata.limit || 10,
+        0,
+        metadata.experience || [],
+        metadata.remote || false,
+        metadata.job_type || [],
+        metadata.listed_at || "86400",
+        [],
+      ] as LinkedInScraperParams,
+    };
+  } else {
+    return {
+      scraper: () => Promise.resolve([]),
       params: [
         metadata.keywords || [],
         location,
@@ -342,6 +421,8 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
 
     // const scraperType = trigger.metadata?.type? || "INDEED_JOBS"; // Default to indeed
     const { scraper, params } = getScraperParams(trigger, scraperType);
+    console.log("scraper", scraper);
+    console.log("params", params);
 
     const jobs = await scraper(...params);
 
@@ -350,13 +431,13 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
       return [];
     }
 
-    await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
+    const resp = await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
       const existingRun = await tx.zapRun.findFirst({
         where: {
           zapId: trigger.zapId,
           metadata: {
             path: ["type"],
-            equals: scraperType.toUpperCase() + "_JOBS",
+            equals: scraperType,
           },
         },
         orderBy: { id: "desc" },
@@ -382,7 +463,7 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
           data: {
             zapId: trigger.zapId,
             metadata: {
-              type: scraperType.toUpperCase() + "_JOBS",
+              type: scraperType,
               jobs,
               scrapedAt: new Date().toISOString(),
             },
@@ -395,8 +476,11 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
           data: { zapRunId: run.id },
         });
       }
+
+      return { run }
     });
 
+    console.log("resp", resp)
     console.info(`Successfully processed trigger ${triggerId}`, {
       jobCount: jobs.length,
     });

@@ -6,6 +6,12 @@ import { parseDynamicFields } from "./parser";
 import { sendEmail } from "./email";
 import { transferSOL } from "./solana";
 import { loadTemplate, renderTemplate } from "./templateLoader";
+import {
+  appendColumnToSheet,
+  appendRowToSheet,
+  createSheet,
+  getGoogleAccessToken,
+} from "./googlesheets";
 
 const TOPIC_NAME = "zap-events";
 
@@ -141,17 +147,75 @@ async function main() {
         } catch (error: any) {
           console.error("Failed to process email action:", error.message);
         }
-      }
-
-      if (currentAction?.type.name === "Solana") {
+      } else if (currentAction?.type.name === "Solana") {
         const SolanaData = parseDynamicFields(
           parseJson(currentAction.metadata),
           parseJson(dynamicFieldsVal),
         );
         await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount);
         console.log("Sent solana", SolanaData);
-      }
+      } else if (currentAction?.type.name === "Google Sheets") {
+        console.log("currentAction", currentAction);
+        const sheetsMetadata = parseJson(currentAction.metadata);
+        const dynamicFields = parseJson(dynamicFieldsVal);
+        console.log("sheetsMetadata", sheetsMetadata);
+        console.log("dynamicFields.jobs", dynamicFields.jobs);
+        if (
+          !sheetsMetadata.refreshToken ||
+          !sheetsMetadata.sheetid ||
+          !sheetsMetadata.sheetOperation
+        ) {
+          throw new Error("Missing required Google Sheets fields");
+        }
 
+        const accessToken = await getGoogleAccessToken(
+          sheetsMetadata.refreshToken,
+        );
+        const sheetName = sheetsMetadata.sheetName || "Sheet1";
+        console.log("accessToken", accessToken);
+
+        if (sheetsMetadata.sheetOperation === "1") {
+          // Append Row
+          const data = Array.isArray(dynamicFields.jobs)
+            ? dynamicFields.jobs
+            : [dynamicFields.jobs || ""];
+          console.log('Adding row with data', data)
+          await appendRowToSheet(
+            accessToken,
+            sheetsMetadata.sheetid,
+            sheetName,
+            data,
+            dynamicFields,
+          );
+        } else if (sheetsMetadata.sheetOperation === "2") {
+          // Append Column
+          const data = Array.isArray(dynamicFields.jobs)
+            ? dynamicFields.jobs
+            : [dynamicFields.jobs || ""];
+          await appendColumnToSheet(
+            accessToken,
+            sheetsMetadata.sheetid,
+            data,
+            dynamicFields
+          );
+        } else if (sheetsMetadata.sheetOperation === "3") {
+          // Create Sheet
+          const data = Array.isArray(dynamicFields.jobs)
+            ? dynamicFields.jobs
+            : [dynamicFields.jobs || ""];
+          await createSheet(
+            accessToken,
+            sheetsMetadata.sheetid,
+            sheetName,
+            data
+          );
+        } else {
+          throw new Error(`Invalid operation: ${sheetsMetadata.sheetOperation}`);
+        }
+        console.log(
+          `Google Sheets operation ${sheetsMetadata.sheetOperation} completed`,
+        );
+      }
       await new Promise((r) => setTimeout(r, 500));
 
       const lastStage = (zapRunDetails?.zap.actions?.length || 1) - 1;

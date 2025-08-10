@@ -287,4 +287,16 @@ export const LINKEDIN_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
   ],
 };
 
-export const INDEED_TRIGGER_FIELDS_MAP: Record<string, string[]> = {};
+export const INDEED_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
+  indeed: [
+    "title",
+    "company",
+    "country",
+    "state",
+    "company_url",
+    "job_link",
+    "posted_date",
+    "skills",
+    "emailBodyTemplate",
+  ]
+};
