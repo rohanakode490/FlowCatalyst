@@ -13,7 +13,7 @@ export default function EditZapPage() {
   const zapId = params.zapId as string;
   const router = useRouter();
   const {
-    flow: { setNodes, setEdges, setTriggerName, setOriginalTriggerMetadata },
+    flow: { setNodes, setEdges, setTriggerName, setOriginalTriggerMetadata, addNode },
     ui: { addToast },
   } = useStore();
 

@@ -54,8 +54,6 @@ export default function Flow({ zapId }: FlowProps) {
   const { isDialogOpen, handleWebhookSelect, openDialog, closeDialog } =
     useWebhook();
 
-  const { userSubscription } = userWebhook();
-
   // Hydration fix
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -66,7 +64,6 @@ export default function Flow({ zapId }: FlowProps) {
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: any) => {
       setSelectedNodeId(node.id);
-      console.log("Node clicked:", node.id, "Configured:", node.data.configured);
       if (node.data !== undefined && !node.data.configured) {
         openDialog(); // Open the dialog for unconfigured nodes
       }
@@ -86,7 +83,6 @@ export default function Flow({ zapId }: FlowProps) {
       });
       if (webhook.hasOwnProperty("action") && !webhook.action) {
         setTriggerName(webhook.metadata || {});
-        console.log("flow", webhook, webhook.metadata || {})
       }
       handleWebhookSelect(webhook);
       closeDialog();
@@ -100,7 +96,6 @@ export default function Flow({ zapId }: FlowProps) {
       updateNodeData(nodeId, { metadata: formData });
       if (!nodes.find((node) => node.id === nodeId)?.data.action) {
         setTriggerName(formData);
-        console.log("flow2", formData)
       }
       addToast("Configuration saved!", "success");
     },

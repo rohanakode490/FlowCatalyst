@@ -24,7 +24,6 @@ export const FlowControls = ({ onAlignNodes, zapId }: FlowControlsProps) => {
   const handleSaveFlow = async () => {
     try {
       const triggerNode = nodes.find((node: Node) => !node.data.action);
-      console.log("triggerNode", triggerNode)
       const response = await saveZap(zapId, triggerNode?.data.name);
 
       // Redirect to the dashboard after saving

@@ -34,11 +34,10 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
   return (
     <>
       <div
-        className={`w-48 h-20 rounded-md border-2 shadow-md flex items-center justify-around px-3 ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-600"
-            : "bg-white border-gray-400"
-        }`}
+        className={`w-48 h-20 rounded-md border-2 shadow-md flex items-center justify-around px-3 ${isDarkMode
+          ? "bg-gray-800 border-gray-600"
+          : "bg-white border-gray-400"
+          }`}
         onClick={handleNodeClick}
       >
         {/* Delete button */}
@@ -53,11 +52,10 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
               }
             }}
             className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 
-        ${
-          isDarkMode
-            ? "bg-red-600 hover:bg-red-700"
-            : "bg-red-500 hover:bg-red-600"
-        }`}
+        ${isDarkMode
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-red-500 hover:bg-red-600"
+              }`}
           >
             <X className="w-4 h-4 text-white" />
           </button>
@@ -79,9 +77,8 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
 
         {/* Right side: Name of the Zap */}
         <div
-          className={`text-sm font-medium truncate ${
-            isDarkMode ? "text-white" : "text-gray-900"
-          }`}
+          className={`text-sm font-medium truncate ${isDarkMode ? "text-white" : "text-gray-900"
+            }`}
         >
           {data.name}
         </div>

@@ -15,7 +15,7 @@ function WebhookSelector({
   type,
 }: WebhookSelectorProps) {
   const {
-    flow: { nodes, setTriggerName, handleTriggerTypeChange },
+    flow: { nodes, setTriggerName },
     webhook: { webhooks, fetchWebhooks },
     ui: { addToast },
   } = useStore();
@@ -46,9 +46,7 @@ function WebhookSelector({
     }
     onSelect(webhook);
     if (type === "trigger") {
-      console.log("webhook-selector", webhook)
       setTriggerName(webhook.metadata);
-      console.log("selector", webhook.metadata)
       // handleTriggerTypeChange(webhook.name, webhook.metadata);
     }
   };

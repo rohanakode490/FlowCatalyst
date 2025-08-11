@@ -77,7 +77,6 @@ export const Sidebar = ({
   }, []);
 
   function findTriggerType(triggerName: any) {
-    console.log("triggerType-find", triggerName)
     if (triggerName?.hasOwnProperty("githubEventType")) {
       return "github";
     } else if (

@@ -1,4 +1,4 @@
-import { Node, Edge, useNodesState, useEdgesState } from "@xyflow/react";
+import { Node, Edge } from "@xyflow/react";
 // Define types for the helper functions
 export type NodeType = Node<{
   id?: string;
@@ -109,14 +109,14 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
-          data: { onAddNode: () => {} },
+        data: { onAddNode: () => { } },
       },
       {
         id: `e${newNodeId}-${targetNode.id}`,
         type: "buttonEdge",
         source: newNodeId,
         target: targetNode.id,
-          data: { onAddNode: () => {} },
+        data: { onAddNode: () => { } },
       },
     ]);
   } else {
@@ -127,13 +127,13 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
-          data: { onAddNode: () => {} },
+        data: { onAddNode: () => { } },
       },
     ]);
   }
 
   setNodes((nds) => [...nds, newNode]);
-  alignNodesVertically(setNodes, () => {}, VERTICAL_SPACING); // Mock fitView for now
+  alignNodesVertically(setNodes, () => { }, VERTICAL_SPACING); // Mock fitView for now
 
   return 1;
 };
@@ -155,28 +155,31 @@ export const deleteNode = (
   ) => void,
 ) => {
   if (nodes.length <= 2) return;
-
   const nodeEdges = edges.filter(
     (e) => e.source === nodeId || e.target === nodeId,
   );
+
   const sourceEdge = nodeEdges.find((e) => e.target === nodeId);
   const targetEdge = nodeEdges.find((e) => e.source === nodeId);
 
   setNodes((nds) => nds.filter((n) => n.id !== nodeId));
 
-  if (sourceEdge && targetEdge) {
-    setEdges((eds) => [
-      ...eds.filter((e) => !nodeEdges.includes(e)),
-      {
+  // Remove associated edges and reconnect source to target if both exist
+  setEdges((eds) => {
+    const remainingEdges = eds.filter(
+      (e) => e.source !== nodeId && e.target !== nodeId
+    );
+    if (sourceEdge && targetEdge) {
+      const newEdge = {
         id: `e${sourceEdge.source}-${targetEdge.target}`,
         type: "buttonEdge",
         source: sourceEdge.source,
         target: targetEdge.target,
-      },
-    ]);
-  } else {
-    setEdges((eds) => eds.filter((e) => !nodeEdges.includes(e)));
-  }
+      };
+      return [...remainingEdges, newEdge];
+    }
+    return remainingEdges;
+  });
 
-  alignNodesVertically(setNodes, () => {}, VERTICAL_SPACING);
+  alignNodesVertically(setNodes, () => { }, VERTICAL_SPACING);
 };

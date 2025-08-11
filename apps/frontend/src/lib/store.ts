@@ -338,7 +338,6 @@ const useStore = createWithEqualityFn<AppState>()(
           // Determine if the selected trigger is new or reverting to the original
           const isOriginalTrigger =
             originalTriggerMetadata && triggerTypeId === currentTriggerType;
-          console.log("isOriginal", isOriginalTrigger, originalTriggerMetadata, triggerTypeId, currentTriggerType)
           const metadataToUse = isOriginalTrigger
             ? originalTriggerMetadata
             : triggerMetadata;
@@ -430,31 +429,28 @@ const useStore = createWithEqualityFn<AppState>()(
             form: { ...state.form, formData: newFormData },
           };
         }),
-      addNode: (sourceNodeId: string) =>
-        set((state) => {
-          const result = addNodeBelow(
-            state.user.userSubscription,
-            sourceNodeId,
-            state.flow.nodes,
-            state.flow.edges,
-            (nodes) =>
-            (state.flow.nodes =
-              typeof nodes === "function" ? nodes(state.flow.nodes) : nodes),
-            (edges) =>
-            (state.flow.edges =
-              typeof edges === "function" ? edges(state.flow.edges) : edges),
-            VERTICAL_SPACING,
-            alignNodesVertically,
+      addNode: (sourceNodeId: string) => {
+        const { user: { userSubscription }, flow: { nodes, edges, setNodes, setEdges }, ui: { addToast } } = get()
+
+        const result = addNodeBelow(
+          userSubscription,
+          sourceNodeId,
+          nodes,
+          edges,
+          setNodes,
+          setEdges,
+          VERTICAL_SPACING,
+          alignNodesVertically,
+        );
+        if (result === 0) {
+          addToast(
+            "Free plan allows only 3 nodes. Upgrade to UPGRADE_URL.",
+            "error",
           );
-          if (result === 0) {
-            state.ui.addToast(
-              "Free plan allows only 3 nodes. Upgrade to UPGRADE_URL.",
-              "error",
-            );
-          } else if (result === -1) {
-            state.ui.addToast("Invalid source node.", "error");
-          }
-        }),
+        } else if (result === -1) {
+          addToast("Invalid source node.", "error");
+        }
+      },
       addFlowEdge: (edge) =>
         set((state) => {
           state.flow.edges.push(edge);
@@ -472,7 +468,6 @@ const useStore = createWithEqualityFn<AppState>()(
           zap: { zaps },
           user,
         } = get();
-        console.log("scraperType", scraperType)
         if (user.userSubscription === "free" && zaps.length >= 5) {
           //TODO: ADD UPGRADE_URL
           set((state) => {
@@ -843,8 +838,6 @@ const useStore = createWithEqualityFn<AppState>()(
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
-        console.log("triggerType", triggerType)
-        console.log("formData", formData)
 
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
@@ -863,7 +856,6 @@ const useStore = createWithEqualityFn<AppState>()(
             ];
         } else if (triggerType === "linkedin" || triggerType === "indeed") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
-          console.log("updatedFormData", updatedFormData)
           if (nodeId === "0") {
             //Trigger Node
             if (!updatedFormData.keywords?.length) {
