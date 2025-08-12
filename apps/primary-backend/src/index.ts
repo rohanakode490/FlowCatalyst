@@ -85,7 +85,12 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: "http://localhost:4000/auth/google/callback",
-      scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.readonly"],
+      scope: [
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive.readonly",
+      ],
     },
     async (
       accessToken: string,
@@ -208,7 +213,12 @@ app.get(
     next();
   },
   passport.authenticate("google", {
-    scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.readonly"],
+    scope: [
+      "profile",
+      "email",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.readonly",
+    ],
     session: false,
   }),
 );
@@ -217,7 +227,6 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req: any, res) => {
-
     const user = req.user;
     const token = jwt.sign({ id: user.id }, JWT_PASSWORD, {
       expiresIn: "10h",
@@ -268,7 +277,7 @@ app.get(
   },
 );
 
-app.use("/api/v1/sheets", spreadsheetsRouter)
+app.use("/api/v1/sheets", spreadsheetsRouter);
 
 app.use("/api/v1/user", userRouter);
 
@@ -290,4 +299,3 @@ app.listen(4000, () => {
 });
 
 export default app;
-

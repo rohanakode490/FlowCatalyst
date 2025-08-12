@@ -34,12 +34,6 @@ interface State {
   state_code: string;
 }
 
-interface ToastMessage {
-  id: string;
-  message: string | JSX.Element;
-  type: "success" | "error" | "info";
-}
-
 interface Spreadsheet {
   spreadsheetId: string;
   title: string;
@@ -91,10 +85,13 @@ interface UserState {
   isAuthenticated: boolean;
   userLoading: boolean;
   refreshToken: string;
+  userTriggers: Record<string, number>;
+  loadingTriggers: boolean;
   fetchUser: () => Promise<void>;
   setUserId: (userId: string) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setRefreshToken: (token: string) => void;
+  fetchUserTriggers: () => Promise<void>;
 }
 
 interface FormState {
@@ -598,6 +595,8 @@ const useStore = createWithEqualityFn<AppState>()(
       isAuthenticated: false,
       userLoading: true,
       refreshToken: "",
+      userTriggers: {},
+      loadingTriggers: false,
       fetchUser: async () => {
         try {
           const token = localStorage.getItem("token");
@@ -645,6 +644,20 @@ const useStore = createWithEqualityFn<AppState>()(
         set((state) => {
           state.user.refreshToken = token;
         });
+      },
+      fetchUserTriggers: async () => {
+        try {
+
+          set({ user: { ...get().user, loadingTriggers: true } });
+          const response = await api.get("/trigger/user-triggers");
+          const triggerCounts = response.data.triggers
+          set((state) => ({
+            user: { ...state.user, userTriggers: triggerCounts, loadingTriggers: false },
+          }));
+        } catch (error) {
+          console.error("Failed to fetch user triggers:", error);
+          get().ui.addToast("Failed to load trigger limits", "error");
+        }
       },
     },
     form: {
