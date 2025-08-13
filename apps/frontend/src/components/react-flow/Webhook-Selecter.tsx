@@ -50,13 +50,11 @@ function WebhookSelector({
   // Handle trigger selection
   const handleTriggerSelect = (webhook: any) => {
     if (loadingTriggers) {
-      console.log("here")
       addToast("Please wait, loading trigger limits...", "loading");
       return;
     }
     if (isTriggerRestricted(webhook.name)) {
       const maxTriggers = userSubscription === "pro" ? 2 : 1
-      console.log("Should be here")
       addToast(`Only ${maxTriggers} ${webhook.name} trigger(s) allowed!`, "error");;
       return;
     }
@@ -79,8 +77,8 @@ function WebhookSelector({
               className={`w-full ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
               <Button
-                className={`w-full flex items-center justify-start p-3 border rounded-lg space-x-2
-                  ${isDisabled ? "bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                className={`w-full flex items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
+                  ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                 disabled={isDisabled}
               >
                 <img src={webhook.image} alt={webhook.name} className="w-8 h-8 rounded-full" />
