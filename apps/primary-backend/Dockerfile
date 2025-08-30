@@ -6,7 +6,7 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat openssl
 
 # Set working directory
- WORKDIR /app
+WORKDIR /app
 
 # Install Turbo globally
 RUN npm install -g turbo@^2.1.3
@@ -34,6 +34,7 @@ RUN npm install -g turbo@^2.1.3
 RUN npm install --omit=dev
 RUN npm install -g dotenv 
 RUN npm install dotenv-extended
+
 # Copy pruned workspace
 COPY --from=builder /app/out/full/ .
 

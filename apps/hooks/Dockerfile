@@ -1,8 +1,8 @@
-# # ==# ====== Python Base ======
+# ====== Python Base ======
 FROM python:3.11-slim AS python-base
 
 # Install system dependencies including build essentials
- RUN apt-get update && apt-get install -y gcc python3-dev libffi-dev musl-dev
+RUN apt-get update && apt-get install -y gcc python3-dev libffi-dev musl-dev
 
 
 RUN pip install --upgrade pip
@@ -50,7 +50,9 @@ COPY --from=builder /app/package-lock.json .
 
 # Install dependencies
 RUN npm install -g turbo@^2.1.3
-RUN npm install --omit=dev --ignore-scripts
+RUN npm install --omit=dev 
+RUN npm install -g dotenv 
+RUN npm install dotenv-extended
 
 # Copy full workspace
 COPY --from=builder /app/out/full/ .
@@ -82,17 +84,17 @@ COPY --from=installer --chown=node:node /opt/venv /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Switch to non-root user
+USER node
+
 # Copy built files and Python scraper
 COPY --from=installer --chown=node:node /app/apps/hooks/dist ./dist
-COPY --from=installer --chown=node:node /app/apps/hooks/src/scraper.py ./dist/
+COPY --from=installer --chown=node:node /app/apps/hooks/indeed-scraper ./dist/
+COPY --from=installer --chown=node:node /app/apps/hooks/linkedin-scraper ./dist/
 COPY --from=installer --chown=node:node /app/node_modules ./node_modules
 
 # Copy Prisma schema
 COPY --from=installer --chown=node:node /app/packages/database ./packages/database
 
-# Switch to non-root user
-USER node
-
 EXPOSE 5000
-CMD ["node", "dist/index.js"]
-
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma && node dist/index.js"]

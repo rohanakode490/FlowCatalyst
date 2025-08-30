@@ -33,7 +33,7 @@ app.use(helmet());
 app.use(cookieParser(JWT_PASSWORD));
 app.use(
   rateLimiter({
-    windowMs: 50 * 60 * 1000,
+    windowMs: 50 * 60 * 10000,
     limit: 50,
   }),
 );

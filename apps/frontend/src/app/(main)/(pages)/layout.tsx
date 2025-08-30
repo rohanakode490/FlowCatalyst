@@ -5,7 +5,7 @@ type Props = { children: React.ReactNode };
 
 export default function Layout(props: Props) {
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   if (!clientId) {
     return <div>Error: Google Client ID is missing. Please check your .env.local file.</div>;
   }

@@ -1,0 +1,465 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-data
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-data
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: primary-backend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: primary-backend
+  template:
+    metadata:
+      labels:
+        app: primary-backend
+    spec:
+      containers:
+      - name: primary-backend
+        image: rohanakode490/fc-primary-backend:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        - name: FRONTEND_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: FRONTEND_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets       
+              key: REDIS_URL
+        - name: JWT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_PASSWORD
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SESSION_SECRET
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GOOGLE_CLIENT_ID
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GOOGLE_CLIENT_SECRET
+        - name: GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GITHUB_CLIENT_ID
+        - name: GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GITHUB_CLIENT_SECRET
+        - name: TOGETHER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: TOGETHER_API_KEY
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: primary-backend
+  namespace: default
+spec:
+  selector:
+    app: primary-backend
+  ports:
+  - port: 80
+    targetPort: 4000
+    nodePort: 32130
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooks
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooks
+  template:
+    metadata:
+      labels:
+        app: hooks
+    spec:
+      containers:
+      - name: hooks
+        image: rohanakode490/fc-hooks:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        - name: LINKEDIN
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: LINKEDIN
+        # - name: VIRTUAL_ENV
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: app-secrets
+        #       key: VIRTUAL_ENV
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooks
+  namespace: default
+spec:
+  selector:
+    app: hooks
+  ports:
+  - port: 80
+    targetPort: 5000
+    nodePort: 31294
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor
+  template:
+    metadata:
+      labels:
+        app: processor
+    spec:
+      containers:
+      - name: processor
+        image: rohanakode490/fc-processor:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        - name: KAFKA_BROKERS
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: KAFKA_BROKERS
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: processor
+  namespace: default
+spec:
+  selector:
+    app: processor
+  ports:
+  - port: 80
+    targetPort: 6000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: rohanakode490/fc-worker:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        - name: KAFKA_BROKERS
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: KAFKA_BROKERS
+        - name: RESEND_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: RESEND_API_KEY
+        - name: SOLANA_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SOLANA_PRIVATE_KEY
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GOOGLE_CLIENT_ID
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GOOGLE_CLIENT_SECRET
+        resources: 
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "300m"
+            memory: "1024Mi"
+          # requests:
+          #   cpu: "50m"
+          #   memory: "128Mi"
+          # limits:
+          #   cpu: "200m"
+          #   memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker
+  namespace: default
+spec:
+  selector:
+    app: worker
+  ports:
+  - port: 80
+    targetPort: 7000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: default
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: bitnami/zookeeper:3.9.2
+        ports:
+        - containerPort: 2181
+        env:
+        - name: ZOO_SERVER_ID
+          value: "1"
+        - name: ALLOW_ANONYMOUS_LOGIN
+          value: "yes"
+        volumeMounts:
+        - name: zookeeper-data
+          mountPath: /bitnami/zookeeper
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+      volumes:
+      - name: zookeeper-data
+        persistentVolumeClaim:
+          claimName: zookeeper-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: default
+spec:
+  selector:
+    app: zookeeper
+  ports:
+  - port: 2181
+    targetPort: 2181
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: bitnami/kafka:3.9.0
+        ports:
+        - containerPort: 9092
+        env:
+        - name: KAFKA_BROKER_ID
+          value: "1"
+        - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+          value: "zookeeper.default.svc.cluster.local:2181"
+        - name: KAFKA_CFG_LISTENERS
+          value: "PLAINTEXT://:9092"
+        - name: KAFKA_CFG_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka:9092"
+        - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT"
+        - name: KAFKA_CFG_NUM_PARTITIONS
+          value: "1"
+        - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+          value: "1"
+        - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+          value: "true"
+        volumeMounts:
+        - name: kafka-data
+          mountPath: /bitnami/kafka
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      volumes:
+      - name: kafka-data
+        persistentVolumeClaim:
+          claimName: kafka-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  selector:
+    app: kafka
+  ports:
+  - port: 9092
+    targetPort: 9092
+  type: ClusterIP

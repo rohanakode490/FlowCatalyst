@@ -649,7 +649,12 @@ const useStore = createWithEqualityFn<AppState>()(
         try {
 
           set({ user: { ...get().user, loadingTriggers: true } });
-          const response = await api.get("/trigger/user-triggers");
+          const token = localStorage.getItem("token")
+          const response = await api.get("/trigger/user-triggers", {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           const triggerCounts = response.data.triggers
           set((state) => ({
             user: { ...state.user, userTriggers: triggerCounts, loadingTriggers: false },

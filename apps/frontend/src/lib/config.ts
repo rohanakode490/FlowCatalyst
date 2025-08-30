@@ -1,4 +1,4 @@
 export const HOOKS_URL =
-  process.env.HOOKS_URL || "http://localhost:4001/hooks/catch";
+  process.env.NEXT_PUBLIC_HOOKS_URL || "http://localhost:5000";
 
-export const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000";

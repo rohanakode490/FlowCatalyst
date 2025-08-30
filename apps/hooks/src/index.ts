@@ -92,6 +92,7 @@ const handleIssueCommentEvent = (payload: any): EventData | null => {
     issue_url: issue.html_url,
   };
 
+  console.log("eventData1", eventData)
   try {
     // Extract the content inside the bounty block
     const bountyContent = match[1];

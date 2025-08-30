@@ -15,6 +15,7 @@ export const config = {
   matcher: [
     "/connections/:path*",
     "/flow/:path*",
+    "/flow/create/:path*",
     "/settings/:path*",
     "/workflows/:path*",
   ], // Protect these routes

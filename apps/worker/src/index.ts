@@ -1,5 +1,6 @@
-require("dotenv").config();
+// require("dotenv").config();
 
+import dotenv from "dotenv";
 import { Kafka, Partitioners } from "kafkajs";
 import { prismaClient } from "@flowcatalyst/database";
 import { parseDynamicFields } from "./parser";
@@ -13,11 +14,14 @@ import {
   getGoogleAccessToken,
 } from "./googlesheets";
 
+dotenv.config();
+
 const TOPIC_NAME = "zap-events";
 
 const kafka = new Kafka({
   clientId: "outbox-processor-2",
-  brokers: ["localhost:9092"],
+  // brokers: ["localhost:9092"],
+  brokers: [process.env.KAFKA_BROKERS || "kafka:9092"],
 });
 
 const parseJson = (data: any, fallback: any = {}) => {
@@ -29,7 +33,22 @@ const parseJson = (data: any, fallback: any = {}) => {
   }
 };
 
+async function waitForKafka() {
+  const admin = kafka.admin();
+  while (true) {
+    try {
+      await admin.connect();
+      await admin.disconnect();
+      return;
+    } catch (err) {
+      console.error("⏳ Waiting for Kafka to be ready...");
+      await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
+}
+
 async function main() {
+  await waitForKafka();
   const consumer = kafka.consumer({ groupId: "main-worker" });
   await consumer.connect();
   const producer = kafka.producer({
