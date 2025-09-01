@@ -92,7 +92,6 @@ const handleIssueCommentEvent = (payload: any): EventData | null => {
     issue_url: issue.html_url,
   };
 
-  console.log("eventData1", eventData)
   try {
     // Extract the content inside the bounty block
     const bountyContent = match[1];
@@ -250,8 +249,6 @@ const runLinkedinScraper = (
       JSON.stringify(existingUrns),
     ];
 
-    // console.log("args", args);
-
     const pythonProcess = spawn(pythonCommand, args);
     let output = "";
 
@@ -311,8 +308,6 @@ const runIndeedScraper = (
       hoursOld.toString(),
     ];
 
-    console.log("Running Indeed scraper", { args });
-
     const pythonProcess = spawn(pythonCommand, args);
     let output = "";
     let errorOutput = "";
@@ -329,7 +324,6 @@ const runIndeedScraper = (
       if (code === 0) {
         try {
           const result = JSON.parse(output);
-          console.log("res", result)
           resolve(result);
         } catch (error) {
           console.error("Failed to parse Python output", { error, output });
@@ -360,7 +354,6 @@ const getScraperParams = (
       : metadata.country || "USA";
 
   if (scraperType === "INDEED_JOBS") {
-    console.log("INDEED_JOBS fetching now...");
     return {
       scraper: runIndeedScraper,
       params: [
@@ -422,8 +415,6 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
 
     // const scraperType = trigger.metadata?.type? || "INDEED_JOBS"; // Default to indeed
     const { scraper, params } = getScraperParams(trigger, scraperType);
-    console.log("scraper", scraper);
-    console.log("params", params);
 
     const jobs = await scraper(...params);
 
@@ -481,7 +472,6 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
       return { run }
     });
 
-    console.log("resp", resp)
     console.info(`Successfully processed trigger ${triggerId}`, {
       jobCount: jobs.length,
     });

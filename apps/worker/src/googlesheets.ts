@@ -8,7 +8,6 @@ export async function getGoogleAccessToken(
 ): Promise<string> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  console.log("SECRET", process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET)
 
   if (!clientId || !clientSecret) {
     throw new Error(
@@ -28,7 +27,6 @@ export async function getGoogleAccessToken(
     if (!accessToken) {
       throw new Error("No access token received");
     }
-    console.log("Access token fetched successfully");
     return accessToken;
   } catch (error) {
     console.error("Failed to fetch Google access token:", error);
@@ -80,7 +78,6 @@ export async function appendRowToSheet(
 
   try {
     let { lastRow, columnCount } = await getSheetDimensions(accessToken, spreadsheetId, sheetName);
-    console.log("lastrow", lastRow)
     console.log("columnCount", columnCount)
     // Handle array of objects or simple values
     const parsedRows = data.map((item) => {

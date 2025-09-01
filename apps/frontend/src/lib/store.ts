@@ -165,7 +165,7 @@ interface AppState {
   ui: UIState;
 }
 
-const initialNodes = [
+export const initialNodes = [
   {
     id: "1",
     type: "customNode",
@@ -204,7 +204,7 @@ const initialNodes = [
   },
 ];
 
-const initialEdges = [
+export const initialEdges = [
   {
     id: "e2-2",
     type: "buttonEdge",
@@ -880,8 +880,6 @@ const useStore = createWithEqualityFn<AppState>()(
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
-        console.log("formData", formData)
-        console.log("nodeData", nodeData)
 
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {

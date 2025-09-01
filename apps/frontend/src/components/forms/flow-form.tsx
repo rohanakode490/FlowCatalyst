@@ -84,11 +84,6 @@ function DynamicForm({
     })),
   );
 
-  useEffect(() => {
-    console.log("nodeData", nodeData)
-    console.log("formData", formData)
-  }, [])
-
   // Get current node's data
   const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
 
@@ -149,7 +144,7 @@ function DynamicForm({
       }
 
       // Update dynamic fields when the event type changes
-      if (fieldName === "githubEventType") {
+      if (triggerType === "github") {
         const fields = GITHUB_TRIGGER_FIELDS_MAP[value || "issue_comment"];
         // setDynamicFields(fields.map((field) => `${field}`));
         setDynamicFields(fields.map((field: string) => `{{trigger.${field}}}`));

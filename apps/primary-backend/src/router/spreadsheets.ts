@@ -25,7 +25,6 @@ router.post("/list", authMiddleware, async (req, res) => {
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
             grant_type: "refresh_token",
         });
-        console.log("ACCESS", response.data)
         const access_token = response.data.access_token;
 
         const auth = new google.auth.OAuth2();

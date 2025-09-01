@@ -71,7 +71,6 @@ export default function EditZapPage() {
           target: `${index + 2}`,
         }));
 
-        console.log("curr", trigger.type.name)
         setCurrentTriggerType(trigger.type.name)
         resetFlow();
         resetFormData();

@@ -23,10 +23,8 @@ router.post("/", authMiddleware, async (req, res) => {
   const { scraperType, zapData } = req.body;
   //@ts-ignore
   const id = req.id;
-  console.log(scraperType, zapData)
   const parsedData = ZapCreateSchema.safeParse(zapData);
   const newScraperType = getScraperType(scraperType)
-  console.log("new", newScraperType)
 
   if (!parsedData.success) {
     return res.status(411).json({

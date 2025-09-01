@@ -4,13 +4,16 @@ import React, { useEffect } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import Heading from "@/components/globals/heading";
 import Flow from "@/components/react-flow/Flow";
-import useStore from "@/lib/store";
+import useStore, { initialEdges, initialNodes } from "@/lib/store";
 
 export default function FlowCreatePage() {
-  const { form: { setFormData } } = useStore();
+  const { flow: { setNodes, setEdges, resetFlow }, form: { resetFormData } } = useStore();
 
   useEffect(() => {
-    setFormData([])
+    resetFlow();
+    resetFormData();
+    setNodes(initialNodes)
+    setEdges(initialEdges)
   }, [])
 
   return (
