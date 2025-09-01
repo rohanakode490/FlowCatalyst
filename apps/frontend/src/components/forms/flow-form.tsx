@@ -84,21 +84,43 @@ function DynamicForm({
     })),
   );
 
+  useEffect(() => {
+    console.log("nodeData", nodeData)
+    console.log("formData", formData)
+  }, [])
+
   // Get current node's data
   const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
 
   // Initialize formData with node metadata and default githubEventType
   useEffect(() => {
-    if (!formData.find((node: any) => node.id === nodeId)) {
+    const existingNode = formData.find((node) => node.id === nodeId);
+    if (!existingNode || JSON.stringify(existingNode.data) !== JSON.stringify(initialData)) {
       const tmpData = {
         ...initialData,
         ...(triggerType === "github" && !initialData.githubEventType
           ? { githubEventType: "issue_comment" }
           : {}),
       };
-      setFormData([...(formData as []), { id: nodeId, data: tmpData }]);
+      setFormData([
+        ...formData.filter((node) => node.id !== nodeId),
+        { id: nodeId, data: tmpData },
+      ]);
     }
-  }, [nodeId, initialData, formData, triggerType, setFormData]);
+  }, [nodeId, initialData, triggerType, setFormData, zapId]);
+
+  // useEffect(() => {
+  //   console.log("checking triggerName rendering here")
+  //   if (!formData.find((node: any) => node.id === nodeId)) {
+  //     const tmpData = {
+  //       ...initialData,
+  //       ...(triggerType === "github" && !initialData.githubEventType
+  //         ? { githubEventType: "issue_comment" }
+  //         : {}),
+  //     };
+  //     setFormData([...(formData as []).filter((node: any) => node.id !== nodeId), { id: nodeId, data: tmpData }]);
+  //   }
+  // }, [nodeId, initialData, formData, triggerType, triggerName, setFormData]);
 
   // Fetch countries on mount
   useEffect(() => {

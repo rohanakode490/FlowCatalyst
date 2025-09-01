@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 
 import dotenv from "dotenv";
 import { Kafka, Partitioners } from "kafkajs";

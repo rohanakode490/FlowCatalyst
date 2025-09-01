@@ -47,6 +47,7 @@ interface FlowState {
   triggerName: any; //Record<string, any>;
   originalTriggerMetadata: Record<string, any>;
   currentTriggerType: string;
+  resetFlow: () => void;
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   onConnect: (connection: Connection) => void;
@@ -111,6 +112,7 @@ interface FormState {
   isSubmitting: boolean;
   formStatus: "idle" | "submitting" | "success" | "error";
   cachedFormData: Record<string, Record<string, any>>;
+  resetFormData: () => void;
   setFormData: (data: Record<string, any>[]) => void;
   setErrors: (errors: Record<string, string>) => void;
   setActiveInput: (input: string | null) => void;
@@ -235,6 +237,15 @@ const useStore = createWithEqualityFn<AppState>()(
       triggerName: [],
       originalTriggerMetadata: {},
       currentTriggerType: "",
+      resetFlow: () => set((state) => ({
+        flow: {
+          ...state.flow,
+          nodes: [],
+          edges: [],
+          triggerName: {},
+          originalTriggerMetadata: {}
+        }
+      })),
       onNodesChange: (changes) => {
         set((state) => {
           state.flow.nodes = applyNodeChanges(
@@ -682,6 +693,19 @@ const useStore = createWithEqualityFn<AppState>()(
       isSubmitting: false,
       formStatus: "idle",
       cachedFormData: {},
+      resetFormData: () => set((state) => ({
+        form: {
+          ...state.form,
+          formData: [],
+          errors: {},
+          activeInput: null,
+          dynamicFields: [],
+          states: [],
+          countryError: "",
+          stateError: "",
+          formStatus: "idle"
+        }
+      })),
       setFormData: (data) =>
         set((state) => {
           state.form.formData = data;
@@ -856,6 +880,8 @@ const useStore = createWithEqualityFn<AppState>()(
         const updatedFormData = { ...nodeData };
 
         let allowedFields: string[] = [];
+        console.log("formData", formData)
+        console.log("nodeData", nodeData)
 
         // Check if triggerName or triggerData has githubEventType
         if (triggerType === "github") {
