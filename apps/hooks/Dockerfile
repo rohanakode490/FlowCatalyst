@@ -4,7 +4,6 @@ FROM python:3.11-slim AS python-base
 # Install system dependencies including build essentials
 RUN apt-get update && apt-get install -y gcc python3-dev libffi-dev musl-dev
 
-
 RUN pip install --upgrade pip
 COPY apps/hooks/requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt

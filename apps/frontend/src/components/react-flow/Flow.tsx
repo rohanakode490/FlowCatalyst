@@ -97,7 +97,7 @@ export default function Flow({ zapId }: FlowProps) {
       if (!nodes.find((node) => node.id === nodeId)?.data.action) {
         setTriggerName(formData);
       }
-      addToast("Configuration saved!", "success");
+      // addToast("Configuration saved!", "success");
     },
     [updateNodeData, setTriggerName, addToast, nodes],
   );

@@ -75,8 +75,6 @@ export default function EditZapPage() {
         resetFlow();
         resetFormData();
         setNodes(nodes);
-        // console.log("nodes", nodes)
-        // setFormData(nodes);
         setEdges(edges);
         setTriggerName(trigger.metadata || {});
         setOriginalTriggerMetadata(trigger.metadata || {});

@@ -237,15 +237,16 @@ const useStore = createWithEqualityFn<AppState>()(
       triggerName: [],
       originalTriggerMetadata: {},
       currentTriggerType: "",
-      resetFlow: () => set((state) => ({
-        flow: {
-          ...state.flow,
-          nodes: [],
-          edges: [],
-          triggerName: {},
-          originalTriggerMetadata: {}
-        }
-      })),
+      resetFlow: () =>
+        set((state) => ({
+          flow: {
+            ...state.flow,
+            nodes: [],
+            edges: [],
+            triggerName: {},
+            originalTriggerMetadata: {},
+          },
+        })),
       onNodesChange: (changes) => {
         set((state) => {
           state.flow.nodes = applyNodeChanges(
@@ -438,7 +439,11 @@ const useStore = createWithEqualityFn<AppState>()(
           };
         }),
       addNode: (sourceNodeId: string) => {
-        const { user: { userSubscription }, flow: { nodes, edges, setNodes, setEdges }, ui: { addToast } } = get()
+        const {
+          user: { userSubscription },
+          flow: { nodes, edges, setNodes, setEdges },
+          ui: { addToast },
+        } = get();
 
         const result = addNodeBelow(
           userSubscription,
@@ -658,17 +663,20 @@ const useStore = createWithEqualityFn<AppState>()(
       },
       fetchUserTriggers: async () => {
         try {
-
           set({ user: { ...get().user, loadingTriggers: true } });
-          const token = localStorage.getItem("token")
+          const token = localStorage.getItem("token");
           const response = await api.get("/trigger/user-triggers", {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           });
-          const triggerCounts = response.data.triggers
+          const triggerCounts = response.data.triggers;
           set((state) => ({
-            user: { ...state.user, userTriggers: triggerCounts, loadingTriggers: false },
+            user: {
+              ...state.user,
+              userTriggers: triggerCounts,
+              loadingTriggers: false,
+            },
           }));
         } catch (error) {
           console.error("Failed to fetch user triggers:", error);
@@ -693,19 +701,20 @@ const useStore = createWithEqualityFn<AppState>()(
       isSubmitting: false,
       formStatus: "idle",
       cachedFormData: {},
-      resetFormData: () => set((state) => ({
-        form: {
-          ...state.form,
-          formData: [],
-          errors: {},
-          activeInput: null,
-          dynamicFields: [],
-          states: [],
-          countryError: "",
-          stateError: "",
-          formStatus: "idle"
-        }
-      })),
+      resetFormData: () =>
+        set((state) => ({
+          form: {
+            ...state.form,
+            formData: [],
+            errors: {},
+            activeInput: null,
+            dynamicFields: [],
+            states: [],
+            countryError: "",
+            stateError: "",
+            formStatus: "idle",
+          },
+        })),
       setFormData: (data) =>
         set((state) => {
           state.form.formData = data;
@@ -1116,7 +1125,7 @@ const useStore = createWithEqualityFn<AppState>()(
         } else if (type === "loading") {
           return toast.loading(message);
         } else {
-          return toast(message); // Fallback for other types 
+          return toast(message); // Fallback for other types
         }
       },
     },

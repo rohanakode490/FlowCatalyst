@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "next-themes";
@@ -84,13 +84,23 @@ function DynamicForm({
     })),
   );
 
+  // Local state for form data and saving status
+  const [localFormData, setLocalFormData] = useState({ ...initialData });
+  const [isSaving, setIsSaving] = useState(false);
+
   // Get current node's data
-  const nodeData = formData.find((node: any) => node.id === nodeId)?.data || {};
+  const nodeData = useMemo(() =>
+    formData.find((node: any) => node.id === nodeId)?.data || {},
+    [formData, nodeId]
+  )
 
   // Initialize formData with node metadata and default githubEventType
   useEffect(() => {
     const existingNode = formData.find((node) => node.id === nodeId);
-    if (!existingNode || JSON.stringify(existingNode.data) !== JSON.stringify(initialData)) {
+    if (
+      !existingNode ||
+      JSON.stringify(existingNode.data) !== JSON.stringify(initialData)
+    ) {
       const tmpData = {
         ...initialData,
         ...(triggerType === "github" && !initialData.githubEventType
@@ -103,19 +113,6 @@ function DynamicForm({
       ]);
     }
   }, [nodeId, initialData, triggerType, setFormData, zapId]);
-
-  // useEffect(() => {
-  //   console.log("checking triggerName rendering here")
-  //   if (!formData.find((node: any) => node.id === nodeId)) {
-  //     const tmpData = {
-  //       ...initialData,
-  //       ...(triggerType === "github" && !initialData.githubEventType
-  //         ? { githubEventType: "issue_comment" }
-  //         : {}),
-  //     };
-  //     setFormData([...(formData as []).filter((node: any) => node.id !== nodeId), { id: nodeId, data: tmpData }]);
-  //   }
-  // }, [nodeId, initialData, formData, triggerType, triggerName, setFormData]);
 
   // Fetch countries on mount
   useEffect(() => {
@@ -169,7 +166,7 @@ function DynamicForm({
         const fields = INDEED_TRIGGER_FIELDS_MAP["indeed"];
         setDynamicFields(fields.map((field) => `${field}`));
       } else {
-        setDynamicFields([])
+        setDynamicFields([]);
       }
     },
     [
@@ -186,11 +183,26 @@ function DynamicForm({
   );
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Use store's submitForm action
-    submitForm(nodeId, fields, schema, triggerType, onSubmit, onClose);
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   // Use store's submitForm action
+  //   submitForm(nodeId, fields, schema, triggerType, onSubmit, onClose);
+  // };
+
+  // Handle auto-save on blur
+  const handleBlur = useCallback(
+    async (fieldName: string) => {
+      setIsSaving(true);
+      await submitForm(nodeId, fields, schema, triggerType, (data) => {
+        onSubmit(data);
+        setLocalFormData(data); // Update local state to reflect saved data
+      }, () => { });
+      setIsSaving(false);
+    },
+    [nodeId, fields, schema, triggerType, onSubmit, onClose, localFormData, submitForm],
+  );
+
+
   // Handle adding a trigger field to the active input
   const handleAddTriggerField = (field: string) => {
     if (activeInput) {
@@ -212,13 +224,16 @@ function DynamicForm({
 
   // Set default sheetid if available
   useEffect(() => {
-    if (actionType === "googlesheets" && spreadsheets?.length > 0 && !nodeData.sheetid) {
+    if (
+      actionType === "googlesheets" &&
+      spreadsheets?.length > 0 &&
+      !nodeData.sheetid
+    ) {
       const formattedOptions = spreadsheets.map(({ spreadsheetId, title }) => ({
         value: spreadsheetId,
         label: title,
       }));
       fields.forEach((field) => {
-
         if (field.name === "sheetid") {
           field.options = formattedOptions;
         }
@@ -270,6 +285,40 @@ function DynamicForm({
     }
   }, [nodeData.country]);
 
+  // Validate field on blur
+  const validateField = useCallback(
+    (fieldName: string, value: any) => {
+      const field = fields.find((f) => f.name === fieldName);
+      if (!field) return;
+
+      const newErrors: Record<string, string> = { ...errors };
+      let allowedFields: string[] = [];
+
+      if (triggerType === "github") {
+        allowedFields = GITHUB_TRIGGER_FIELDS_MAP[triggerName?.githubEventType || "issue_comment"];
+      } else if (triggerType === "linkedin" || triggerType === "indeed") {
+        allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
+      }
+
+      if (field.required && !value) {
+        newErrors[fieldName] = `${field.label} is required`;
+      } else if (typeof value === "string" && value.match(/{{trigger\.([^}]+)}}/g)) {
+        const placeholders = value.match(/{{trigger\.([^}]+)}}/g) || [];
+        const isValid = placeholders.every((p) => allowedFields.includes(p.replace(/{{trigger\.([^}]+)}}/, "$1")));
+        if (!isValid) {
+          newErrors[fieldName] = `Invalid placeholder for ${field.label}. Allowed: ${allowedFields.join(", ")}`;
+        }
+      } else if (field.validation?.isNumberOrPlaceholder && value) {
+        const isValid = !isNaN(parseFloat(value)) || value.trim() === "{{trigger.Amount}}";
+        if (!isValid) {
+          newErrors[fieldName] = `Invalid value for ${field.label}. Must be a number or {{trigger.Amount}}`;
+        }
+      }
+      setErrors(newErrors);
+    },
+    [fields, triggerType, triggerName, errors, setErrors],
+  );
+
   // Render fields based on their type and conditions
   const renderField = (field: FormField) => {
     switch (field.type) {
@@ -289,7 +338,11 @@ function DynamicForm({
               placeholder={field.placeholder}
               className="mt-1 flex-1"
               onChange={(e) => handleInputChange(field.name, e.target.value)}
-              onFocus={() => setActiveInput(field.name)} // Set active input on focus
+              onFocus={() => setActiveInput(field.name)} // Set active input on focus 
+              onBlur={() => {
+                validateField(field.name, localFormData[field.name]);
+                handleBlur(field.name);
+              }}
             />
             {/* Buttons to insert trigger fields */}
             {activeInput === field.name && field.type !== "password" && (
@@ -326,12 +379,15 @@ function DynamicForm({
                 (field.name === "githubEventType" ? "issue_comment" : "")
               }
               onChange={(e) => handleInputChange(field.name, e.target.value)}
+              onBlur={() => {
+                validateField(field.name, localFormData[field.name]);
+                handleBlur(field.name);
+              }}
               className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
                 ? "bg-[#1f2937] border-[#374151] text-white"
                 : "bg-white border-[#d1d5db] text-[#111827]"
                 }`}
             >
-
               <option value="">Select an Option</option>
               {field.options?.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -390,7 +446,10 @@ function DynamicForm({
             key={field.name}
             options={field.options || []}
             selected={nodeData[field.name] || []}
-            onChange={(selected) => handleInputChange(field.name, selected)}
+            onChange={(selected) => {
+              handleInputChange(field.name, selected);
+              handleBlur(field.name);
+            }}
             label={field.label}
             required={field.required}
           />
@@ -400,7 +459,10 @@ function DynamicForm({
           <TagInput
             key={field.name}
             tags={nodeData[field.name] || []}
-            onTagsChange={(tags) => handleInputChange(field.name, tags)}
+            onTagsChange={(tags) => {
+              handleInputChange(field.name, tags);
+              handleBlur(field.name)
+            }}
             placeholder={field.placeholder}
             label={field.label}
             required={field.required}
@@ -424,6 +486,10 @@ function DynamicForm({
                 onChange={(e) => {
                   handleInputChange(field.name, e.target.value);
                   handleCountryChange(e.target.value);
+                }}
+                onBlur={() => {
+                  validateField("country", localFormData[field.name]);
+                  handleBlur("country");
                 }}
                 className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
                   ? "bg-[#1f2937] border-[#374151] text-white"
@@ -463,6 +529,10 @@ function DynamicForm({
                   id="state"
                   value={nodeData.state || ""}
                   onChange={(e) => handleInputChange("state", e.target.value)}
+                  onBlur={() => {
+                    validateField("state", localFormData[field.name]);
+                    handleBlur("state");
+                  }}
                   className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
                     ? "bg-[#1f2937] border-[#374151] text-white"
                     : "bg-white border-[#d1d5db] text-[#111827]"
@@ -499,7 +569,9 @@ function DynamicForm({
   if (actionType === "googlesheets" && !refreshToken) {
     return (
       <div className="flex flex-col items-center gap-4">
-        <p className="text-sm text-red-500">Please connect your Google Sheets account to proceed.</p>
+        <p className="text-sm text-red-500">
+          Please connect your Google Sheets account to proceed.
+        </p>
         <Button
           type="button"
           variant="outline"
@@ -512,7 +584,15 @@ function DynamicForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto">
+    <div className="space-y-4 overflow-y-auto">
+      {isSaving && (
+        <div className="absolute top-0 right-0 p-2">
+          <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.5-3.5L12 8V4a8 8 0 00-8 8h4z" />
+          </svg>
+        </div>
+      )}
       {fields.map((field, index) => (
         <div key={index}>
           {renderField(field)}
@@ -521,10 +601,10 @@ function DynamicForm({
           )}
         </div>
       ))}
-      <Button type="submit" className="w-full">
-        Save
-      </Button>
-    </form>
+      {/* <Button type="submit" className="w-full"> */}
+      {/*   Save */}
+      {/* </Button> */}
+    </div>
   );
 }
 
