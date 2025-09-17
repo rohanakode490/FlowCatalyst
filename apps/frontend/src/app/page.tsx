@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { InfiniteMovingCards } from "@/components/globals/infinite-moving-cards";
 import { Integrations } from "@/lib/constant";
 import { Footer } from "@/components/footer/footer";
+import { Pricing } from "@/components/pricing/pricing-component";
 
 export default function Home() {
   return (
@@ -50,6 +51,10 @@ export default function Home() {
             speed="normal"
           />
         </div>
+      </section>
+
+      <section>
+        <Pricing />
       </section>
       <Footer />
     </main>
