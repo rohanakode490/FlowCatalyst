@@ -1,56 +1,81 @@
 version: "3.9"
 
 services:
-  zookeeper:
-    image: bitnami/zookeeper:3.9.2
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: "yes"
-    ports:
-      - "2181:2181"
-
   kafka:
-    image: bitnami/kafka:3.9.0
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    image: apache/kafka:3.9.1  
+    hostname: kafka
+    container_name: kafka
     ports:
-      - "9092:9092"
+      - "9092:9092"  
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk 
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"  
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs 
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine  
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data 
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   primary-backend:
-    image: rohanakode490/fc-primary-backend:latest
-    env_file: .env
+    image: rohanakode490/fc-primary-backend:latest  
+    env_file: .env  
     ports:
-      - "4000:4000"
+      - "4000:4000" 
     depends_on:
-      - redis
-      - kafka
-
+      redis:
+        condition: service_healthy
   hooks:
-    image: rohanakode490/fc-hooks:latest
-    env_file: .env
+    image: rohanakode490/fc-hooks:latest  
+    env_file: .env  
     ports:
-      - "5000:5000"
-    depends_on:
-      - redis
-      - kafka
+      - "5000:5000"  
 
   processor:
-    image: rohanakode490/fc-processor:latest
-    env_file: .env
+    image: rohanakode490/fc-processor:latest  
+    env_file: .env  
+    environment:
+      - KAFKA_BROKERS=kafka:29092 
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
 
   worker:
-    image: rohanakode490/fc-worker:latest
-    env_file: .env
+    image: rohanakode490/fc-worker:latest  
+    env_file: .env  
+    environment:
+      - KAFKA_BROKERS=kafka:29092  
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+
+volumes:
+  kafka_data:
+  redis_data:  
