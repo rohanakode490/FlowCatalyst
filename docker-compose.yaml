@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.9.2
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: bitnami/kafka:3.9.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  primary-backend:
+    image: rohanakode490/fc-primary-backend:latest
+    env_file: .env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
+      - kafka
+
+  hooks:
+    image: rohanakode490/fc-hooks:latest
+    env_file: .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+      - kafka
+
+  processor:
+    image: rohanakode490/fc-processor:latest
+    env_file: .env
+    depends_on:
+      - kafka
+
+  worker:
+    image: rohanakode490/fc-worker:latest
+    env_file: .env
+    depends_on:
+      - kafka
