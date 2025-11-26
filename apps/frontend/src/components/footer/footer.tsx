@@ -1,10 +1,10 @@
 import { Zap, Workflow, Sparkles, Bot } from "lucide-react";
+import Link from "next/link";
 import { FooterLinks } from "./footer-links";
 
 const communityLinks = [
-  { label: "GitHub", href: "https://github.com/yourusername/flowcatalyst" },
-  { label: "Twitter", href: "https://twitter.com/yourusername" },
-  { label: "Discord", href: "/discord" },
+  { label: "GitHub", href: "https://github.com/rohanakode490/flowcatalyst" },
+  { label: "X", href: "https://x.com/rohanakode7" },
 ];
 
 export function Footer() {
@@ -67,15 +67,13 @@ export function Footer() {
           <p className="text-neutral-400 text-sm">
             ©2025 FlowCatalyst. Built with ❤️ by Rohan Akode
           </p>
-          <div className="flex gap-6">
-            <a
-              href="https://github.com/yourusername/flowcatalyst"
-              className="text-neutral-400 hover:text-white transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
+          <div className="flex gap-6 items-center">
+            <Link
+              href="/privacy-policy"
+              className="text-neutral-400 hover:text-white text-sm transition-colors"
             >
-              GitHub
-            </a>
+              Privacy Policy
+            </Link>
           </div>
         </div>
       </div>
