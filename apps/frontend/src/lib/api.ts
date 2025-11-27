@@ -4,6 +4,9 @@ import { BACKEND_URL } from "./config";
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api/v1`,
   withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  }
 });
 
 api.interceptors.response.use(

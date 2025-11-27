@@ -18,8 +18,10 @@ import api from "@/lib/api";
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import { BACKEND_URL } from "@/lib/config";
+import useStore from "@/lib/store"
 
 export default function LogIn() {
+  const {ui: {addToast}} = useStore()
   const router = useRouter();
 
   // Login Credentials
@@ -37,11 +39,18 @@ export default function LogIn() {
         email,
         password,
       });
+
+      console.log("response of loggin in", response.data.status);
       if (response.status === 200) {
+        addToast("Logged In", "success")
         localStorage.setItem("token", response.data.token);
-        router.push("/workflows");
+        // router.push("/workflows");
+        setTimeout(() => {
+          router.push("/workflows");
+        }, 100);
       }
     } catch (error: any) {
+      addToast("Signing failed", "error")
       if (error.response && error.response.data) {
         setError(error.response.data.message || "Login Failed");
       } else {

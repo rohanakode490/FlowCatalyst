@@ -65,6 +65,7 @@ router.post("/login", async (req, res) => {
   const user = await prismaClient.user.findUnique({
     where: { email: parsedData.data.email },
   });
+
   if (!user) {
     return res.status(401).json({ message: "Email not found" });
   }
@@ -94,12 +95,12 @@ router.post("/login", async (req, res) => {
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === "production",
-    signed: true,
+    // signed: true,
   });
 
   res.header("auth", token);
 
-  res.status(200).json({
+  return res.status(200).json({
     message: "Logged in successfully",
     token,
   });

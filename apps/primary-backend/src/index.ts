@@ -51,12 +51,13 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60,
+      maxAge: 24*60*60*1000,
       httpOnly: true, // Prevent access from JavaScript
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS
-      sameSite: "strict", // Prevent CSRF attacks
+      sameSite: "none", 
+      domain:".rohanakode.dev"
     },
   }),
 );
