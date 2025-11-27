@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalDependencies": [".env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -12,7 +13,44 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "JWT_PASSWORD",
+        "KAFKA_BROKERS",
+        "KAFKA_ENABLE_KRAFT",
+        "KAFKA_BROKER_ID",
+        "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+        "KAFKA_ADVERTISED_LISTENERS",
+        "KAFKA_PROCESS_ROLES",
+        "KAFKA_CONTROLLER_QUORUM_VOTERS",
+        "REDIS_URL",
+        "NEXT_PUBLIC_JWT_PASSWORD",
+        "NEXT_PUBLIC_BACKEND_URL",
+        "NEXT_PUBLIC_HOOKS_URL",
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+        "NODE_ENV",
+        "FRONTEND_URL",
+        "HOOKS_APP_URL",
+        "JWT_PASSWORD",
+        "SESSION_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "CASHFREE_APP_ID",
+        "CASHFREE_SECRET_KEY",
+        "TOGETHER_API_KEY",
+        "LINKEDIN",
+        "VIRTUAL_ENV",
+        "PROXY",
+        "INDEED_MIN_DELAY_SECONDS",
+        "INDEED_MAX_DELAY_SECONDS",
+        "INDEED_HEADLESS",
+        "API_KEY",
+        "RESEND_API_KEY",
+        "SOLANA_PRIVATE_KEY",
+        "DATABASE_URL"
+      ]
     },
     "db:generate": {
       "cache": false

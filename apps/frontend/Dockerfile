@@ -54,9 +54,6 @@ WORKDIR /app
 # Install Turbo globally
 RUN npm install -g turbo@^2
 
-# Copy the entire monorepo
-# COPY . .
-
 # Copy package.json, package-lock.json, and turbo.json
 COPY package.json package-lock.json turbo.json ./
 

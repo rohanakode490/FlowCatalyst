@@ -1,4 +1,4 @@
-# ====== Base Image ======
+# ====== Base Image =====
 FROM node:20-alpine AS base
 
 # ====== Builder Stage ======
@@ -18,11 +18,19 @@ COPY package.json package-lock.json turbo.json ./
 COPY apps/primary-backend ./apps/primary-backend
 COPY packages ./packages
 
+RUN npm ci
+
+# Increase V8 heap for the build (4GB)
+# ENV NODE_OPTIONS="--max_old_space_size=4096"
+ENV NODE_OPTIONS="--max_old_space_size=6144"
+ENV TURBO_WORKER_CONCURRENCY=1
+RUN turbo run build --filter=@flowcatalyst/primary-backend...
 # Prune the workspace for @flowcatalyst/primary-backend
 RUN turbo prune --scope=@flowcatalyst/primary-backend --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy pruned package.json and lockfile
@@ -31,7 +39,7 @@ COPY --from=builder /app/package-lock.json .
 
 # Install production dependencies
 RUN npm install -g turbo@^2.1.3
-RUN npm install --omit=dev
+RUN npm install --omit=dev 
 RUN npm install -g dotenv 
 RUN npm install dotenv-extended
 
@@ -42,8 +50,8 @@ COPY --from=builder /app/out/full/ .
 RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the app
-RUN turbo run build --filter=@flowcatalyst/primary-backend...
-RUN ls -la node_modules | grep dotenv
+# RUN turbo run build --filter=@flowcatalyst/primary-backend...
+# RUN ls -la node_modules | grep dotenv
 # ====== Runner Stage ======
 FROM base AS runner
 WORKDIR /app

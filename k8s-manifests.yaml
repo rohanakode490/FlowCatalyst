@@ -13,6 +13,69 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: rohanakode490/fc-frontend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_JWT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NEXT_PUBLIC_JWT_PASSWORD
+            - name: NEXT_PUBLIC_BACKEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NEXT_PUBLIC_BACKEND_URL
+            - name: NEXT_PUBLIC_HOOKS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NEXT_PUBLIC_HOOKS_URL
+            - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 3000
+      nodePort: 30080
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: primary-backend
   namespace: default
 spec:
@@ -26,68 +89,68 @@ spec:
         app: primary-backend
     spec:
       containers:
-      - name: primary-backend
-        image: rohanakode490/fc-primary-backend:latest
-        ports:
-        - containerPort: 4000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: DATABASE_URL
-        - name: FRONTEND_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: FRONTEND_URL
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets       
-              key: REDIS_URL
-        - name: JWT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: JWT_PASSWORD
-        - name: SESSION_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: SESSION_SECRET
-        - name: GOOGLE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GOOGLE_CLIENT_ID
-        - name: GOOGLE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GOOGLE_CLIENT_SECRET
-        - name: GITHUB_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GITHUB_CLIENT_ID
-        - name: GITHUB_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GITHUB_CLIENT_SECRET
-        - name: TOGETHER_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: TOGETHER_API_KEY
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "128Mi"
-          limits:
-            cpu: "200m"
-            memory: "256Mi"
+        - name: primary-backend
+          image: rohanakode490/fc-primary-backend:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+            - name: FRONTEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: FRONTEND_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REDIS_URL
+            - name: JWT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_PASSWORD
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SESSION_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_SECRET
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GITHUB_CLIENT_ID
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GITHUB_CLIENT_SECRET
+            - name: TOGETHER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: TOGETHER_API_KEY
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -98,9 +161,9 @@ spec:
   selector:
     app: primary-backend
   ports:
-  - port: 80
-    targetPort: 4000
-    nodePort: 32130
+    - port: 80
+      targetPort: 4000
+      nodePort: 32130
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -119,28 +182,28 @@ spec:
         app: hooks
     spec:
       containers:
-      - name: hooks
-        image: rohanakode490/fc-hooks:latest
-        ports:
-        - containerPort: 5000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: DATABASE_URL
-        - name: LINKEDIN
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: LINKEDIN
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "128Mi"
-          limits:
-            cpu: "200m"
-            memory: "256Mi"
+        - name: hooks
+          image: rohanakode490/fc-hooks:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+            - name: LINKEDIN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: LINKEDIN
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -151,9 +214,9 @@ spec:
   selector:
     app: hooks
   ports:
-  - port: 80
-    targetPort: 5000
-    nodePort: 31294
+    - port: 80
+      targetPort: 5000
+      nodePort: 31294
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -172,23 +235,23 @@ spec:
         app: processor
     spec:
       containers:
-      - name: processor
-        image: rohanakode490/fc-processor:latest
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: DATABASE_URL
-        - name: KAFKA_BROKERS
-          value: "my-kafka-kafka-bootstrap.default.svc.cluster.local:9092" 
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "128Mi"
-          limits:
-            cpu: "200m"
-            memory: "256Mi"
+        - name: processor
+          image: rohanakode490/fc-processor:latest
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+            - name: KAFKA_BROKERS
+              value: "my-kafka-kafka-bootstrap.default.svc.cluster.local:9092"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -199,8 +262,8 @@ spec:
   selector:
     app: processor
   ports:
-  - port: 80
-    targetPort: 6000
+    - port: 80
+      targetPort: 6000
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -219,43 +282,43 @@ spec:
         app: worker
     spec:
       containers:
-      - name: worker
-        image: rohanakode490/fc-worker:latest
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: DATABASE_URL
-        - name: KAFKA_BROKERS
-          value: "my-kafka-kafka-bootstrap.default.svc.cluster.local:9092" 
-        - name: RESEND_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: RESEND_API_KEY
-        - name: SOLANA_PRIVATE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: SOLANA_PRIVATE_KEY
-        - name: GOOGLE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GOOGLE_CLIENT_ID
-        - name: GOOGLE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: GOOGLE_CLIENT_SECRET
-        resources: 
-          requests:
-            cpu: "100m"
-            memory: "256Mi"
-          limits:
-            cpu: "300m"
-            memory: "1024Mi"
+        - name: worker
+          image: rohanakode490/fc-worker:latest
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+            - name: KAFKA_BROKERS
+              value: "my-kafka-kafka-bootstrap.default.svc.cluster.local:9092"
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: RESEND_API_KEY
+            - name: SOLANA_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SOLANA_PRIVATE_KEY
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_SECRET
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "300m"
+              memory: "1024Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -266,8 +329,8 @@ spec:
   selector:
     app: worker
   ports:
-  - port: 80
-    targetPort: 7000
+    - port: 80
+      targetPort: 7000
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -286,17 +349,17 @@ spec:
         app: redis
     spec:
       containers:
-      - name: redis
-        image: redis:7-alpine
-        ports:
-        - containerPort: 6379
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "64Mi"
-          limits:
-            cpu: "100m"
-            memory: "128Mi"
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -307,8 +370,8 @@ spec:
   selector:
     app: redis
   ports:
-  - port: 6379
-    targetPort: 6379
+    - port: 6379
+      targetPort: 6379
   type: ClusterIP
 ---
 # Strimzi Kafka Custom Resource (replaces manual Kafka and ZooKeeper deployments/services)
@@ -358,3 +421,4 @@ spec:
   entityOperator:
     topicOperator: {}
     userOperator: {}
+
