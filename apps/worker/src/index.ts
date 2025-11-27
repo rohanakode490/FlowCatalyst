@@ -38,6 +38,7 @@ async function waitForKafka() {
   while (true) {
     try {
       await admin.connect();
+      console.log("✅ Kafka is ready and connected");
       await admin.disconnect();
       return;
     } catch (err) {
@@ -48,13 +49,16 @@ async function waitForKafka() {
 }
 
 async function main() {
+  console.log("Starting worker application...");
   await waitForKafka();
+  console.log("Connecting Kafka consumer and producer...");
   const consumer = kafka.consumer({ groupId: "main-worker" });
   await consumer.connect();
   const producer = kafka.producer({
     createPartitioner: Partitioners.LegacyPartitioner,
   });
   await producer.connect();
+  console.log("✅ Kafka consumer and producer connected successfully");
 
   // Get action from Kafka queue
   await consumer.subscribe({ topic: TOPIC_NAME, fromBeginning: true });
@@ -68,6 +72,7 @@ async function main() {
       }
 
       const parsedValue = JSON.parse(message.value?.toString());
+      console.log("Received Kafka message:", { zapRunId: parsedValue.zapRunId, stage: parsedValue.stage });
       const zapRunId = parsedValue.zapRunId;
       const currStage = parsedValue.stage; // Which action is going to happen
 
@@ -91,6 +96,7 @@ async function main() {
       const currentAction = zapRunDetails?.zap.actions.find(
         (x: any) => x.sortingOrder === currStage,
       );
+      console.log("Current action found:", { actionType: currentAction?.type?.name, stage: currStage });
 
       const dynamicFieldsVal = zapRunDetails?.metadata;
       // If action does not exists
@@ -100,7 +106,7 @@ async function main() {
       }
 
       if (currentAction?.type.name === "Email") {
-        console.log("Started Working");
+        console.log("Processing Email action");
         try {
           // Safely parse metadata and dynamic fields
           const emailMetadata = parseJson(currentAction.metadata);
@@ -161,7 +167,7 @@ async function main() {
             subject = parseDynamicFields(subject, dynamicFields);
             emailBody = parseDynamicFields(emailBody, dynamicFields);
           }
-          console.log("Sent Email");
+          console.log("✅ Email sent successfully to:", to);
           await sendEmail({ to, subject, body: emailBody });
         } catch (error: any) {
           console.error("Failed to process email action:", error.message);
@@ -171,9 +177,11 @@ async function main() {
           parseJson(currentAction.metadata),
           parseJson(dynamicFieldsVal),
         );
+        console.log("🪙 Processing Solana transfer:", SolanaData);
         await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount);
-        console.log("Sent solana", SolanaData);
+        console.log("✅ Solana transfer completed:", { to: SolanaData.ToSolanaAddress, amount: SolanaData.Amount });
       } else if (currentAction?.type.name === "Google Sheets") {
+        console.log("📊 Processing Google Sheets operation");
         console.log("currentAction", currentAction);
         const sheetsMetadata = parseJson(currentAction.metadata);
         const dynamicFields = parseJson(dynamicFieldsVal);
@@ -192,6 +200,7 @@ async function main() {
         );
         const sheetName = sheetsMetadata.sheetName || "Sheet1";
         console.log("accessToken", accessToken);
+        console.log("📊 Google Sheets operation details:", { operation: sheetsMetadata.sheetOperation, sheetName });
 
         if (sheetsMetadata.sheetOperation === "1") {
           // Append Row
