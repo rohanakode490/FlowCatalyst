@@ -95,6 +95,7 @@ router.post("/login", async (req, res) => {
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === "production",
+    domain: ".rohanakode.dev"
     // signed: true,
   });
 

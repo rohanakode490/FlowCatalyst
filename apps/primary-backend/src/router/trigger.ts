@@ -5,7 +5,11 @@ import { authMiddleware } from "../middleware";
 const router = Router();
 
 router.get("/available", async (req, res) => {
-  const availableTriggers = await prismaClient.availableTrigger.findMany({});
+  const availableTriggers = await prismaClient.availableTrigger.findMany({
+    where: {
+      show:true,
+    }
+  });
   res.json({
     availableTriggers,
   });
