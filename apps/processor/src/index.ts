@@ -14,6 +14,7 @@ async function waitForKafka() {
   while (true) {
     try {
       await admin.connect();
+      console.log("✅ Kafka is ready and connected");
       await admin.disconnect();
       return;
     } catch (err) {
@@ -24,12 +25,15 @@ async function waitForKafka() {
 }
 
 async function main() {
+  console.log("Starting worker application...");
   await waitForKafka();
+  console.log("Connecting Kafka consumer and producer...");
 
   const producer = kafka.producer({
     createPartitioner: Partitioners.LegacyPartitioner,
   });
   await producer.connect();
+  console.log("✅ Kafka consumer and producer connected successfully");
 
   while (1) {
     // Put in the Outbox

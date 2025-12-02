@@ -29,6 +29,12 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.use(helmet());
 app.use(cookieParser(JWT_PASSWORD));
 app.use(

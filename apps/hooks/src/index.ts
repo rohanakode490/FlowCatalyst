@@ -11,6 +11,11 @@ type PrismaTransactionalClient = Prisma.TransactionClient;
 const app = express();
 app.use(express.json());
 
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 type EventData = {
   eventType: string;
   action: string;
