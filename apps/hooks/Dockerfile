@@ -5,7 +5,7 @@ FROM python:3.11-slim AS python-base
 RUN apt-get update && apt-get install -y gcc python3-dev libffi-dev musl-dev
 
 RUN pip install --upgrade pip
-COPY apps/hooks/requirements.txt .
+COPY ./apps/hooks/requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Create and activate virtual environment
 ENV VIRTUAL_ENV=/opt/venv
@@ -14,7 +14,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install Python dependencies
 WORKDIR /app
-COPY apps/hooks/requirements.txt .
+COPY ./apps/hooks/requirements.txt .
 # RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install -r requirements.txt
 

@@ -72,12 +72,14 @@ const handlePullRequestEvent = (payload: any): EventData | null => {
 
 const handleIssueCommentEvent = (payload: any): EventData | null => {
   const { action, issue, comment, sender } = payload;
+  console.log("GIHUB EVENT DATA", action, " ", comment)
 
   // Check if the comment is a bounty
   const bountyRegex = /bounty:\s*{([^}]+)}/;
   const match = comment.body.match(bountyRegex);
   const isBounty = !!match;
 
+  console.log("comment", comment)
   // Only process if the comment is created
   if (
     !isBounty ||
@@ -158,6 +160,7 @@ const handleGitHubWebhook = async (
 
   try {
     let eventData: EventData | null = null;
+    console.log("GITHUB HOOK", eventType)
 
     // Route based on event type
     switch (eventType) {
@@ -174,6 +177,7 @@ const handleGitHubWebhook = async (
         throw new Error(`Unsupported event type: ${eventType}`);
     }
 
+    console.log("Data obtained", eventData)
     // Only store data if the event is valid and meets the conditions
     if (eventData) {
       await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {

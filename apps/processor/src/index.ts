@@ -33,15 +33,22 @@ async function main() {
     createPartitioner: Partitioners.LegacyPartitioner,
   });
   await producer.connect();
-  console.log("✅ Kafka consumer and producer connected successfully");
+  console.log("✅ Kafka producer connected successfully");
 
   while (1) {
+
+    console.log("Finding in Outbox")
     // Put in the Outbox
     const pendingRows = await prismaClient.zapRunOutbox.findMany({
       where: {},
       take: 10,
     });
 
+    if(pendingRows){
+      console.log("Found in Outbox", pendingRows)
+    }
+
+    console.log("@fc-processor Putting in queue")
     // Put in the queue
     await producer.send({
       topic: TOPIC_NAME,
@@ -52,6 +59,7 @@ async function main() {
       }),
     });
 
+    console.log("Deleting from the Temp DB table")
     //Delete from the Outbox
     await prismaClient.zapRunOutbox.deleteMany({
       where: {
