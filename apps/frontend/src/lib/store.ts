@@ -624,7 +624,7 @@ const useStore = createWithEqualityFn<AppState>()(
               state.user.isAuthenticated = false;
               state.user.userLoading = false;
             });
-            return;
+            return 401;
           }
           const response = await api.get("/user", {
             headers: { Authorization: `Bearer ${token}` },
@@ -641,7 +641,7 @@ const useStore = createWithEqualityFn<AppState>()(
               response.data.user.googleRefreshToken || "";
             state.user.savedSheetIds = response.data.user.savedSheetIds || [];
           });
-          return response.status;
+          return response.status || 404;
         } catch (error) {
           console.error("Failed to fetch user:", error);
           set((state) => {
@@ -649,6 +649,7 @@ const useStore = createWithEqualityFn<AppState>()(
             state.user.userLoading = false;
             state.ui.addToast("Failed to load user data.", "error");
           });
+          return 404;
         }
       },
       setUserId: (userId) => {

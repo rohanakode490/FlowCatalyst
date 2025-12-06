@@ -14,6 +14,14 @@ import { useRouter } from "next/navigation";
 import useStore from "@/lib/store";
 import api from "@/lib/api";
 
+declare global {
+  interface Window {
+    google: any;
+    gapi: any;
+    googleCodeClient: any;
+  }
+}
+
 const CONNECTIONS = [
   {
     title: "Google Sheets",
@@ -151,7 +159,7 @@ const Connections: React.FC = () => {
 
       // init code client
       window.googleCodeClient = window.google.accounts.oauth2.initCodeClient({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         scope:
           "https://www.googleapis.com/auth/drive.file openid email profile",
         ux_mode: "popup",
@@ -204,8 +212,8 @@ const Connections: React.FC = () => {
               type={connection.title}
               connected={connections}
               onConnect={() => {
-                if ((window as any).googleCodeClient) {
-                  (window as any).googleCodeClient.requestCode();
+                if (window.googleCodeClient) {
+                  window.googleCodeClient.requestCode();
                 } else {
                   setError("Google auth not ready yet");
                 }
