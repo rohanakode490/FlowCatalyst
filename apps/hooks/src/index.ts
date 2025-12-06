@@ -12,8 +12,8 @@ const app = express();
 app.use(express.json());
 
 // Health Check Endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 type EventData = {
@@ -72,14 +72,14 @@ const handlePullRequestEvent = (payload: any): EventData | null => {
 
 const handleIssueCommentEvent = (payload: any): EventData | null => {
   const { action, issue, comment, sender } = payload;
-  console.log("GIHUB EVENT DATA", action, " ", comment)
+  console.log("GIHUB EVENT DATA", action, " ", comment);
 
   // Check if the comment is a bounty
   const bountyRegex = /bounty:\s*{([^}]+)}/;
   const match = comment.body.match(bountyRegex);
   const isBounty = !!match;
 
-  console.log("comment", comment)
+  console.log("comment", comment);
   // Only process if the comment is created
   if (
     !isBounty ||
@@ -160,7 +160,7 @@ const handleGitHubWebhook = async (
 
   try {
     let eventData: EventData | null = null;
-    console.log("GITHUB HOOK", eventType)
+    console.log("GITHUB HOOK", eventType);
 
     // Route based on event type
     switch (eventType) {
@@ -177,7 +177,7 @@ const handleGitHubWebhook = async (
         throw new Error(`Unsupported event type: ${eventType}`);
     }
 
-    console.log("Data obtained", eventData)
+    console.log("Data obtained", eventData);
     // Only store data if the event is valid and meets the conditions
     if (eventData) {
       await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
@@ -432,54 +432,56 @@ const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
       return [];
     }
 
-    const resp = await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {
-      const existingRun = await tx.zapRun.findFirst({
-        where: {
-          zapId: trigger.zapId,
-          metadata: {
-            path: ["type"],
-            equals: scraperType,
-          },
-        },
-        orderBy: { id: "desc" },
-        take: 1,
-      });
-
-      let run: { id: string; zapId: string; metadata: Prisma.JsonValue };
-      if (existingRun) {
-        const existingMetadata = existingRun.metadata as any;
-        const updatedJobs = [...jobs, ...(existingMetadata.jobs || [])];
-        run = await tx.zapRun.update({
-          where: { id: existingRun.id },
-          data: {
-            metadata: {
-              ...existingMetadata,
-              jobs: updatedJobs,
-              lastUpdated: new Date().toISOString(),
-            },
-          },
-        });
-      } else {
-        run = await tx.zapRun.create({
-          data: {
+    const resp = await prismaClient.$transaction(
+      async (tx: PrismaTransactionalClient) => {
+        const existingRun = await tx.zapRun.findFirst({
+          where: {
             zapId: trigger.zapId,
             metadata: {
-              type: scraperType,
-              jobs,
-              scrapedAt: new Date().toISOString(),
+              path: ["type"],
+              equals: scraperType,
             },
           },
+          orderBy: { id: "desc" },
+          take: 1,
         });
-      }
 
-      if (run.id !== "") {
-        await tx.zapRunOutbox.create({
-          data: { zapRunId: run.id },
-        });
-      }
+        let run: { id: string; zapId: string; metadata: Prisma.JsonValue };
+        if (existingRun) {
+          const existingMetadata = existingRun.metadata as any;
+          const updatedJobs = [...jobs, ...(existingMetadata.jobs || [])];
+          run = await tx.zapRun.update({
+            where: { id: existingRun.id },
+            data: {
+              metadata: {
+                ...existingMetadata,
+                jobs: updatedJobs,
+                lastUpdated: new Date().toISOString(),
+              },
+            },
+          });
+        } else {
+          run = await tx.zapRun.create({
+            data: {
+              zapId: trigger.zapId,
+              metadata: {
+                type: scraperType,
+                jobs,
+                scrapedAt: new Date().toISOString(),
+              },
+            },
+          });
+        }
 
-      return { run }
-    });
+        if (run.id !== "") {
+          await tx.zapRunOutbox.create({
+            data: { zapRunId: run.id },
+          });
+        }
+
+        return { run };
+      },
+    );
 
     console.info(`Successfully processed trigger ${triggerId}`, {
       jobCount: jobs.length,

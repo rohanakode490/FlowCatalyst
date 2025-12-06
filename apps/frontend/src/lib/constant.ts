@@ -254,7 +254,7 @@ export const ACTION_FORM_FIELDS: Record<string, FormField[]> = {
       options: [
         { value: "1", label: "Add Row" },
         { value: "2", label: "Add Col" },
-        { value: "3", label: "Create a New Sheet" }
+        { value: "3", label: "Create a New Sheet" },
       ],
       required: true,
     },
@@ -298,5 +298,5 @@ export const INDEED_TRIGGER_FIELDS_MAP: Record<string, string[]> = {
     "posted_date",
     "skills",
     "emailBodyTemplate",
-  ]
+  ],
 };

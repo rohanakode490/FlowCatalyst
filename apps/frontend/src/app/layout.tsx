@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -27,6 +28,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Script
+            src="https://accounts.google.com/gsi/client"
+            strategy="afterInteractive"
+          />
+          <Script
+            src="https://apis.google.com/js/api.js"
+            strategy="afterInteractive"
+          />
+          <Script
+            src="https://apis.google.com/js/picker.js"
+            strategy="afterInteractive"
+          />
           {children}
         </ThemeProvider>
       </body>

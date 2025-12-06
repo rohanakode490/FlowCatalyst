@@ -15,13 +15,14 @@ import {
 } from "./googlesheets";
 
 dotenv.config();
+console.log(process.env.KAFKA_BROKERS);
 
 const TOPIC_NAME = "zap-events";
 
 const kafka = new Kafka({
   clientId: "outbox-processor-2",
   // brokers: ["localhost:9092"],
-  brokers: [process.env.KAFKA_BROKERS || "kafka:9092"],
+  brokers: [process.env.KAFKA_BROKERS || "localhost:9092"],
 });
 
 const parseJson = (data: any, fallback: any = {}) => {
@@ -72,7 +73,10 @@ async function main() {
       }
 
       const parsedValue = JSON.parse(message.value?.toString());
-      console.log("Received Kafka message:", { zapRunId: parsedValue.zapRunId, stage: parsedValue.stage });
+      console.log("Received Kafka message:", {
+        zapRunId: parsedValue.zapRunId,
+        stage: parsedValue.stage,
+      });
       const zapRunId = parsedValue.zapRunId;
       const currStage = parsedValue.stage; // Which action is going to happen
 
@@ -96,7 +100,10 @@ async function main() {
       const currentAction = zapRunDetails?.zap.actions.find(
         (x: any) => x.sortingOrder === currStage,
       );
-      console.log("Current action found:", { actionType: currentAction?.type?.name, stage: currStage });
+      console.log("Current action found:", {
+        actionType: currentAction?.type?.name,
+        stage: currStage,
+      });
 
       const dynamicFieldsVal = zapRunDetails?.metadata;
       // If action does not exists
@@ -179,7 +186,10 @@ async function main() {
         );
         console.log("🪙 Processing Solana transfer:", SolanaData);
         await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount);
-        console.log("✅ Solana transfer completed:", { to: SolanaData.ToSolanaAddress, amount: SolanaData.Amount });
+        console.log("✅ Solana transfer completed:", {
+          to: SolanaData.ToSolanaAddress,
+          amount: SolanaData.Amount,
+        });
       } else if (currentAction?.type.name === "Google Sheets") {
         console.log("📊 Processing Google Sheets operation");
         console.log("currentAction", currentAction);
@@ -200,14 +210,17 @@ async function main() {
         );
         const sheetName = sheetsMetadata.sheetName || "Sheet1";
         console.log("accessToken", accessToken);
-        console.log("📊 Google Sheets operation details:", { operation: sheetsMetadata.sheetOperation, sheetName });
+        console.log("📊 Google Sheets operation details:", {
+          operation: sheetsMetadata.sheetOperation,
+          sheetName,
+        });
 
         if (sheetsMetadata.sheetOperation === "1") {
           // Append Row
           const data = Array.isArray(dynamicFields.jobs)
             ? dynamicFields.jobs
             : [dynamicFields.jobs || ""];
-          console.log('Adding row with data', data)
+          console.log("Adding row with data", data);
           await appendRowToSheet(
             accessToken,
             sheetsMetadata.sheetid,
@@ -224,7 +237,7 @@ async function main() {
             accessToken,
             sheetsMetadata.sheetid,
             data,
-            dynamicFields
+            dynamicFields,
           );
         } else if (sheetsMetadata.sheetOperation === "3") {
           // Create Sheet
@@ -235,10 +248,12 @@ async function main() {
             accessToken,
             sheetsMetadata.sheetid,
             sheetName,
-            data
+            data,
           );
         } else {
-          throw new Error(`Invalid operation: ${sheetsMetadata.sheetOperation}`);
+          throw new Error(
+            `Invalid operation: ${sheetsMetadata.sheetOperation}`,
+          );
         }
         console.log(
           `Google Sheets operation ${sheetsMetadata.sheetOperation} completed`,

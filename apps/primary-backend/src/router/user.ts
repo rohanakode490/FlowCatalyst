@@ -91,13 +91,21 @@ router.post("/login", async (req, res) => {
   //   sameSite: "strict",
   //   maxAge: 3600000, // 1 hour in milliseconds
   // });
-  res.cookie("token", token, {
+  // Set cookie without domain restriction in development, with domain in production
+  const cookieOptions: any = {
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === "production",
-    domain: ".rohanakode.dev"
-    // signed: true,
-  });
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    // path: "/",
+  };
+
+  // Only set domain in production (for subdomain support)
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.domain = ".rohanakode.dev";
+  }
+
+  res.cookie("token", token, cookieOptions);
 
   res.header("auth", token);
 

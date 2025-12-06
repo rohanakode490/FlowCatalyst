@@ -31,15 +31,15 @@ const app = express();
 app.use(express.json());
 
 // Health Check Endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 app.use(helmet());
 app.use(cookieParser(JWT_PASSWORD));
 app.use(
   rateLimiter({
-    windowMs: 50 * 60 * 10000,
+    windowMs: 100 * 60 * 10000,
     limit: 50,
   }),
 );
@@ -59,11 +59,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 24*60*60*1000,
+      maxAge: 3 * 24 * 60 * 60 * 1000,
       httpOnly: true, // Prevent access from JavaScript
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS
-      sameSite: "none", 
-      domain:".rohanakode.dev"
+      sameSite: "none",
+      domain: ".rohanakode.dev",
     },
   }),
 );
@@ -95,7 +95,6 @@ passport.use(
       scope: [
         "profile",
         "email",
-        "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive.readonly",
       ],
     },
@@ -223,7 +222,6 @@ app.get(
     scope: [
       "profile",
       "email",
-      "https://www.googleapis.com/auth/spreadsheets",
       "https://www.googleapis.com/auth/drive.readonly",
     ],
     session: false,
@@ -240,12 +238,22 @@ app.get(
     });
 
     const oneDay = 1000 * 60 * 60 * 24;
-    res.cookie("token", token, {
+    // Set cookie without domain restriction in development, with domain in production
+    const cookieOptions: any = {
       httpOnly: true,
       expires: new Date(Date.now() + oneDay),
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       signed: true,
-    });
+    };
+
+    // Only set domain in production (for subdomain support)
+    if (process.env.NODE_ENV === "production") {
+      cookieOptions.domain = ".rohanakode.dev";
+    }
+
+    res.cookie("token", token, cookieOptions);
 
     res.header("auth", token);
 

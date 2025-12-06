@@ -88,11 +88,13 @@ interface UserState {
   refreshToken: string;
   userTriggers: Record<string, number>;
   loadingTriggers: boolean;
-  fetchUser: () => Promise<void>;
+  savedSheetIds: string[];
+  fetchUser: () => Promise<number>;
   setUserId: (userId: string) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setRefreshToken: (token: string) => void;
   fetchUserTriggers: () => Promise<void>;
+  setSavedSheetIds: (ids: string[]) => void;
 }
 
 interface FormState {
@@ -613,6 +615,7 @@ const useStore = createWithEqualityFn<AppState>()(
       refreshToken: "",
       userTriggers: {},
       loadingTriggers: false,
+      savedSheetIds: [],
       fetchUser: async () => {
         try {
           const token = localStorage.getItem("token");
@@ -636,7 +639,9 @@ const useStore = createWithEqualityFn<AppState>()(
             state.user.userLoading = false;
             state.user.refreshToken =
               response.data.user.googleRefreshToken || "";
+            state.user.savedSheetIds = response.data.user.savedSheetIds || [];
           });
+          return response.status;
         } catch (error) {
           console.error("Failed to fetch user:", error);
           set((state) => {
@@ -659,6 +664,11 @@ const useStore = createWithEqualityFn<AppState>()(
       setRefreshToken: (token) => {
         set((state) => {
           state.user.refreshToken = token;
+        });
+      },
+      setSavedSheetIds: (ids) => {
+        set((state) => {
+          state.user.savedSheetIds = ids;
         });
       },
       fetchUserTriggers: async () => {
@@ -839,26 +849,51 @@ const useStore = createWithEqualityFn<AppState>()(
             state.form.spreadsheetError = "";
           });
 
-          const {
-            user: { refreshToken },
-          } = get();
-
           const token = localStorage.getItem("token");
-          const response = await api.post(
-            "/sheets/list",
-            { refresh_token: refreshToken },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-          set((state) => {
-            state.form.spreadsheets = response.data.spreadsheets || [];
+          if (!token) {
+            set((state) => {
+              state.form.spreadsheets = [];
+              state.form.loadingSpreadsheets = false;
+            });
+            return;
+          }
+
+          const response = await api.get("/sheets/list", {
+            headers: { Authorization: `Bearer ${token}` },
           });
-        } catch (error) {
-          console.error("Spreadsheet fetch error:", error);
+
+          console.log("sheets", response.data.spreadsheets);
+          const spreadsheets = response.data.spreadsheets || [];
           set((state) => {
-            state.form.spreadsheetError = "Failed to load spreadsheets";
-            state.ui.addToast("Failed to load spreadsheets.", "error");
+            state.form.spreadsheets = spreadsheets;
+          });
+
+          // If no spreadsheets found, it's okay - user can use Google Picker
+          if (spreadsheets.length === 0) {
+            console.log(
+              "No spreadsheets found. User can use Google Picker to select one.",
+            );
+          }
+        } catch (error: any) {
+          console.error("Spreadsheet fetch error:", error);
+          const errorMessage =
+            error.response?.data?.error ||
+            error.response?.data?.details ||
+            "Failed to load spreadsheets";
+          const detailedMessage = error.response?.data?.details
+            ? `${error.response.data.error}: ${error.response.data.details}`
+            : errorMessage;
+
+          set((state) => {
+            state.form.spreadsheetError = detailedMessage;
+            state.form.spreadsheets = []; // Clear spreadsheets on error
+            state.ui.addToast(
+              errorMessage.includes("expired") ||
+                errorMessage.includes("reconnect")
+                ? "Please reconnect Google Sheets in Connections page."
+                : "Failed to load spreadsheets. You can use 'Pick from Google Drive' button to select a spreadsheet.",
+              "error",
+            );
           });
         } finally {
           set((state) => {
@@ -984,8 +1019,43 @@ const useStore = createWithEqualityFn<AppState>()(
         }
 
         // If sheets schema add refreshToken
-        if (updatedFormData.hasOwnProperty("sheetid") && refreshToken) {
-          updatedFormData.refreshToken = refreshToken;
+        // RefreshToken is stored in DB, fetch from backend if not in store
+        if (updatedFormData.hasOwnProperty("sheetid")) {
+          let tokenToUse = refreshToken;
+          if (!tokenToUse) {
+            // Try to fetch from backend if not in store
+            try {
+              const token = localStorage.getItem("token");
+              if (token) {
+                const userResponse = await api.get("/user", {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                tokenToUse = userResponse.data.user?.googleRefreshToken || "";
+                // Update store with fetched token
+                if (tokenToUse) {
+                  set((state) => {
+                    state.user.refreshToken = tokenToUse;
+                  });
+                }
+              }
+            } catch (err) {
+              console.error("Failed to fetch refresh token:", err);
+            }
+          }
+          if (tokenToUse) {
+            updatedFormData.refreshToken = tokenToUse;
+          } else {
+            set((state) => {
+              state.form.errors.sheetid =
+                "Google Sheets not connected. Please connect in Connections page.";
+              state.form.formStatus = "error";
+              state.ui.addToast(
+                "Google Sheets not connected. Please connect your account.",
+                "error",
+              );
+            });
+            return;
+          }
         }
 
         // Replace placeholders with actual values

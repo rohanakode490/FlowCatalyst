@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Header from "@/components/globals/heading";
@@ -17,8 +17,10 @@ import api from "@/lib/api";
 const CONNECTIONS = [
   {
     title: "Google Sheets",
-    description: "Connect your Google account to access and update Google Sheets.",
-    image: "https://res.cloudinary.com/dmextegpu/image/upload/v1753959054/Google_Sheets_Logo_512px_gtxhsx.png",
+    description:
+      "Connect your Google account to access and update Google Sheets.",
+    image:
+      "https://res.cloudinary.com/dmextegpu/image/upload/v1753959054/Google_Sheets_Logo_512px_gtxhsx.png",
   },
 ];
 
@@ -79,33 +81,39 @@ const Connections: React.FC = () => {
     "Google Sheets": false,
   });
   const [error, setError] = useState<string | null>(null);
-  const { user: { refreshToken, setRefreshToken } } = useStore();
+  const {
+    user: { refreshToken, setRefreshToken },
+  } = useStore();
   const router = useRouter();
 
-  const login = useGoogleLogin({
-    onSuccess: async (codeResponse) => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.post(`/sheets`, {
-          code: codeResponse.code,
-        }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRefreshToken(response.data.refresh_token);
-        setConnections((prev) => ({ ...prev, "Google Sheets": true }));
-        setError(null);
-        router.push("/workflows");
-      } catch (err) {
-        setError("Failed to authenticate with Google Sheets");
-      }
-    },
-    onError: () => {
-      setError("Google authentication failed");
-    },
-    flow: "auth-code",
-    scope: "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly",
-    redirect_uri: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/callback`,
-  });
+  // const login = useGoogleLogin({
+  //   onSuccess: async (codeResponse) => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       const response = await api.post(
+  //         `/sheets`,
+  //         {
+  //           code: codeResponse.code,
+  //         },
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         },
+  //       );
+  //       setRefreshToken(response.data.refresh_token);
+  //       setConnections((prev) => ({ ...prev, "Google Sheets": true }));
+  //       setError(null);
+  //       router.push("/workflows");
+  //     } catch (err) {
+  //       setError("Failed to authenticate with Google Sheets");
+  //     }
+  //   },
+  //   onError: () => {
+  //     setError("Google authentication failed");
+  //   },
+  //   flow: "auth-code",
+  //   scope: "https://www.googleapis.com/auth/drive.readonly",
+  //   redirect_uri: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/callback`,
+  // });
 
   const handleDisconnect = (type: string) => {
     if (type === "Google Sheets") {
@@ -115,11 +123,77 @@ const Connections: React.FC = () => {
     setConnections((prev) => ({ ...prev, [type]: false }));
   };
 
+  useEffect(() => {
+    let mounted = true;
+    const waitForGoogle = async () => {
+      if (!mounted) return;
+      if (typeof window === "undefined") return;
+      if (!window.google || !window.gapi) {
+        // keep polling until scripts load
+        setTimeout(waitForGoogle, 200);
+        return;
+      }
+
+      // init gapi client (optional but helpful)
+      try {
+        await new Promise<void>((resolve) =>
+          window.gapi.load("client", resolve),
+        );
+        await window.gapi.client.init({
+          apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
+          discoveryDocs: [
+            "https://sheets.googleapis.com/$discovery/rest?version=v4",
+          ],
+        });
+      } catch (e) {
+        console.warn("gapi init failed", e);
+      }
+
+      // init code client
+      window.googleCodeClient = window.google.accounts.oauth2.initCodeClient({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        scope:
+          "https://www.googleapis.com/auth/drive.file openid email profile",
+        ux_mode: "popup",
+        redirect_uri: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/callback`,
+        // callback receives { code }
+        callback: async (resp: any) => {
+          if (!resp || !resp.code) {
+            setError("No code received from Google");
+            return;
+          }
+          try {
+            const token = localStorage.getItem("token");
+            const response = await api.post(
+              `/sheets`,
+              { code: resp.code },
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            // backend should return refresh_token
+            setRefreshToken(response.data.refresh_token || "");
+            setConnections((prev) => ({ ...prev, "Google Sheets": true }));
+            setError(null);
+            router.push("/workflows");
+          } catch (err) {
+            console.error("Token exchange error:", err);
+            setError("Failed to authenticate with Google Sheets");
+          }
+        },
+      });
+    };
+
+    waitForGoogle();
+    return () => {
+      mounted = false;
+    };
+  }, [setRefreshToken, router]);
+
   return (
     <div className="relative flex flex-col gap-4">
       <div className="relative flex flex-col gap-4">
         <section className="flex flex-col gap-4 p-6 text-muted-foreground">
-          Connect all your apps directly from here. You may need to connect these apps regularly to refresh verification.
+          Connect all your apps directly from here. You may need to connect
+          these apps regularly to refresh verification.
           {error && <p className="text-red-500">{error}</p>}
           {CONNECTIONS.map((connection) => (
             <ConnectionCard
@@ -129,7 +203,13 @@ const Connections: React.FC = () => {
               icon={connection.image}
               type={connection.title}
               connected={connections}
-              onConnect={login}
+              onConnect={() => {
+                if ((window as any).googleCodeClient) {
+                  (window as any).googleCodeClient.requestCode();
+                } else {
+                  setError("Google auth not ready yet");
+                }
+              }}
             />
           ))}
           {Object.keys(connections).some((key) => connections[key]) && (
@@ -144,7 +224,7 @@ const Connections: React.FC = () => {
                   >
                     Disconnect {connection.title}
                   </button>
-                ) : null
+                ) : null,
               )}
             </div>
           )}

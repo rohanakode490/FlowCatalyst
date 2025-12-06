@@ -1,12 +1,15 @@
 import { Kafka, Partitioners } from "kafkajs";
 import { prismaClient } from "@flowcatalyst/database";
+import dotenv from "dotenv";
+dotenv.config();
 
 const TOPIC_NAME = "zap-events";
 
+console.log(process.env.KAFKA_BROKERS);
 const kafka = new Kafka({
   clientId: "outbox-processor-2",
   // brokers: ["localhost:9092"],
-  brokers: [process.env.KAFKA_BROKERS || "kafka:9092"],
+  brokers: [process.env.KAFKA_BROKERS || "localhost:9092"],
 });
 
 async function waitForKafka() {
@@ -36,19 +39,18 @@ async function main() {
   console.log("✅ Kafka producer connected successfully");
 
   while (1) {
-
-    console.log("Finding in Outbox")
+    console.log("Finding in Outbox");
     // Put in the Outbox
     const pendingRows = await prismaClient.zapRunOutbox.findMany({
       where: {},
       take: 10,
     });
 
-    if(pendingRows){
-      console.log("Found in Outbox", pendingRows)
+    if (pendingRows) {
+      console.log("Found in Outbox", pendingRows);
     }
 
-    console.log("@fc-processor Putting in queue")
+    console.log("@fc-processor Putting in queue");
     // Put in the queue
     await producer.send({
       topic: TOPIC_NAME,
@@ -59,7 +61,7 @@ async function main() {
       }),
     });
 
-    console.log("Deleting from the Temp DB table")
+    console.log("Deleting from the Temp DB table");
     //Delete from the Outbox
     await prismaClient.zapRunOutbox.deleteMany({
       where: {

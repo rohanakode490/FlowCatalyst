@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc -b",
     "dev2": "tsc -b && node dist/index.js",
-    "dev": "npm run build --workspace=@flowcatalyst/database && tsc -b && node dist/index.js"
+    "dev1": "npm run build --workspace=@flowcatalyst/database && tsc -b && node dist/index.js",
+    "dev": "nodemon src/index.ts"
   },
   "keywords": [],
   "exports": {
@@ -32,10 +33,12 @@
     "generate-password": "^1.7.1",
     "googleapis": "^154.0.0",
     "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^3.2.0",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
     "together-ai": "^0.13.0",
     "zod": "^3.24.1"
   },

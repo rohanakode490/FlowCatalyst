@@ -16,12 +16,19 @@ export async function getGoogleAccessToken(
   }
 
   try {
-    const response = await axios.post("https://oauth2.googleapis.com/token", {
-      refresh_token,
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      grant_type: "refresh_token",
-    });
+    const params = new URLSearchParams();
+    params.append("refresh_token", refresh_token);
+    params.append("client_id", clientId);
+    params.append("client_secret", clientSecret);
+    params.append("grant_type", "refresh_token");
+
+    const response = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      params.toString(),
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      },
+    );
 
     const accessToken = response.data.access_token;
     if (!accessToken) {
@@ -34,12 +41,11 @@ export async function getGoogleAccessToken(
   }
 }
 
-
 // Get the last filled row and column count from a sheet
 async function getSheetDimensions(
   accessToken: string,
   spreadsheetId: string,
-  sheetName: string
+  sheetName: string,
 ): Promise<{ lastRow: number; columnCount: number }> {
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: accessToken });
@@ -52,7 +58,8 @@ async function getSheetDimensions(
     });
     const values = response.data.values || [];
     const lastRow = values.length;
-    const columnCount = values.length > 0 ? Math.max(...values.map((row) => row.length)) : 0;
+    const columnCount =
+      values.length > 0 ? Math.max(...values.map((row) => row.length)) : 0;
     return { lastRow, columnCount };
   } catch (error: any) {
     if (error.code === 400 && error.message.includes("Range")) {
@@ -70,19 +77,25 @@ export async function appendRowToSheet(
   spreadsheetId: string,
   sheetName: string,
   data: any[],
-  triggerValues?: any
+  triggerValues?: any,
 ) {
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: accessToken });
   const sheets = google.sheets({ version: "v4", auth });
 
   try {
-    let { lastRow, columnCount } = await getSheetDimensions(accessToken, spreadsheetId, sheetName);
-    console.log("columnCount", columnCount)
+    let { lastRow, columnCount } = await getSheetDimensions(
+      accessToken,
+      spreadsheetId,
+      sheetName,
+    );
+    console.log("columnCount", columnCount);
     // Handle array of objects or simple values
     const parsedRows = data.map((item) => {
       if (typeof item === "object" && item !== null && !Array.isArray(item)) {
-        return Object.values(item).map((value) => parseDynamicFields(value, triggerValues));
+        return Object.values(item).map((value) =>
+          parseDynamicFields(value, triggerValues),
+        );
       }
       return [parseDynamicFields(item, triggerValues)];
     });
@@ -92,7 +105,10 @@ export async function appendRowToSheet(
       let adjustedData = parsedData;
       if (columnCount > 0 && parsedData.length !== columnCount) {
         if (parsedData.length < columnCount) {
-          adjustedData = [...parsedData, ...Array(columnCount - parsedData.length).fill("")];
+          adjustedData = [
+            ...parsedData,
+            ...Array(columnCount - parsedData.length).fill(""),
+          ];
         } else {
           adjustedData = parsedData.slice(0, columnCount);
         }
@@ -108,10 +124,11 @@ export async function appendRowToSheet(
           values: [adjustedData],
         },
       });
-      console.log(`Appended row to ${sheetName} at ${range} in spreadsheet ${spreadsheetId}`);
+      console.log(
+        `Appended row to ${sheetName} at ${range} in spreadsheet ${spreadsheetId}`,
+      );
       lastRow++;
     }
-
   } catch (error) {
     console.error("Failed to append row:", error);
     throw error;
@@ -123,7 +140,7 @@ export async function appendColumnToSheet(
   accessToken: string,
   spreadsheetId: string,
   data: any[],
-  triggerValues: any
+  triggerValues: any,
 ) {
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: accessToken });
@@ -135,9 +152,15 @@ export async function appendColumnToSheet(
       ranges: ["Sheet1"],
       fields: "sheets(properties(sheetId,title))",
     });
-    let sheetId = sheetResponse.data.sheets?.find((sheet) => sheet.properties?.title === "Sheet1")?.properties?.sheetId;
+    let sheetId = sheetResponse.data.sheets?.find(
+      (sheet) => sheet.properties?.title === "Sheet1",
+    )?.properties?.sheetId;
 
-    let { lastRow, columnCount } = await getSheetDimensions(accessToken, spreadsheetId, "Sheet1");
+    let { lastRow, columnCount } = await getSheetDimensions(
+      accessToken,
+      spreadsheetId,
+      "Sheet1",
+    );
     if (lastRow === 0 && columnCount === 0) {
       await createSheet(accessToken, spreadsheetId, "Sheet1");
       const newSheetResponse = await sheets.spreadsheets.get({
@@ -145,7 +168,10 @@ export async function appendColumnToSheet(
         ranges: ["Sheet1"],
         fields: "sheets(properties(sheetId,title))",
       });
-      sheetId = newSheetResponse.data.sheets?.find((sheet) => sheet.properties?.title === "Sheet1")?.properties?.sheetId || 0;
+      sheetId =
+        newSheetResponse.data.sheets?.find(
+          (sheet) => sheet.properties?.title === "Sheet1",
+        )?.properties?.sheetId || 0;
       lastRow = 0;
       columnCount = 0;
     }
@@ -153,7 +179,9 @@ export async function appendColumnToSheet(
     // Handle array of objects or simple values
     const parsedColumns = data.map((item) => {
       if (typeof item === "object" && item !== null && !Array.isArray(item)) {
-        return Object.values(item).map((value) => parseDynamicFields(value, triggerValues));
+        return Object.values(item).map((value) =>
+          parseDynamicFields(value, triggerValues),
+        );
       }
       return [parseDynamicFields(item, triggerValues)];
     });
@@ -164,7 +192,10 @@ export async function appendColumnToSheet(
       let adjustedData = columnData;
       if (lastRow > 0 && columnData.length !== lastRow) {
         if (columnData.length < lastRow) {
-          adjustedData = [...columnData, ...Array(lastRow - columnData.length).fill("")];
+          adjustedData = [
+            ...columnData,
+            ...Array(lastRow - columnData.length).fill(""),
+          ];
         } else {
           adjustedData = columnData.slice(0, lastRow);
         }
@@ -203,7 +234,9 @@ export async function appendColumnToSheet(
           values: [adjustedData],
         },
       });
-      console.log(`Updated column ${columnCount + i + 1} at ${range} in spreadsheet ${spreadsheetId}`);
+      console.log(
+        `Updated column ${columnCount + i + 1} at ${range} in spreadsheet ${spreadsheetId}`,
+      );
     }
   } catch (error) {
     console.error("Failed to append column:", error);

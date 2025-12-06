@@ -3,7 +3,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "source /home/rohan-akode/Projects/FlowCatalyst/apps/hooks/venv/bin/activate && tsc -b && cp -r linkedin-scraper/ dist/ && cp -r indeed-scraper/ dist/ && node dist/index.js",
+    "devt": "pwd",
+    "dev": ". ./venv/bin/activate && tsc -b && cp -r linkedin-scraper/ dist/ && cp -r indeed-scraper/ dist/ && node dist/index.js",
     "dev1": "tsc -b && cp linkedin-scraper dist/  && cp indeed-scraper dist/ && node dist/index.js"
   },
   "dependencies": {
