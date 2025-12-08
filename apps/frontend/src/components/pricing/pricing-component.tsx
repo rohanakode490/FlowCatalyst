@@ -25,6 +25,10 @@ export const Pricing = () => {
     const loadPlans = async () => {
       try {
         const pricing = await api.get("/pricing");
+        let sortedPlans = pricing.data.plans;
+        sortedPlans.sort(
+          (a: Record<any, any>, b: Record<any, any>) => a.price - b.price,
+        );
         setPlans(pricing.data.plans);
       } catch (err) {
         setError("Failed to load pricing plans");

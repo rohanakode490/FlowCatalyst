@@ -29,7 +29,7 @@ export const PricingCard = ({ plan, onSelect }: PricingCardProps) => {
         <div className="text-4xl font-bold">
           {plan.price === 0 ? "Free" : `$${plan.price / 100}`}
           <span className="text-lg text-muted-foreground">
-            /{plan.interval}
+            {`/${plan.interval}` || ""}
           </span>
         </div>
 
