@@ -25,7 +25,7 @@ export const Pricing = () => {
     const loadPlans = async () => {
       try {
         const pricing = await api.get("/pricing");
-        setPlans(pricing.data);
+        setPlans(pricing.data.plans);
       } catch (err) {
         setError("Failed to load pricing plans");
       } finally {

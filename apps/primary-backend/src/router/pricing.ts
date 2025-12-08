@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
       },
     });
 
-    res.json(plans);
+    res.status(200).json({ plans: plans });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch pricing plans" });
   }

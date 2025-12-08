@@ -3,6 +3,7 @@
 import { PricingPlan } from "@/app/pricing/page";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PricingCardProps {
   plan: PricingPlan;
@@ -10,6 +11,17 @@ interface PricingCardProps {
 }
 
 export const PricingCard = ({ plan, onSelect }: PricingCardProps) => {
+  const router = useRouter();
+
+  /* TODO: redirect to payment page */
+  const RedirectTOPayments = () => {
+    if (plan.price === 0) {
+      router.push("/workflows");
+    } else {
+      router.push("/redirect_to_payment_page");
+    }
+  };
+
   return (
     <div className="border rounded-xl p-6 bg-card shadow-sm">
       <div className="flex flex-col gap-4">
@@ -31,10 +43,7 @@ export const PricingCard = ({ plan, onSelect }: PricingCardProps) => {
         </ul>
 
         <div className="flex flex-col gap-2">
-          <Button
-            onClick={() => onSelect("stripe")}
-            disabled={plan.price === 0}
-          >
+          <Button onClick={RedirectTOPayments}>
             {plan.price === 0 ? "Get Started" : "Subscribe"}
           </Button>
           {plan.price > 0 && (
