@@ -91,7 +91,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      callbackURL: `http://${process.env.BACKEND_URL}/auth/google/callback`,
+      callbackURL: `https://${process.env.BACKEND_URL}/auth/google/callback`,
       scope: [
         "profile",
         "email",
@@ -152,7 +152,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `http://${process.env.BACKEND_URL}/auth/github/callback`,
+      callbackURL: `https://${process.env.BACKEND_URL}/auth/github/callback`,
       scope: ["user:email"],
     },
     async (
