@@ -1,45 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { motion } from "framer-motion";
-import api from "@/lib/api";
-import { PaymentButton } from "@/components/pricing/payment-button";
+// import api from "@/lib/api";
+// import { PaymentButton } from "@/components/pricing/payment-button";
+import { pricingOptions } from "@/lib/constant";
 
 export interface PricingPlan {
   id: string;
   name: string;
   price: number;
-  interval: "month" | "year";
-  features: Record<string, string[]>;
-  stripePriceId?: string;
-  cashfreePlanId?: string;
+  interval: string;
+  features: string[];
 }
 
 export const Pricing = () => {
-  const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // const [plans, setPlans] = useState<PricingPlan[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const pricing = await api.get("/pricing");
-        let sortedPlans = pricing.data.plans;
-        sortedPlans.sort(
-          (a: Record<any, any>, b: Record<any, any>) => a.price - b.price,
-        );
-        setPlans(pricing.data.plans);
-      } catch (err) {
-        setError("Failed to load pricing plans");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPlans();
-  }, []);
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  // useEffect(() => {
+  //   const loadPlans = async () => {
+  //     try {
+  //       const pricing = await api.get("/pricing");
+  //       let sortedPlans = pricing.data.plans;
+  //       sortedPlans.sort(
+  //         (a: Record<any, any>, b: Record<any, any>) => a.price - b.price,
+  //       );
+  //       setPlans(pricing.data.plans);
+  //     } catch (err) {
+  //       setError("Failed to load pricing plans");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   loadPlans();
+  // }, []);
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>{error}</div>;
 
   return (
     <main className="[background:radial-gradient(125%_125%_at_50%_10%,#000_35%,#223_100%)]">
@@ -59,14 +58,8 @@ export const Pricing = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {plans.map((plan) => (
-              <PricingCard
-                key={plan.id}
-                plan={plan}
-                onSelect={(paymentMethod) => (
-                  <PaymentButton plan={plan} paymentMethod={paymentMethod} />
-                )}
-              />
+            {pricingOptions.map((plan) => (
+              <PricingCard key={plan.id} plan={plan} />
             ))}
           </div>
         </div>

@@ -19,6 +19,35 @@ export const menuOptions = [
   { name: "Connections", Component: Category, href: "/connections" },
 ];
 
+export const pricingOptions = [
+  {
+    id: "1",
+    name: "Basic",
+    price: 0,
+    interval: "",
+    features: [
+      "2 lifetime AI-generated workflows",
+      "Basic Triggers: GitHub, LinkedIn",
+      "Basic Actions: Email, Solana",
+      "3 automated workflows",
+      "Daily limit: 10 job fetches.",
+    ],
+  },
+  {
+    id: "2",
+    name: "Pro",
+    price: 699,
+    interval: "month",
+    features: [
+      "Everything from Basic Tier",
+      "Unlimited lifetime AI-generated workflows",
+      "New Triggers: Indeed",
+      "Multi-step workflows",
+      "Daily limit: 100 job fetches.",
+    ],
+  },
+];
+
 export const TRIGGER_FORM_FIELDS: Record<string, FormField[]> = {
   // emailtrigger: [
   //   {

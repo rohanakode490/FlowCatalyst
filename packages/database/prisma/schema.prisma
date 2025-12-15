@@ -14,6 +14,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentStatus {
+  pending
+  processing
+  succeeded
+  failed
+  refunded
+  partially_refunded
+}
+
 model User {
   id                 Int            @id @default(autoincrement())
   name               String
@@ -127,7 +136,7 @@ model SubscriptionPlan {
   name           String         @unique // "Pro", "Enterprise", etc.
   dodoPriceId    String? // dodo Price ID
   cashfreePlanId String? // Cashfree Plan ID
-  price          Float
+  price          Int
   currency       String         @default("USD")
   interval       String
   features       Json // Stored as JSON array
@@ -137,29 +146,46 @@ model SubscriptionPlan {
 }
 
 model Subscription {
-  id                 String           @id @default(uuid())
-  userId             Int
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
-  planId             String
-  status             String // "active", "canceled", "past_due"
-  paymentMethod      String // "dodopayments", "cashfree"
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean          @default(false)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  Payment            Payment[]
+  id                  String           @id @default(uuid())
+  userId              Int
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId              String
+  plan                SubscriptionPlan @relation(fields: [planId], references: [id])
+  status              String // "active", "canceled", "past_due"
+  paymentMethod       String // "dodopayments", "cashfree"
+  dodoSubscriptionId  String?          @unique
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelAtPeriodEnd   Boolean          @default(false)
+  canceledAt          DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  payments            Payment[]
 }
 
 model Payment {
   id             String       @id @default(uuid())
   subscription   Subscription @relation(fields: [subscriptionId], references: [id])
   subscriptionId String
-  amount         Float
+  amount         Int
   currency       String
   paymentMethod  String // "dodo", "cashfree"
   transactionId  String // Gateway's transaction ID
-  status         String // "succeeded", "failed", "pending"
+  status         PaymentStatus @default(pending)
+  failureReason  String?
+  refundAmount   Int?
+  refundedAt     DateTime?
+  metadata       Json?
   createdAt      DateTime     @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model WebhookEvent {
+  id              String   @id @default(uuid())
+  provider        String
+  eventType       String
+  payload         Json
+  processed       Boolean  @default(false)
+  processingError String?
+  createdAt       DateTime @default(now())
 }

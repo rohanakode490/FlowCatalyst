@@ -126,7 +126,6 @@ function DynamicForm({
 
   useEffect(() => {
     if (actionType === "googlesheets" && refreshToken) {
-      console.log("fetching");
       fetchSpreadsheets();
     }
   }, [actionType, refreshToken]);
@@ -254,7 +253,6 @@ function DynamicForm({
         label: title,
       }));
       setSheetOptions(formattedOptions);
-      console.log("Fetched sheets", formattedOptions);
     }
   }, [actionType, spreadsheets]);
 
@@ -397,8 +395,6 @@ function DynamicForm({
             ? sheetOptions
             : field.options;
 
-        console.log("sheet options", sheetOptions);
-
         return (
           <div className="flex flex-col gap-2">
             <Label
@@ -421,8 +417,8 @@ function DynamicForm({
                   handleBlur(field.name);
                 }}
                 className={`mt-1 block flex-1 p-2 border rounded-md ${isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
+                  ? "bg-[#1f2937] border-[#374151] text-white"
+                  : "bg-white border-[#d1d5db] text-[#111827]"
                   }`}
               >
                 <option value="">Select an Option</option>
@@ -440,14 +436,6 @@ function DynamicForm({
                     const existingSpreadsheet = spreadsheets.find(
                       (s) => s.spreadsheetId === spreadsheetId,
                     );
-                    console.log("s", [
-                      ...spreadsheets,
-                      {
-                        spreadsheetId,
-                        title,
-                        sheets: [],
-                      },
-                    ]);
                     if (!existingSpreadsheet) {
                       // Add to spreadsheets list
                       setSpreadsheets([
@@ -567,8 +555,8 @@ function DynamicForm({
                   handleBlur("country");
                 }}
                 className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
+                  ? "bg-[#1f2937] border-[#374151] text-white"
+                  : "bg-white border-[#d1d5db] text-[#111827]"
                   }`}
                 disabled={loadingCountries}
               >
@@ -609,8 +597,8 @@ function DynamicForm({
                     handleBlur("state");
                   }}
                   className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
-                      ? "bg-[#1f2937] border-[#374151] text-white"
-                      : "bg-white border-[#d1d5db] text-[#111827]"
+                    ? "bg-[#1f2937] border-[#374151] text-white"
+                    : "bg-white border-[#d1d5db] text-[#111827]"
                     }`}
                   disabled={loadingStates}
                 >

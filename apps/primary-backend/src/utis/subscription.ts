@@ -4,12 +4,12 @@ export async function createFreeSubscription(
   prisma: Prisma.TransactionClient,
   userId: number,
 ) {
-  const freePlan = await prisma.subscriptionPlan.findUnique({
-    where: { name: "free" },
+  const basicPlan = await prisma.subscriptionPlan.findUnique({
+    where: { name: "Basic" },
   });
 
-  if (!freePlan) {
-    console.error("Free subscription plan not configured");
+  if (!basicPlan) {
+    console.error("Basic subscription plan not configured");
   }
 
   // console.log("freePlan", freePlan, "\n\n");
@@ -17,7 +17,7 @@ export async function createFreeSubscription(
     //@ts-ignore
     data: {
       userId,
-      planId: freePlan?.id,
+      planId: basicPlan?.id,
       status: "active",
       paymentMethod: "none",
       currentPeriodStart: new Date(),

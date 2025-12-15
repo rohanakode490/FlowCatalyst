@@ -26,5 +26,6 @@ export const config = {
     "/flow/create/:path*",
     "/settings/:path*",
     "/workflows/:path*",
+    "/callback/:path*",
   ], // Protect these routes
 };

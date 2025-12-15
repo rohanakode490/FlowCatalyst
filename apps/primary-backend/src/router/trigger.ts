@@ -7,8 +7,8 @@ const router = Router();
 router.get("/available", async (req, res) => {
   const availableTriggers = await prismaClient.availableTrigger.findMany({
     where: {
-      show:true,
-    }
+      show: true,
+    },
   });
   res.json({
     availableTriggers,
@@ -37,11 +37,15 @@ router.get("/user-triggers", authMiddleware, async (req, res) => {
       select: { id: true, name: true },
     });
 
-    const triggers = triggerCounts.reduce((acc, count) => {
-      const name = triggerTypes.find((t) => t.id === count.triggerId)?.name || "Unknown";
-      acc[name] = count._count.triggerId;
-      return acc;
-    }, {} as Record<string, number>);
+    const triggers = triggerCounts.reduce(
+      (acc, count) => {
+        const name =
+          triggerTypes.find((t) => t.id === count.triggerId)?.name || "Unknown";
+        acc[name] = count._count.triggerId;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     res.json({ success: true, triggers });
   } catch (error) {

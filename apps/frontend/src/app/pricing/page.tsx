@@ -4,18 +4,7 @@
 // import { PricingCard } from "@/components/pricing/pricing-card";
 // import { motion } from "framer-motion";
 // import api from "@/lib/api";
-// import { PaymentButton } from "@/components/pricing/payment-button";
 import { Pricing } from "@/components/pricing/pricing-component";
-
-export interface PricingPlan {
-  id: string;
-  name: string;
-  price: number;
-  interval: "month" | "year";
-  features: Record<string, string[]>;
-  stripePriceId?: string;
-  cashfreePlanId?: string;
-}
 
 export default function PricingPage() {
   // const tiers = [

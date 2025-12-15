@@ -13,7 +13,14 @@ export default function EditZapPage() {
   const zapId = params.zapId as string;
   const router = useRouter();
   const {
-    flow: { setCurrentTriggerType, resetFlow, setNodes, setEdges, setTriggerName, setOriginalTriggerMetadata },
+    flow: {
+      setCurrentTriggerType,
+      resetFlow,
+      setNodes,
+      setEdges,
+      setTriggerName,
+      setOriginalTriggerMetadata,
+    },
     form: { resetFormData },
     ui: { addToast },
   } = useStore();
@@ -71,7 +78,7 @@ export default function EditZapPage() {
           target: `${index + 2}`,
         }));
 
-        setCurrentTriggerType(trigger.type.name)
+        setCurrentTriggerType(trigger.type.name);
         resetFlow();
         resetFormData();
         setNodes(nodes);

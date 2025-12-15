@@ -52,7 +52,6 @@ export default function GooglePicker({
           const docs = event.detail?.docs || [];
           if (docs.length > 0) {
             const doc = docs[0];
-            console.log("doc", doc);
             onSelect(doc.id, doc.name);
           }
           setShowPicker(false);

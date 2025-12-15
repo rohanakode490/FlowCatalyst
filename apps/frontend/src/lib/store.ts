@@ -863,7 +863,6 @@ const useStore = createWithEqualityFn<AppState>()(
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          console.log("sheets", response.data.spreadsheets);
           const spreadsheets = response.data.spreadsheets || [];
           set((state) => {
             state.form.spreadsheets = spreadsheets;

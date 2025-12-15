@@ -177,7 +177,6 @@ const handleGitHubWebhook = async (
         throw new Error(`Unsupported event type: ${eventType}`);
     }
 
-    console.log("Data obtained", eventData);
     // Only store data if the event is valid and meets the conditions
     if (eventData) {
       await prismaClient.$transaction(async (tx: PrismaTransactionalClient) => {

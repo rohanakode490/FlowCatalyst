@@ -16,7 +16,7 @@ import { prismaClient } from "@flowcatalyst/database";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 import jwt from "jsonwebtoken";
-// import { subscriptionsRouter } from "./router/subscription";
+import { subscriptionsRouter } from "./router/subscription";
 import { pricingRouter } from "./router/pricing";
 import { aiRouter } from "./router/ai";
 import { createFreeSubscription } from "./utis/subscription";
@@ -63,7 +63,7 @@ app.use(
       httpOnly: true, // Prevent access from JavaScript
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS
       sameSite: "none",
-      domain: ".rohanakode.dev",
+      // domain: ".rohanakode.dev",
     },
   }),
 );
@@ -304,7 +304,8 @@ app.use("/api/v1/action", actionRouter);
 
 app.use("/api/v1/trigger-response", triggerResponseRouter);
 
-// app.use("/api/v1/subscription", subscriptionsRouter);
+app.use("/api/v1/subscription", subscriptionsRouter);
+
 app.use("/api/v1/pricing", pricingRouter);
 
 app.use("/api/v1/ai", aiRouter);
