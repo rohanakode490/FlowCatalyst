@@ -63,12 +63,12 @@ export default function LogIn() {
 
   const handleGoogleLogin = () => {
     // window.open(`${BACKEND_URL}/user/auth/google/callback`, "_self");
-    window.location.href = `${BACKEND_URL}/auth/google/callback`;
+    window.location.href = `${BACKEND_URL}/auth/google`;
   };
 
   const handleGithubLogin = () => {
     // window.open(`${BACKEND_URL}/user/auth/google/callback`, "_self");
-    window.location.href = `${BACKEND_URL}/auth/github/callback`;
+    window.location.href = `${BACKEND_URL}/auth/github`;
   };
 
   return (
