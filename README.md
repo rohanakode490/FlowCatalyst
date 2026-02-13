@@ -1,81 +1,81 @@
-# Turborepo starter
+# FlowCatalyst - Enterprise Workflow Automation Platform
 
-This is an official starter Turborepo.
+FlowCatalyst is a high-performance, scalable SaaS platform designed for seamless workflow automation. Much like Zapier, FlowCatalyst empowers users to connect disparate applications and automate repetitive tasks through "Zaps"—powerful, multi-step workflows triggered by real-time events.
 
-## Using this example
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Kafka](https://img.shields.io/badge/Kafka-Distributed-orange?style=flat-square&logo=apache-kafka)](https://kafka.apache.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
 
-Run the following command:
+## 🚀 Key Features
 
-```sh
-npx create-turbo@latest
-```
+- **Visual Workflow Builder**: Intuitive drag-and-drop interface powered by React Flow for designing complex automations.
+- **Multi-Step Zaps**: Support for workflows with multiple sequential actions and conditional logic.
+- **Robust Integrations**:
+  - **GitHub**: Trigger workflows based on PRs, issues, and commits.
+  - **Google Sheets**: Automate data entry and spreadsheet management.
+  - **Email (Gmail/Nodemailer)**: Automated notifications and communication.
+  - **Web3 (Solana)**: Execute on-chain transfers and blockchain interactions.
+  - **Job Scrapers**: Built-in Python scrapers for LinkedIn and Indeed.
+- **Enterprise-Grade Security**: OAuth2 integration (Google/GitHub) and JWT-based authentication.
+- **Integrated Payments**: Global payment support via DodoPayments and Cashfree.
+- **Scalable Execution**: Event-driven architecture using Kafka for high-throughput processing.
 
-## What's inside?
+## 🏗️ System Architecture
 
-This Turborepo includes the following packages/apps:
+FlowCatalyst is built as a modern monorepo using **Turborepo**, ensuring consistency and high performance across all services.
 
-### Apps and Packages
+### Applications (`apps/`)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **Frontend**: A sleek Next.js dashboard for building and managing Zaps.
+- **Primary Backend**: The core Express.js API handling authentication, CRUD, and business logic.
+- **Hooks Service**: Dedicated ingestion engine for webhooks and background tasks.
+- **Processor**: Implements the Transactional Outbox pattern to ensure reliable event delivery to Kafka.
+- **Worker**: The distributed execution engine that consumes Kafka events and runs workflow actions.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Shared Packages (`packages/`)
 
-### Utilities
+- **Database**: Centralized Prisma schema and client for PostgreSQL.
+- **UI**: A shared React component library built with Tailwind CSS and Radix UI.
+- **Configuration**: Shared ESLint and TypeScript configurations.
 
-This Turborepo has some additional tools already setup for you:
+## 🛠️ Technology Stack
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- **Frontend**: Next.js (App Router), Tailwind CSS, Framer Motion, Zustand, React Flow.
+- **Backend**: Node.js, Express.js, Passport.js.
+- **Database**: PostgreSQL with Prisma ORM.
+- **Messaging**: Apache Kafka (via KafkaJS).
+- **Blockchain**: Solana Web3.js.
+- **DevOps**: Docker, Turborepo.
 
-### Build
+## 🏁 Getting Started
 
-To build all apps and packages, run the following command:
+### Prerequisites
 
-```
-cd my-turborepo
-pnpm build
-```
+- Node.js (>= 18)
+- Docker (for Kafka, PostgreSQL, and Redis)
+- Python (for job scraping capabilities)
 
-### Develop
+### Installation
 
-To develop all apps and packages, run the following command:
+1. Clone the repository and install dependencies:
+   ```bash
+   npm install
+   ```
 
-```
-cd my-turborepo
-pnpm dev
-```
+2. Configure environment variables:
+   Copy `.env.example` to `.env` in the root and respective app directories.
 
-### Remote Caching
+3. Initialize the database:
+   ```bash
+   npm run db:update
+   ```
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+4. Start the development environment:
+   ```bash
+   npm run dev
+   ```
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+## 📄 License
 
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+This project is licensed under the MIT License - see the LICENSE file for details.
