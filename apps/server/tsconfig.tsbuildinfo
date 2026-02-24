@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/engine/email.ts","./src/engine/googlesheets.ts","./src/engine/parser.ts","./src/engine/solana.ts","./src/engine/templateLoader.ts"],"version":"5.7.3"}

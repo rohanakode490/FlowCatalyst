@@ -5,6 +5,7 @@
     "build": "turbo build",
     "start": "turbo start",
     "dev": "turbo dev",
+    "dev:server": "turbo dev --filter=@flowcatalyst/frontend --filter=@flowcatalyst/primary-backend --filter=@flowcatalyst/server",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:update": "turbo run db:generate && turbo run db:push",
@@ -14,6 +15,7 @@
     "schema": "packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
+    "@types/bs58": "^4.0.4",
     "prettier": "^3.2.5",
     "turbo": "^2.1.3"
   },

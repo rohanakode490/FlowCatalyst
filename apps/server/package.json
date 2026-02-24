@@ -1,0 +1,24 @@
+{
+  "name": "@flowcatalyst/server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b && cp src/engine/emailTemplate.html dist/engine/ && cp -r indeed-scraper dist/ && cp -r linkedin-scraper dist/ && node dist/index.js"
+  },
+  "dependencies": {
+    "@flowcatalyst/database": "*",
+    "@solana/web3.js": "^1.98.0",
+    "@types/express": "^4.17.21",
+    "axios": "^1.11.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^155.0.0",
+    "linkedin-jobs-api": "^1.0.6",
+    "linkedin-jobs-scraper": "^18.0.0",
+    "nodemailer": "^6.10.0",
+    "python-shell": "^5.0.0",
+    "resend": "^4.1.1"
+  }
+}
