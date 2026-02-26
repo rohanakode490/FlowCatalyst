@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -b",
-    "dev": "tsc -b && cp src/engine/emailTemplate.html dist/engine/ && cp -r indeed-scraper dist/ && cp -r linkedin-scraper dist/ && node dist/index.js"
+    "build": "tsc -b && mkdir -p dist/engine/actions && cp src/engine/actions/emailTemplate.html dist/engine/actions/ && mkdir -p dist/scrapers/python && cp -r src/scrapers/python/* dist/scrapers/python/",
+    "dev": "npm run build && node dist/index.js"
   },
   "dependencies": {
     "@flowcatalyst/database": "*",

@@ -3,7 +3,7 @@ import path from "path";
 
 // Load template from file
 export function loadTemplate(templateName: string): string {
-  const templatePath = path.join(__dirname, `${templateName}.html`);
+  const templatePath = path.join(__dirname, "..", "actions", `${templateName}.html`);
   return fs.readFileSync(templatePath, "utf-8");
 }
 

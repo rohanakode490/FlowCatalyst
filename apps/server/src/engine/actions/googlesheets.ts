@@ -1,6 +1,6 @@
 import axios from "axios";
 import { google } from "googleapis";
-import { parseDynamicFields } from "./parser";
+import { parseDynamicFields } from "../utils/parser";
 
 // Fetch Google Sheets access token using refresh token
 export async function getGoogleAccessToken(
