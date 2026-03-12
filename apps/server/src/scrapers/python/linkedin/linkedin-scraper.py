@@ -1,130 +1,127 @@
 import sys
 import json
 import os
-import time
+import asyncio
+from typing import List 
 from dotenv import load_dotenv
-from linkedin_api import Linkedin
-import ast
-from datetime import datetime, timezone
-import random
+import httpx
+
+# Import the new scraper logic
+from scraper import LinkedInLiteScraper
 
 load_dotenv()
 
-LINKEDIN_json = os.getenv("LINKEDIN")
-LINKEDIN = json.loads(LINKEDIN_json)
-random_index = random.randint(0, len(LINKEDIN) - 1)
-# Authenticate to LinkedIn
-# print(random_index, "\t\t", LINKEDIN[random_index][0], LINKEDIN[random_index][1])
-api = Linkedin(LINKEDIN[random_index][0], LINKEDIN[random_index][1])
+# --- Proxy Configuration ---
+proxies_str = os.getenv("PROXIES", "")
+PROXIES = [p.strip() for p in proxies_str.split(",") if p.strip()]
 
-# EMAIL = os.getenv("LINKEDIN_EMAIL")
-# PASSWORD = os.getenv("LINKEDIN_PASSWORD")
-#
-# api = Linkedin(EMAIL, PASSWORD)
-
-def parse_list_arg(arg):
+def parse_list_arg(arg: str) -> List[str]:
     """Convert a string representation of a list into a Python list with string elements."""
     try:
-        # Ensure correct JSON formatting, if the argument is already wrapped in quotes
         if arg.startswith("[") and arg.endswith("]"):
-            # Remove any extra outer quotes and parse it
             parsed_list = json.loads(arg.replace("'", '"'))
         else:
-            # If it's just a single value, treat it as a list with one string element
             parsed_list = [arg]
-        
-        return [str(item) for item in parsed_list]  # Ensure all elements are strings
+        return [str(item) for item in parsed_list]
     except (json.JSONDecodeError, TypeError):
-        return [str(arg)] # Fallback to treating it as a single-item list
+        return [str(arg)]
 
-def fetch_jobs(keywords, location, limit=20, offset=0, experience=[""], remote=[""], job_type=[""], listed_at=86400, existing_urns=None):
-    # existingUrns = set(json.loads(existing_urns)) if existing_urns else set()
-    jobs_with_links = []
-    retries = 0
-    while len(jobs_with_links) < limit:
-        try:
-            jobs = api.search_jobs(
-                keywords=keywords, # strings separated by OR
-                location_name=location, # string
-                limit=limit, #Number
-                offset=offset,
-                remote=remote, #Array of strings
-                experience=experience, #Array of strings
-                job_type=job_type, #Array of strings
-                listed_at=listed_at
-            )
-            # print(jobs)
-            if retries > 10:
-                break
-            for job in jobs:
-                job_urn = job['entityUrn']
-                if job_urn not in existing_urns:
-                    job_id = job['entityUrn'].split(':')[-1]
-                    job_details = api.get_job(job_id)
-                    
-                    # Get job skills
-                    skills = api.get_job_skills(job_id)
-                    skills_list=[]
-                    if skills:
-                        for skill in skills.get('skillMatchStatuses', []):
-                            skills_list.append(skill.get('skill', {}).get('name', 'unknown'))
-                    
-                    # Extract job URL
-                    job_url = job_details.get("applyMethod", {}).get("com.linkedin.voyager.jobs.ComplexOnsiteApply", {}).get("easyApplyUrl", "")
-                    if not job_url:
-                        job_url = f"https://www.linkedin.com/jobs/view/{job_id}"
+def parse_remote_arg(arg: str) -> List[str]:
+    """
+    In old scraper, 'remote' was often passed as boolean-like string or list of strings.
+    In new scraper, workplace_types: 1: On-site, 2: Remote, 3: Hybrid
+    """
+    try:
+        # If passed as JSON list like '["true"]' or '["2"]'
+        val = parse_list_arg(arg)
+        # If it contains "true" or "2", we'll treat it as remote.
+        if "true" in [v.lower() for v in val] or "2" in val:
+            return ["2"]
+    except:
+        pass
+    return []
 
-                    company_info = job_details.get("companyDetails", {}).get("com.linkedin.voyager.deco.jobs.web.shared.WebCompactJobPostingCompany", {}).get("companyResolutionResult", {})
-                    company_name = company_info.get("name", "Unknown Company")
-                    company_url = company_info.get("url", "")
+async def fetch_jobs_and_print(
+    keywords: str, 
+    location: str, 
+    limit: int = 20, 
+    experience: List[str] = None, 
+    remote: List[str] = None, 
+    job_type: List[str] = None, 
+    listed_at: int = 86400, 
+    existing_urns: List[str] = None
+):
+    if existing_urns is None:
+        existing_urns = []
 
-                    # Extract posted date
-                    listed_at_timestamp = job_details.get("listedAt")
-                    posted_date = datetime.fromtimestamp(listed_at_timestamp / 1000, timezone.utc).strftime('%Y-%m-%d')
+    # Map listed_at (seconds) to f_TPR (LinkedIn filter)
+    # listed_at 86400 -> r86400
+    time_period = f"r{listed_at}" if listed_at else ""
 
-                    # Append job details with link
-                    jobs_with_links.append({
-                        "urn": job_urn,
-                        "title": job_details["title"],
-                        "company": company_name,
-                        "location": job_details["formattedLocation"],
-                        "company_url": company_url,
-                        "job_link": job_url,
-                        "posted_date": posted_date,
-                        "skills": skills_list
-                    })
-                    existing_urns.append(job_urn)
-                    if len(jobs_with_links) >= limit:
-                        break
-            offset += limit
-            retries += 1 
-            time.sleep(1)
+    async with httpx.AsyncClient() as client:
+        scraper = LinkedInLiteScraper(client, max_results=limit, proxies=PROXIES)
+        
+        # In this lite version, 'skills' isn't explicitly passed but we can add to keywords if needed.
+        # For now, we'll keep it as keywords for the most part.
+        
+        jobs = await scraper.search_jobs_concurrent(
+            keywords=keywords,
+            location=location,
+            time_period=time_period,
+            experience_levels=experience if experience and experience != [""] else None,
+            job_types=job_type if job_type and job_type != [""] else None,
+            workplace_types=remote if remote and remote != [""] else None
+        )
 
-            # Convert result to JSON for Nodejs
-        except Exception as e:
-            print(json.dumps({"error": str(e)}))
-            retries += 1
-            time.sleep(5) 
-    print(json.dumps(jobs_with_links))
+        # Map to the format expected by the frontend
+        formatted_jobs = []
+        for job in jobs:
+            job_id = job.get("jobId")
+            urn = f"urn:li:jobPosting:{job_id}"
+            
+            # Skip if already exists
+            if urn in existing_urns:
+                continue
 
-# Run if executed from Node.js
+            # Map the fields
+            formatted_jobs.append({
+                "urn": urn,
+                "title": job.get("title"),
+                "company": job.get("company"),
+                "location": job.get("location"),
+                "company_url": "",
+                "job_link": job.get("url"),
+                "posted_date": job.get("posted_at"), # Already formatted as YYYY-MM-DD or similar
+                "skills": [] # Not available in lite scraper without extra detail fetching
+            })
+
+        print(json.dumps(formatted_jobs))
+
 if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print(json.dumps({"error": "Missing keywords or location"}))
+        sys.exit(1)
+
     keywords = sys.argv[1]
     location = sys.argv[2]
     limit = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-    offset = int(sys.argv[4]) if len(sys.argv) > 0 else 0
-    experience = parse_list_arg(sys.argv[5])
-    remote = parse_list_arg(sys.argv[6])
-    job_type = parse_list_arg(sys.argv[7])
-    listed_at = int(sys.argv[8]) 
-    URNS = parse_list_arg(sys.argv[9])
-    existing_urns = URNS if len(URNS) > 0 else []
+    offset = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+    experience = parse_list_arg(sys.argv[5]) if len(sys.argv) > 5 else [""]
+    remote_mapped = parse_remote_arg(sys.argv[6]) if len(sys.argv) > 6 else [""]
+    job_type = parse_list_arg(sys.argv[7]) if len(sys.argv) > 7 else [""]
+    listed_at = int(sys.argv[8]) if len(sys.argv) > 8 else 86400
+    existing_urns = parse_list_arg(sys.argv[9]) if len(sys.argv) > 9 else []
 
-    # print("keywords", keywords, type(keywords))
-    # print("Experience:", experience)
-    # print("Remote:", remote)
-    # print("Job Type:", job_type)
-    # print("listed_at", listed_at)
-    # print("existing_urns", existing_urns, type(existing_urns))
-
-    fetch_jobs(keywords, location, limit, offset, experience, remote, job_type, listed_at, existing_urns)
+    try:
+        asyncio.run(fetch_jobs_and_print(
+            keywords=keywords,
+            location=location,
+            limit=limit,
+            experience=experience,
+            remote=remote_mapped,
+            job_type=job_type,
+            listed_at=listed_at,
+            existing_urns=existing_urns
+        ))
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))

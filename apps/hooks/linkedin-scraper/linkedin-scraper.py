@@ -37,6 +37,18 @@ def parse_list_arg(arg):
     except (json.JSONDecodeError, TypeError):
         return [str(arg)] # Fallback to treating it as a single-item list
 
+def parse_remote_arg(arg):
+    """Parse remote argument with error handling and map to LinkedIn filter codes."""
+    try:
+        val = parse_list_arg(arg)
+        # Convert boolean-like strings or "2" to the format expected by the API
+        # LinkedIn Filter: 1: On-site, 2: Remote, 3: Hybrid
+        if any(v.lower() == "true" or v == "2" for v in val):
+            return ["2"]
+        return []
+    except Exception:
+        return []
+
 def fetch_jobs(keywords, location, limit=20, offset=0, experience=[""], remote=[""], job_type=[""], listed_at=86400, existing_urns=None):
     # existingUrns = set(json.loads(existing_urns)) if existing_urns else set()
     jobs_with_links = []
@@ -114,7 +126,7 @@ if __name__ == "__main__":
     limit = int(sys.argv[3]) if len(sys.argv) > 3 else 20
     offset = int(sys.argv[4]) if len(sys.argv) > 0 else 0
     experience = parse_list_arg(sys.argv[5])
-    remote = parse_list_arg(sys.argv[6])
+    remote = parse_remote_arg(sys.argv[6])
     job_type = parse_list_arg(sys.argv[7])
     listed_at = int(sys.argv[8]) 
     URNS = parse_list_arg(sys.argv[9])
