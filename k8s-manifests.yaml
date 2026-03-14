@@ -333,11 +333,21 @@ spec:
                   key: DATABASE_URL
             - name: KAFKA_BROKERS
               value: "kafka-service.default.svc.cluster.local:9092"
-            - name: RESEND_API_KEY
+            - name: BREVO_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: RESEND_API_KEY
+                  key: BREVO_API_KEY
+            - name: BREVO_USER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: BREVO_USER_NAME
+            - name: BREVO_USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: BREVO_USER_EMAIL
             - name: SOLANA_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
@@ -824,11 +834,21 @@ spec:
 #                   key: DATABASE_URL
 #             - name: KAFKA_BROKER
 #               value: "kafka-service.default.svc.cluster.local:9092"
-#             - name: RESEND_API_KEY
+#             - name: BREVO_API_KEY
 #               valueFrom:
 #                 secretKeyRef:
 #                   name: app-secrets
-#                   key: RESEND_API_KEY
+#                   key: BREVO_API_KEY
+#             - name: BREVO_USER_NAME
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: app-secrets
+#                   key: BREVO_USER_NAME
+#             - name: BREVO_USER_EMAIL
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: app-secrets
+#                   key: BREVO_USER_EMAIL
 #             - name: SOLANA_PRIVATE_KEY
 #               valueFrom:
 #                 secretKeyRef:

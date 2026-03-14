@@ -60,7 +60,9 @@
         "INDEED_MAX_DELAY_SECONDS",
         "INDEED_HEADLESS",
         "API_KEY",
-        "RESEND_API_KEY",
+        "BREVO_API_KEY",
+        "BREVO_USER_NAME",
+        "BREVO_USER_EMAIL",
         "SOLANA_PRIVATE_KEY",
         "DATABASE_URL"
       ]
