@@ -241,7 +241,7 @@ const runLinkedinScraper = (
     // "python3";
     const pythonCommand = process.env.VIRTUAL_ENV
       ? `${process.env.VIRTUAL_ENV}/bin/python`
-      : "python";
+      : "python3";
 
     const keywords_list = keywords.join(" OR ") || "";
     const args = [

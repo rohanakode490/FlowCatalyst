@@ -53,7 +53,7 @@ FlowCatalyst is built as a modern monorepo using **Turborepo**, ensuring consist
 ### Prerequisites
 
 - Node.js (>= 18)
-- Docker (for Kafka, PostgreSQL, and Redis)
+- Docker (for Kafka and PostgreSQL)
 - Python (for job scraping capabilities)
 
 ### Installation

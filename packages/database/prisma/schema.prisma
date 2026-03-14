@@ -33,6 +33,7 @@ model User {
   dodoCustomerId     String?        @unique
   cashfreeCustomerId String?        @unique
   googleRefreshToken String?        @unique
+  aiPromptCount      Int            @default(0)
   subscriptions      Subscription[]
   sessions           Session[]
   zaps               Zap[]

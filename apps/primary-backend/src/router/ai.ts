@@ -2,7 +2,6 @@ import Together from "together-ai";
 import { z } from "zod";
 import { Router } from "express";
 import { aiRateLimiter, authMiddleware } from "../middleware";
-import Redis from "ioredis";
 import { prismaClient } from "@flowcatalyst/database";
 
 const router = Router();
@@ -10,8 +9,6 @@ const router = Router();
 const together = new Together({
   apiKey: process.env.TOGETHER_API_KEY,
 });
-
-const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 // Zod Schemas
 const linkedinJobSchema = z.object({
@@ -460,14 +457,16 @@ router.post("/generate", authMiddleware, aiRateLimiter, async (req, res) => {
       target: `action-${i}`,
     }));
 
-    const key = `ai_prompts:${userId}`;
-    // Increment count
-    const newCount = await redis.incr(key);
+    const updatedUser = await prismaClient.user.update({
+      where: { id: userId },
+      data: { aiPromptCount: { increment: 1 } },
+      select: { aiPromptCount: true }
+    });
 
     res.locals.aiLimit = {
-      remaining: 2 - newCount,
+      remaining: 2 - updatedUser.aiPromptCount,
     };
-    res.json({ nodes, edges, remaining: 2 - newCount });
+    res.json({ nodes, edges, remaining: 2 - updatedUser.aiPromptCount });
   } catch (error) {
     console.error("Workflow generation failed:", error);
     res.status(500).json({ error });
@@ -480,15 +479,25 @@ router.get("/limits", authMiddleware, async (req, res) => {
     const userId = req.id;
 
     // Check for active subscription
-    const activeSubscription = await prismaClient.subscription.findFirst({
-      where: {
-        userId: userId,
-        status: "active",
-        currentPeriodEnd: { gte: new Date() },
-        plan: { name: { not: "free" } }, // Exclude free plan
+    const user = await prismaClient.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscriptions: {
+          where: {
+            status: "active",
+            currentPeriodEnd: { gte: new Date() },
+            plan: { name: { not: "free" } }, // Exclude free plan
+          },
+          include: { plan: true },
+        },
       },
-      include: { plan: true },
     });
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const activeSubscription = user.subscriptions[0];
 
     // If user has an active paid subscription
     if (activeSubscription) {
@@ -499,11 +508,10 @@ router.get("/limits", authMiddleware, async (req, res) => {
         features: activeSubscription.plan.features,
       });
     }
-    const key = `ai_prompts:${userId}`;
-    const currentCount = Number(await redis.get(key)) || 0;
+
     res.json({
       isPro: false,
-      remaining: 2 - currentCount,
+      remaining: Math.max(0, 2 - user.aiPromptCount),
     });
   } catch (error) {
     console.error("Failed to get AI limits:", error);

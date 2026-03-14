@@ -40,7 +40,7 @@ app.use(cookieParser(JWT_PASSWORD));
 app.use(
   rateLimiter({
     windowMs: 100 * 60 * 10000,
-    limit: 50,
+    limit: 100,
   }),
 );
 

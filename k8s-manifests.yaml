@@ -113,11 +113,6 @@ spec:
                   key: DATABASE_URL
             - name: FRONTEND_URL
               value: "https://fc.rohanakode.dev"
-            - name: REDIS_URL
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: REDIS_URL
             - name: JWT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -391,59 +386,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
-  namespace: default
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-        - name: redis
-          image: redis:7-alpine
-          ports:
-            - containerPort: 6379
-          livenessProbe:
-            tcpSocket:
-              port: 6379
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 3
-          readinessProbe:
-            tcpSocket:
-              port: 6379
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 3
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "100m"
-              memory: "128Mi"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-  namespace: default
-spec:
-  selector:
-    app: redis
-  ports:
-    - port: 6379
-      targetPort: 6379
-  type: ClusterIP
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: zookeeper
   namespace: default
 spec:
@@ -699,11 +641,6 @@ spec:
 #                 secretKeyRef:
 #                   name: app-secrets
 #                   key: FRONTEND_URL
-#             - name: REDIS_URL
-#               valueFrom:
-#                 secretKeyRef:
-#                   name: app-secrets
-#                   key: REDIS_URL
 #             - name: JWT_PASSWORD
 #               valueFrom:
 #                 secretKeyRef:

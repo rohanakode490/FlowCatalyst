@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+
+dotenv.config();
 import { prismaClient } from "@flowcatalyst/database";
 import { parseDynamicFields } from "./utils/parser";
 import { sendEmail } from "./actions/email";

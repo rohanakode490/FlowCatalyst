@@ -15,7 +15,7 @@ export const runLinkedinScraper = (
   return new Promise((resolve, reject) => {
     // Correct path after refactor: src/scrapers/python/linkedin/linkedin-scraper.py
     const scriptPath = path.join(__dirname, "python", "linkedin", "linkedin-scraper.py");
-    const pythonCommand = process.env.VIRTUAL_ENV ? `${process.env.VIRTUAL_ENV}/bin/python` : "python";
+    const pythonCommand = process.env.VIRTUAL_ENV ? `${process.env.VIRTUAL_ENV}/bin/python` : "python3";
     const args = [
       scriptPath,
       keywords.join(" OR ") || "",

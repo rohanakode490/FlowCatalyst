@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
-import Redis from "ioredis";
 import { prismaClient } from "@flowcatalyst/database";
-
-const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 export function authMiddleware(
   req: Request,
@@ -71,19 +68,28 @@ export const aiRateLimiter = async (
     //@ts-ignore
     const userId = req.id;
 
-    // const key = `ai_limits:${userId}`;
-
     if (!userId) {
       return res.status(401).json({ error: "Login Required" });
     }
-    const activeSubscription = await prismaClient.subscription.findFirst({
-      where: {
-        userId: userId,
-        status: "active",
-        currentPeriodEnd: { gte: new Date() },
+
+    const user = await prismaClient.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscriptions: {
+          where: {
+            status: "active",
+            currentPeriodEnd: { gte: new Date() },
+          },
+          include: { plan: true },
+        },
       },
-      include: { plan: true },
     });
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const activeSubscription = user.subscriptions[0];
 
     // Bypass limits for paid plans
     if (activeSubscription && activeSubscription.plan.name !== "free") {
@@ -91,8 +97,7 @@ export const aiRateLimiter = async (
     }
 
     // Check lifetime prompt count
-    const key = `ai_prompts:${userId}`;
-    const currentCount = Number(await redis.get(key)) || 0;
+    const currentCount = user.aiPromptCount;
 
     if (currentCount >= 2) {
       return res.status(429).json({
@@ -105,7 +110,7 @@ export const aiRateLimiter = async (
 
     // Attach limit info to response locals
     res.locals.aiLimit = {
-      remaining: 2,
+      remaining: 2 - currentCount,
     };
 
     next();
