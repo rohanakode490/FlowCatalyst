@@ -234,7 +234,11 @@ app.get(
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res, next) => {
+    passport.authenticate("google", { 
+      failureRedirect: `${process.env.FRONTEND_URL}/login` 
+    })(req, res, next);
+  },
   (req: any, res) => {
     const user = req.user;
     const token = jwt.sign({ id: user.id }, JWT_PASSWORD, {
@@ -242,7 +246,6 @@ app.get(
     });
 
     const oneDay = 1000 * 60 * 60 * 24;
-    // Set cookie without domain restriction in development, with domain in production
     const cookieOptions: any = {
       httpOnly: true,
       expires: new Date(Date.now() + oneDay),
@@ -252,16 +255,12 @@ app.get(
       signed: true,
     };
 
-    // Only set domain in production (for subdomain support)
     if (process.env.NODE_ENV === "production") {
       cookieOptions.domain = ".rohanakode.dev";
     }
 
     res.cookie("token", token, cookieOptions);
-
     res.header("auth", token);
-
-    // res.redirect("http://localhost:3000/workflows");
     res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}`);
   },
 );
@@ -274,24 +273,32 @@ app.get(
 
 app.get(
   "/auth/github/callback",
-  passport.authenticate("github", { failureRedirect: "/login" }),
+  (req, res, next) => {
+    passport.authenticate("github", { 
+      failureRedirect: `${process.env.FRONTEND_URL}/login` 
+    })(req, res, next);
+  },
   (req: any, res) => {
     const token = jwt.sign({ id: req.user.id }, JWT_PASSWORD, {
       expiresIn: "10h",
     });
 
     const oneDay = 1000 * 60 * 60 * 24;
-
-    res.cookie("token", token, {
+    const cookieOptions: any = {
       httpOnly: true,
       expires: new Date(Date.now() + oneDay),
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       signed: true,
-    });
+    };
 
+    if (process.env.NODE_ENV === "production") {
+      cookieOptions.domain = ".rohanakode.dev";
+    }
+
+    res.cookie("token", token, cookieOptions);
     res.header("auth", token);
-
-    // res.redirect("http://localhost:3000/workflows");
     res.redirect(`${process.env.FRONTEND_URL}/workflows?token=${token}`);
   },
 );
