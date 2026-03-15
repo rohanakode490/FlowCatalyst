@@ -65,16 +65,15 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 EXPOSE 7860
 ENV PORT=7860
 
-# Create a non-root user (UID 1000 is default for Hugging Face)
-RUN addgroup --system --gid 1000 nodejs && adduser --system --uid 1000 nodejs
-USER nodejs
+# Use the existing 'node' user 
+USER node
 
 # Copy built files and dependencies
-COPY --from=installer --chown=nodejs:nodejs /app/apps/server/dist ./apps/server/dist
-COPY --from=installer --chown=nodejs:nodejs /app/apps/server/package.json ./apps/server/package.json
-COPY --from=installer --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=installer --chown=nodejs:nodejs /app/packages/database ./packages/database
-COPY --from=installer --chown=nodejs:nodejs /app/apps/server/venv /app/apps/server/venv
+COPY --from=installer --chown=node:node /app/apps/server/dist ./apps/server/dist
+COPY --from=installer --chown=node:node /app/apps/server/package.json ./apps/server/package.json
+COPY --from=installer --chown=node:node /app/node_modules ./node_modules
+COPY --from=installer --chown=node:node /app/packages/database ./packages/database
+COPY --from=installer --chown=node:node /app/apps/server/venv /app/apps/server/venv
 
 # Start the app
 CMD ["node", "apps/server/dist/index.js"]
