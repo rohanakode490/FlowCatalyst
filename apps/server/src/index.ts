@@ -57,7 +57,7 @@ app.post("/schedule", async (req: Request, res: Response) => {
 // Start Background Scheduler
 startScheduler();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 7860;
 app.listen(PORT, () => {
   console.log(`🚀 FlowCatalyst Server running on port ${PORT}`);
 });

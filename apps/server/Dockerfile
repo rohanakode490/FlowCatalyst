@@ -61,8 +61,12 @@ ENV NODE_ENV=production
 ENV VIRTUAL_ENV=/app/apps/server/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nodejs
+# Expose port (7860 is required for Hugging Face Spaces)
+EXPOSE 7860
+ENV PORT=7860
+
+# Create a non-root user (UID 1000 is default for Hugging Face)
+RUN addgroup --system --gid 1000 nodejs && adduser --system --uid 1000 nodejs
 USER nodejs
 
 # Copy built files and dependencies
@@ -71,9 +75,6 @@ COPY --from=installer --chown=nodejs:nodejs /app/apps/server/package.json ./apps
 COPY --from=installer --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=installer --chown=nodejs:nodejs /app/packages/database ./packages/database
 COPY --from=installer --chown=nodejs:nodejs /app/apps/server/venv /app/apps/server/venv
-
-# Expose port
-EXPOSE 5000
 
 # Start the app
 CMD ["node", "apps/server/dist/index.js"]
