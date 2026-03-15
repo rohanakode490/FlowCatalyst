@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
+import cors from "cors";
 import { prismaClient } from "@flowcatalyst/database";
 import { handleGitHubWebhook } from "./webhooks/github-handlers";
 import { executeScrapingFlow } from "./scrapers/flow";
@@ -8,6 +9,7 @@ import { startScheduler } from "./scheduler/scheduler";
 dotenv.config();
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Health Check
