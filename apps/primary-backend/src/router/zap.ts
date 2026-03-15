@@ -88,7 +88,7 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/", authMiddleware, async (req, res) => {
+router.get("/all", authMiddleware, async (req, res) => {
   // @ts-ignore
   const id = req.id;
   const zaps = await prismaClient.zap.findMany({

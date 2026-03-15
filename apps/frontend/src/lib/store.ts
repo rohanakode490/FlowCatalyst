@@ -1135,7 +1135,7 @@ const useStore = createWithEqualityFn<AppState>()(
       fetchZaps: async () => {
         try {
           const token = localStorage.getItem("token");
-          const response = await api.get("/zap/", {
+          const response = await api.get("/zap/all", {
             headers: { Authorization: `Bearer ${token}` },
           });
           const zaps = response.data.zaps || [];

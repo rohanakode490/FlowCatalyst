@@ -9,7 +9,7 @@ export default function GetZaps() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     api
-      .get("/zap/", {
+      .get("/zap/all", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
