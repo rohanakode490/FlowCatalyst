@@ -95,9 +95,10 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
       scope: [
-        "profile",
-        "email",
-        "https://www.googleapis.com/auth/drive.readonly",
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/drive.file",
       ],
     },
     async (
@@ -222,9 +223,10 @@ app.get(
   },
   passport.authenticate("google", {
     scope: [
-      "profile",
-      "email",
-      "https://www.googleapis.com/auth/drive.readonly",
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/drive.file",
     ],
     session: false,
   }),
