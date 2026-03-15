@@ -26,11 +26,10 @@ RUN turbo prune --scope=@flowcatalyst/server --docker
 FROM base AS installer
 WORKDIR /app
 
-# Copy pruned package.json and lockfile
+# Copy pruned package.json and lockfile from builder
 COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/package-lock.json .
 
-# Install production dependencies
+# Install dependencies
 RUN npm ci
 
 # Copy pruned workspace
@@ -42,6 +41,9 @@ RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 # Build the app
 RUN npx turbo run build --filter=@flowcatalyst/server...
 
+# Remove devDependencies to keep image small
+# RUN npm prune --omit=dev
+
 # ====== Python Environment Setup ======
 # Create a virtual environment for the scrapers
 RUN python3 -m venv /app/apps/server/venv
@@ -49,7 +51,6 @@ ENV VIRTUAL_ENV=/app/apps/server/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install Python dependencies
-# Indeed needs 'python-jobspy'
 RUN pip install python-jobspy python-dotenv httpx beautifulsoup4 lxml
 
 # ====== Runner Stage ======
@@ -65,15 +66,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 EXPOSE 7860
 ENV PORT=7860
 
-# Use the existing 'node' user 
+# Use the existing 'node' user (UID 1000 is default for Hugging Face and node image)
 USER node
 
 # Copy built files and dependencies
-COPY --from=installer --chown=node:node /app/apps/server/dist ./apps/server/dist
-COPY --from=installer --chown=node:node /app/apps/server/package.json ./apps/server/package.json
-COPY --from=installer --chown=node:node /app/node_modules ./node_modules
-COPY --from=installer --chown=node:node /app/packages/database ./packages/database
-COPY --from=installer --chown=node:node /app/apps/server/venv /app/apps/server/venv
+# We copy from /app of the installer which contains the pruned structure + node_modules
+COPY --from=installer --chown=node:node /app ./
 
 # Start the app
+# Point directly to the server entry point
 CMD ["node", "apps/server/dist/index.js"]
