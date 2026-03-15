@@ -15,7 +15,6 @@ import {
 } from "./googlesheets";
 
 dotenv.config();
-console.log(process.env.KAFKA_BROKERS);
 
 const TOPIC_NAME = "zap-events";
 
