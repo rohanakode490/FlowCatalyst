@@ -1,3 +1,12 @@
+---
+title: FlowCatalyst Server
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
+
 # FlowCatalyst - Enterprise Workflow Automation Platform
 
 FlowCatalyst is a high-performance, scalable SaaS platform designed for seamless workflow automation. Much like Zapier, FlowCatalyst empowers users to connect disparate applications and automate repetitive tasks through "Zaps"—powerful, multi-step workflows triggered by real-time events.
