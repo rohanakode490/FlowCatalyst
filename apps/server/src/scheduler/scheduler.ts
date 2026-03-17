@@ -3,7 +3,7 @@ import { executeScrapingFlow } from "../scrapers/flow";
 
 export const startScheduler = async () => {
   // Interval of 10 hours for checking due jobs
-  const CHECK_INTERVAL = 10 * 60 * 60 * 1000; 
+  const CHECK_INTERVAL = 15 * 60 * 1000; 
 
   setInterval(async () => {
     console.info("Scheduler: Checking for due jobs...");
