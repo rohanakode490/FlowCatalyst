@@ -55,7 +55,6 @@ export async function transferSOL(
     const signature = await sendAndConfirmTransaction(connection, transaction, [
       senderKeypair,
     ]);
-
   } catch (error) {
     console.error("SOL transfer failed:", error);
     throw error;

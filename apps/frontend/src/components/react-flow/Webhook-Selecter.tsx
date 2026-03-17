@@ -10,15 +10,17 @@ interface WebhookSelectorProps {
   type: "action" | "trigger";
 }
 
-function WebhookSelector({
-  onSelect,
-  type,
-}: WebhookSelectorProps) {
+function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
   const {
     flow: { nodes, setTriggerName },
     webhook: { webhooks, fetchWebhooks },
     ui: { addToast },
-    user: { userSubscription, userTriggers, loadingTriggers, fetchUserTriggers },
+    user: {
+      userSubscription,
+      userTriggers,
+      loadingTriggers,
+      fetchUserTriggers,
+    },
   } = useStore();
 
   // Fetch available actions or triggers based on the type
@@ -36,11 +38,12 @@ function WebhookSelector({
     }
     // Count triggers in current flow
     const currentFlowTriggerCount = nodes.filter(
-      (node) => node.data.name === webhookName && node.data.configured
+      (node) => node.data.name === webhookName && node.data.configured,
     ).length;
 
     // Get total trigger count for user (including other flows)
-    const totalTriggerCount = (userTriggers[webhookName] || 0) + currentFlowTriggerCount;
+    const totalTriggerCount =
+      (userTriggers[webhookName] || 0) + currentFlowTriggerCount;
 
     // Subscription limits (default to 1 if userSubscription is null)
     const maxTriggers = userSubscription === "pro" ? 2 : 1;
@@ -54,8 +57,11 @@ function WebhookSelector({
       return;
     }
     if (isTriggerRestricted(webhook.name)) {
-      const maxTriggers = userSubscription === "pro" ? 2 : 1
-      addToast(`Only ${maxTriggers} ${webhook.name} trigger(s) allowed!`, "error");;
+      const maxTriggers = userSubscription === "pro" ? 2 : 1;
+      addToast(
+        `Only ${maxTriggers} ${webhook.name} trigger(s) allowed!`,
+        "error",
+      );
       return;
     }
     onSelect(webhook);
@@ -67,9 +73,9 @@ function WebhookSelector({
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-4">
-
         {webhooks.map((webhook) => {
-          const isDisabled = isTriggerRestricted(webhook.name) || loadingTriggers;
+          const isDisabled =
+            isTriggerRestricted(webhook.name) || loadingTriggers;
           return (
             <div
               key={webhook.id}
@@ -81,14 +87,18 @@ function WebhookSelector({
                   ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                 disabled={isDisabled}
               >
-                <img src={webhook.image} alt={webhook.name} className="w-8 h-8 rounded-full" />
+                <img
+                  src={webhook.image}
+                  alt={webhook.name}
+                  className="w-8 h-8 rounded-full"
+                />
                 <span className="text-sm font-medium">{webhook.name}</span>
               </Button>
             </div>
           );
         })}
       </div>
-    </div >
+    </div>
   );
 }
 

@@ -33,7 +33,12 @@ export const handleIssueCommentEvent = (payload: any): EventData | null => {
   const match = comment.body.match(bountyRegex);
   const isBounty = !!match;
 
-  if (!isBounty || action !== "created" || (comment.author_association !== "MEMBER" && comment.author_association !== "OWNER")) {
+  if (
+    !isBounty ||
+    action !== "created" ||
+    (comment.author_association !== "MEMBER" &&
+      comment.author_association !== "OWNER")
+  ) {
     return null;
   }
 
@@ -53,7 +58,11 @@ export const handleIssueCommentEvent = (payload: any): EventData | null => {
 
     const bountyData = JSON.parse(`{${flexibleJson}}`);
 
-    if (typeof bountyData.FromSolanaAddress === "string" && typeof bountyData.ToSolanaAddress === "string" && typeof bountyData.Amount === "number") {
+    if (
+      typeof bountyData.FromSolanaAddress === "string" &&
+      typeof bountyData.ToSolanaAddress === "string" &&
+      typeof bountyData.Amount === "number"
+    ) {
       eventData.FromSolanaAddress = bountyData.FromSolanaAddress;
       eventData.ToSolanaAddress = bountyData.ToSolanaAddress;
       eventData.Amount = bountyData.Amount;
@@ -81,17 +90,28 @@ export const handleIssuesEvent = (payload: any): EventData | null => {
   };
 };
 
-export const handleGitHubWebhook = async (req: Request, res: Response, eventType: string) => {
+export const handleGitHubWebhook = async (
+  req: Request,
+  res: Response,
+  eventType: string,
+) => {
   const zapId = req.params.zapId;
   const payload = req.body;
 
   try {
     let eventData: EventData | null = null;
     switch (eventType) {
-      case "pull_request": eventData = handlePullRequestEvent(payload); break;
-      case "issue_comment": eventData = handleIssueCommentEvent(payload); break;
-      case "issues": eventData = handleIssuesEvent(payload); break;
-      default: throw new Error(`Unsupported event type: ${eventType}`);
+      case "pull_request":
+        eventData = handlePullRequestEvent(payload);
+        break;
+      case "issue_comment":
+        eventData = handleIssueCommentEvent(payload);
+        break;
+      case "issues":
+        eventData = handleIssuesEvent(payload);
+        break;
+      default:
+        throw new Error(`Unsupported event type: ${eventType}`);
     }
 
     if (eventData) {
@@ -103,11 +123,15 @@ export const handleGitHubWebhook = async (req: Request, res: Response, eventType
       });
 
       // Directly trigger execution
-      runZap(run.id).catch(err => console.error("Error in async runZap:", err));
+      runZap(run.id).catch((err) =>
+        console.error("Error in async runZap:", err),
+      );
 
       res.json({ message: "Webhook received and execution started" });
     } else {
-      res.json({ message: "Webhook received but not processed (condition not met)" });
+      res.json({
+        message: "Webhook received but not processed (condition not met)",
+      });
     }
   } catch (error) {
     console.error("Error processing webhook:", error);

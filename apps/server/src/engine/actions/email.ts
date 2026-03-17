@@ -32,7 +32,7 @@ export async function sendEmail({
         to: [
           {
             email: to,
-            name: to.split("@")[0], 
+            name: to.split("@")[0],
           },
         ],
         subject: subject || "Notification from FlowCatalyst",

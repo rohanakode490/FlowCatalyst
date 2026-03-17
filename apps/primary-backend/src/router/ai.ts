@@ -460,7 +460,7 @@ router.post("/generate", authMiddleware, aiRateLimiter, async (req, res) => {
     const updatedUser = await prismaClient.user.update({
       where: { id: userId },
       data: { aiPromptCount: { increment: 1 } },
-      select: { aiPromptCount: true }
+      select: { aiPromptCount: true },
     });
 
     res.locals.aiLimit = {

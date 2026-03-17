@@ -11,7 +11,7 @@ const linkedinJobSchema = z.object({
   remote: z.array(z.string()).optional(),
   job_type: z.array(z.string()).optional(),
   listed_at: z.string().optional(),
-  type: z.string().optional()
+  type: z.string().optional(),
 });
 
 const indeedTriggerSchema = z.object({
@@ -23,7 +23,7 @@ const indeedTriggerSchema = z.object({
   remote: z.array(z.string()).optional(),
   job_type: z.array(z.string()).optional(),
   listed_at: z.string().optional(),
-  type: z.string().optional()
+  type: z.string().optional(),
 });
 
 // Actions

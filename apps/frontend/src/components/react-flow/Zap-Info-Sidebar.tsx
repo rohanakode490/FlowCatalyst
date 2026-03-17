@@ -28,12 +28,18 @@ export const Sidebar = ({
   } = useStore();
 
   const formFields = selectedNode.data.action
-    ? ACTION_FORM_FIELDS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
-    : TRIGGER_FORM_FIELDS[selectedNode.data.name.toLowerCase().replace(" ", "")] || [];
+    ? ACTION_FORM_FIELDS[
+        selectedNode.data.name.toLowerCase().replace(" ", "")
+      ] || []
+    : TRIGGER_FORM_FIELDS[
+        selectedNode.data.name.toLowerCase().replace(" ", "")
+      ] || [];
 
   const schema = selectedNode.data.action
-    ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] || []
-    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] || [];
+    ? ACTION_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] ||
+      []
+    : TRIGGER_SCHEMAS[selectedNode.data.name.toLowerCase().replace(" ", "")] ||
+      [];
 
   // Get the initial data from the node's metadata field
   const initialData = selectedNode.data.metadata;
@@ -84,7 +90,10 @@ export const Sidebar = ({
       triggerName["type"] === "LINKEDIN_JOBS"
     ) {
       return "linkedin";
-    } else if (triggerName?.hasOwnProperty("type") && triggerName["type"] === "INDEED_JOBS") {
+    } else if (
+      triggerName?.hasOwnProperty("type") &&
+      triggerName["type"] === "INDEED_JOBS"
+    ) {
       return "indeed";
     }
   }
@@ -93,8 +102,7 @@ export const Sidebar = ({
     if (selectedNode.data.action) {
       const name = selectedNode.data.name.toLowerCase().replace(" ", "");
       return name;
-    }
-    else {
+    } else {
       return "";
     }
   }

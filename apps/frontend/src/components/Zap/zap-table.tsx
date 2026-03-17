@@ -21,7 +21,7 @@ import { debounce } from "lodash";
 export default function ZapTable({ zaps }: { zaps: Zap[] }) {
   const [zapToDelete, setZapToDelete] = useState<string | null>(null);
   const [localZapStatus, setLocalZapStatus] = useState<Record<string, boolean>>(
-    zaps.reduce((acc, zap) => ({ ...acc, [zap.id]: zap.isActive }), {})
+    zaps.reduce((acc, zap) => ({ ...acc, [zap.id]: zap.isActive }), {}),
   );
   const {
     zap: { toggleZap, zapStatus },
@@ -36,15 +36,15 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
           ...acc,
           [zap.id]: zapStatus[zap.id] ?? zap.isActive,
         }),
-        prev
-      )
+        prev,
+      ),
     );
   }, [zapStatus, zaps]);
 
   // Function to handle Zap toggle
   const handleToggleZap = useCallback(
     async (zapId: string, isActive: boolean) => {
-      addToast("Loading...", "loading")
+      addToast("Loading...", "loading");
       try {
         await toggleZap(zapId, isActive);
       } catch (error) {
@@ -53,15 +53,19 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
         addToast("Failed to toggle Zap status.", "error");
       }
     },
-    [toggleZap, addToast]
+    [toggleZap, addToast],
   );
 
   // Debounced toggle handler
   const debouncedToggleZap = useCallback(
-    debounce((zapId: string, isActive: boolean) => {
-      handleToggleZap(zapId, isActive);
-    }, 2000, { leading: false, trailing: true }),
-    [handleToggleZap]
+    debounce(
+      (zapId: string, isActive: boolean) => {
+        handleToggleZap(zapId, isActive);
+      },
+      2000,
+      { leading: false, trailing: true },
+    ),
+    [handleToggleZap],
   );
 
   // Handle switch toggle with local state
@@ -69,7 +73,6 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
     setLocalZapStatus((prev) => ({ ...prev, [zapId]: checked }));
     debouncedToggleZap(zapId, checked);
   };
-
 
   // Function to handle Zap deletion
   const handleDeleteZap = async (zapId: string) => {
@@ -161,11 +164,13 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
               <TableCell className="text-right">
                 <Switch
                   checked={localZapStatus[zap.id] ?? zap.isActive}
-                  onCheckedChange={(checked) => handleSwitchToggle(zap.id, checked)}
-                // onCheckedChange={
-                //   (checked) => debouncedToggleZap(zap.id, checked)
-                //   // handleToggleZap(zap.id, checked)
-                // }
+                  onCheckedChange={(checked) =>
+                    handleSwitchToggle(zap.id, checked)
+                  }
+                  // onCheckedChange={
+                  //   (checked) => debouncedToggleZap(zap.id, checked)
+                  //   // handleToggleZap(zap.id, checked)
+                  // }
                 />
               </TableCell>
               <TableCell>

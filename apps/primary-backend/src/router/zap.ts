@@ -10,12 +10,11 @@ const router = Router();
 
 function getScraperType(scraperType: string) {
   if (scraperType.includes("Indeed")) {
-    return "INDEED_JOBS"
-  }
-  else if (scraperType.includes("Linkedin")) {
-    return "LINKEDIN_JOBS"
+    return "INDEED_JOBS";
+  } else if (scraperType.includes("Linkedin")) {
+    return "LINKEDIN_JOBS";
   } else {
-    return ""
+    return "";
   }
 }
 
@@ -24,7 +23,7 @@ router.post("/", authMiddleware, async (req, res) => {
   //@ts-ignore
   const id = req.id;
   const parsedData = ZapCreateSchema.safeParse(zapData);
-  const newScraperType = getScraperType(scraperType)
+  const newScraperType = getScraperType(scraperType);
 
   if (!parsedData.success) {
     return res.status(411).json({

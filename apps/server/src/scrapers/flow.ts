@@ -2,7 +2,10 @@ import { prismaClient } from "@flowcatalyst/database";
 import { runIndeedScraper, runLinkedinScraper } from "./runners";
 import { runZap } from "../engine/executor";
 
-export const executeScrapingFlow = async (triggerId: string, scraperType: string) => {
+export const executeScrapingFlow = async (
+  triggerId: string,
+  scraperType: string,
+) => {
   try {
     const trigger = await prismaClient.trigger.findUnique({
       where: { id: triggerId },
@@ -10,10 +13,12 @@ export const executeScrapingFlow = async (triggerId: string, scraperType: string
     });
 
     if (!trigger || !trigger.metadata) return [];
-    
+
     const metadata = trigger.metadata as any;
-    const location = metadata.state ? `${metadata.state}, ${metadata.country || "USA"}` : metadata.country || "USA";
-    
+    const location = metadata.state
+      ? `${metadata.state}, ${metadata.country || "USA"}`
+      : metadata.country || "USA";
+
     let jobs: any[] = [];
     if (scraperType === "INDEED_JOBS") {
       jobs = await runIndeedScraper(
@@ -23,7 +28,7 @@ export const executeScrapingFlow = async (triggerId: string, scraperType: string
         metadata.limit || 10,
         metadata.is_remote || false,
         metadata.job_type || "",
-        metadata.hours_old || 168
+        metadata.hours_old || 168,
       );
     } else if (scraperType === "LINKEDIN_JOBS") {
       jobs = await runLinkedinScraper(
@@ -35,7 +40,7 @@ export const executeScrapingFlow = async (triggerId: string, scraperType: string
         metadata.remote || false,
         metadata.job_type || [],
         metadata.listed_at || "86400",
-        []
+        [],
       );
     }
 
@@ -43,7 +48,10 @@ export const executeScrapingFlow = async (triggerId: string, scraperType: string
 
     const run = await prismaClient.$transaction(async (tx) => {
       const existingRun = await tx.zapRun.findFirst({
-        where: { zapId: trigger.zapId, metadata: { path: ["type"], equals: scraperType } },
+        where: {
+          zapId: trigger.zapId,
+          metadata: { path: ["type"], equals: scraperType },
+        },
         orderBy: { id: "desc" },
       });
 
@@ -51,16 +59,31 @@ export const executeScrapingFlow = async (triggerId: string, scraperType: string
         const existingMetadata = existingRun.metadata as any;
         return await tx.zapRun.update({
           where: { id: existingRun.id },
-          data: { metadata: { ...existingMetadata, jobs: [...jobs, ...(existingMetadata.jobs || [])], lastUpdated: new Date().toISOString() } },
+          data: {
+            metadata: {
+              ...existingMetadata,
+              jobs: [...jobs, ...(existingMetadata.jobs || [])],
+              lastUpdated: new Date().toISOString(),
+            },
+          },
         });
       } else {
         return await tx.zapRun.create({
-          data: { zapId: trigger.zapId, metadata: { type: scraperType, jobs, scrapedAt: new Date().toISOString() } },
+          data: {
+            zapId: trigger.zapId,
+            metadata: {
+              type: scraperType,
+              jobs,
+              scrapedAt: new Date().toISOString(),
+            },
+          },
         });
       }
     });
 
-    runZap(run.id).catch(err => console.error("Error in async runZap from scraper:", err));
+    runZap(run.id).catch((err) =>
+      console.error("Error in async runZap from scraper:", err),
+    );
     return jobs;
   } catch (error) {
     console.error(`Error processing scraper trigger ${triggerId}:`, error);

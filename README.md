@@ -68,6 +68,7 @@ FlowCatalyst is built as a modern monorepo using **Turborepo**, ensuring consist
 ### Installation
 
 1. Clone the repository and install dependencies:
+
    ```bash
    npm install
    ```
@@ -76,6 +77,7 @@ FlowCatalyst is built as a modern monorepo using **Turborepo**, ensuring consist
    Copy `.env.example` to `.env` in the root and respective app directories.
 
 3. Initialize the database:
+
    ```bash
    npm run db:update
    ```

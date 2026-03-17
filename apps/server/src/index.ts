@@ -20,10 +20,13 @@ app.get("/health", (req: Request, res: Response) => {
 /**
  * Webhook Endpoints
  */
-app.post("/github-webhook/:eventType/:userId/:zapId", (req: Request, res: Response) => {
-  const { eventType } = req.params;
-  handleGitHubWebhook(req, res, eventType);
-});
+app.post(
+  "/github-webhook/:eventType/:userId/:zapId",
+  (req: Request, res: Response) => {
+    const { eventType } = req.params;
+    handleGitHubWebhook(req, res, eventType);
+  },
+);
 
 /**
  * Scraping / Scheduling Endpoints
@@ -32,20 +35,22 @@ app.post("/schedule", async (req: Request, res: Response) => {
   const { triggerId, scraperType, userId } = req.body;
   try {
     if (!triggerId || !userId) {
-      return res.status(400).json({ success: false, error: "Missing triggerId or userId" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing triggerId or userId" });
     }
 
     const nextRunAt = new Date(Date.now() + 10 * 60 * 60 * 1000);
-    
+
     // Find if a schedule already exists to get its ID for upsert
     const existingSchedule = await prismaClient.jobSchedule.findFirst({
-      where: { triggerId, userId }
+      where: { triggerId, userId },
     });
 
     await prismaClient.jobSchedule.upsert({
-      where: { id: existingSchedule?.id || 'new_placeholder_id' },
+      where: { id: existingSchedule?.id || "new_placeholder_id" },
       update: { isActive: true, nextRunAt, updatedAt: new Date() },
-      create: { triggerId, userId, interval: 10, nextRunAt }
+      create: { triggerId, userId, interval: 10, nextRunAt },
     });
 
     const jobs = await executeScrapingFlow(triggerId, scraperType);

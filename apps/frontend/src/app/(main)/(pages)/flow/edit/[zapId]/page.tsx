@@ -139,7 +139,7 @@ export default function EditZapPage() {
           type: "buttonEdge",
           source: "1",
           target: "2",
-          data: { onAddNode: () => { } }, // Will be set in Flow.tsx
+          data: { onAddNode: () => {} }, // Will be set in Flow.tsx
         },
       ];
       setNodes(defaultNodes);

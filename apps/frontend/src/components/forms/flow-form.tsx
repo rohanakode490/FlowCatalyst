@@ -210,7 +210,7 @@ function DynamicForm({
           onSubmit(data);
           setLocalFormData(data); // Update local state to reflect saved data
         },
-        () => { },
+        () => {},
       );
       setIsSaving(false);
     },
@@ -268,7 +268,7 @@ function DynamicForm({
     if (triggerType === "github") {
       fields =
         GITHUB_TRIGGER_FIELDS_MAP[
-        triggerName?.githubEventType || "issue_comment"
+          triggerName?.githubEventType || "issue_comment"
         ];
     } else if (triggerType === "linkedin") {
       fields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
@@ -312,7 +312,7 @@ function DynamicForm({
       if (triggerType === "github") {
         allowedFields =
           GITHUB_TRIGGER_FIELDS_MAP[
-          triggerName?.githubEventType || "issue_comment"
+            triggerName?.githubEventType || "issue_comment"
           ];
       } else if (triggerType === "linkedin" || triggerType === "indeed") {
         allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];
@@ -416,10 +416,11 @@ function DynamicForm({
                   validateField(field.name, localFormData[field.name]);
                   handleBlur(field.name);
                 }}
-                className={`mt-1 block flex-1 p-2 border rounded-md ${isDarkMode
-                  ? "bg-[#1f2937] border-[#374151] text-white"
-                  : "bg-white border-[#d1d5db] text-[#111827]"
-                  }`}
+                className={`mt-1 block flex-1 p-2 border rounded-md ${
+                  isDarkMode
+                    ? "bg-[#1f2937] border-[#374151] text-white"
+                    : "bg-white border-[#d1d5db] text-[#111827]"
+                }`}
               >
                 <option value="">Select an Option</option>
                 {options?.map((option) => (
@@ -554,10 +555,11 @@ function DynamicForm({
                   validateField("country", localFormData[field.name]);
                   handleBlur("country");
                 }}
-                className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
-                  ? "bg-[#1f2937] border-[#374151] text-white"
-                  : "bg-white border-[#d1d5db] text-[#111827]"
-                  }`}
+                className={`mt-1 block w-full p-2 border rounded-md ${
+                  isDarkMode
+                    ? "bg-[#1f2937] border-[#374151] text-white"
+                    : "bg-white border-[#d1d5db] text-[#111827]"
+                }`}
                 disabled={loadingCountries}
               >
                 <option value="">Select Country</option>
@@ -596,10 +598,11 @@ function DynamicForm({
                     validateField("state", localFormData[field.name]);
                     handleBlur("state");
                   }}
-                  className={`mt-1 block w-full p-2 border rounded-md ${isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
-                    }`}
+                  className={`mt-1 block w-full p-2 border rounded-md ${
+                    isDarkMode
+                      ? "bg-[#1f2937] border-[#374151] text-white"
+                      : "bg-white border-[#d1d5db] text-[#111827]"
+                  }`}
                   disabled={loadingStates}
                 >
                   <option value="">Select State</option>

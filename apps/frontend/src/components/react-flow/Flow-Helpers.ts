@@ -11,8 +11,12 @@ export type NodeType = Node<{
 
 export type EdgeType = Edge;
 
-export type SetNodesType = (nodes: NodeType[] | ((prev: NodeType[]) => NodeType[])) => void; // ReturnType<typeof useNodesState>[1];
-export type SetEdgesType = (edges: EdgeType[] | ((prev: EdgeType[]) => EdgeType[])) => void; // ReturnType<typeof useEdgesState>[1];
+export type SetNodesType = (
+  nodes: NodeType[] | ((prev: NodeType[]) => NodeType[]),
+) => void; // ReturnType<typeof useNodesState>[1];
+export type SetEdgesType = (
+  edges: EdgeType[] | ((prev: EdgeType[]) => EdgeType[]),
+) => void; // ReturnType<typeof useEdgesState>[1];
 export type FitViewType = (options?: {
   padding?: number;
   duration?: number;
@@ -109,14 +113,14 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
-        data: { onAddNode: () => { } },
+        data: { onAddNode: () => {} },
       },
       {
         id: `e${newNodeId}-${targetNode.id}`,
         type: "buttonEdge",
         source: newNodeId,
         target: targetNode.id,
-        data: { onAddNode: () => { } },
+        data: { onAddNode: () => {} },
       },
     ]);
   } else {
@@ -127,13 +131,13 @@ export const addNodeBelow = (
         type: "buttonEdge",
         source: sourceNodeId,
         target: newNodeId,
-        data: { onAddNode: () => { } },
+        data: { onAddNode: () => {} },
       },
     ]);
   }
 
   setNodes((nds) => [...nds, newNode]);
-  alignNodesVertically(setNodes, () => { }, VERTICAL_SPACING); // Mock fitView for now
+  alignNodesVertically(setNodes, () => {}, VERTICAL_SPACING); // Mock fitView for now
 
   return 1;
 };
@@ -167,7 +171,7 @@ export const deleteNode = (
   // Remove associated edges and reconnect source to target if both exist
   setEdges((eds) => {
     const remainingEdges = eds.filter(
-      (e) => e.source !== nodeId && e.target !== nodeId
+      (e) => e.source !== nodeId && e.target !== nodeId,
     );
     if (sourceEdge && targetEdge) {
       const newEdge = {
@@ -181,5 +185,5 @@ export const deleteNode = (
     return remainingEdges;
   });
 
-  alignNodesVertically(setNodes, () => { }, VERTICAL_SPACING);
+  alignNodesVertically(setNodes, () => {}, VERTICAL_SPACING);
 };

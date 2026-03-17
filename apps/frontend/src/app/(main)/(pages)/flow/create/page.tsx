@@ -7,14 +7,17 @@ import Flow from "@/components/react-flow/Flow";
 import useStore, { initialEdges, initialNodes } from "@/lib/store";
 
 export default function FlowCreatePage() {
-  const { flow: { setNodes, setEdges, resetFlow }, form: { resetFormData } } = useStore();
+  const {
+    flow: { setNodes, setEdges, resetFlow },
+    form: { resetFormData },
+  } = useStore();
 
   useEffect(() => {
     resetFlow();
     resetFormData();
-    setNodes(initialNodes)
-    setEdges(initialEdges)
-  }, [])
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, []);
 
   return (
     <Heading heading="Create">

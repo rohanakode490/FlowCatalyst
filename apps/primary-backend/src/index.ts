@@ -235,8 +235,8 @@ app.get(
 app.get(
   "/auth/google/callback",
   (req, res, next) => {
-    passport.authenticate("google", { 
-      failureRedirect: `${process.env.FRONTEND_URL}/login` 
+    passport.authenticate("google", {
+      failureRedirect: `${process.env.FRONTEND_URL}/login`,
     })(req, res, next);
   },
   (req: any, res) => {
@@ -274,8 +274,8 @@ app.get(
 app.get(
   "/auth/github/callback",
   (req, res, next) => {
-    passport.authenticate("github", { 
-      failureRedirect: `${process.env.FRONTEND_URL}/login` 
+    passport.authenticate("github", {
+      failureRedirect: `${process.env.FRONTEND_URL}/login`,
     })(req, res, next);
   },
   (req: any, res) => {

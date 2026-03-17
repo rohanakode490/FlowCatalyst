@@ -10,12 +10,19 @@ export const runLinkedinScraper = (
   remote: boolean,
   jobType: string[],
   listed_at: string,
-  existingUrns: string[]
+  existingUrns: string[],
 ): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     // Correct path after refactor: src/scrapers/python/linkedin/linkedin-scraper.py
-    const scriptPath = path.join(__dirname, "python", "linkedin", "linkedin-scraper.py");
-    const pythonCommand = process.env.VIRTUAL_ENV ? `${process.env.VIRTUAL_ENV}/bin/python` : "python3";
+    const scriptPath = path.join(
+      __dirname,
+      "python",
+      "linkedin",
+      "linkedin-scraper.py",
+    );
+    const pythonCommand = process.env.VIRTUAL_ENV
+      ? `${process.env.VIRTUAL_ENV}/bin/python`
+      : "python3";
     const args = [
       scriptPath,
       keywords.join(" OR ") || "",
@@ -31,7 +38,9 @@ export const runLinkedinScraper = (
     const pythonProcess = spawn(pythonCommand, args);
     let output = "";
     pythonProcess.stdout.on("data", (data) => (output += data.toString()));
-    pythonProcess.stderr.on("data", (data) => console.error(`Python error: ${data}`));
+    pythonProcess.stderr.on("data", (data) =>
+      console.error(`Python error: ${data}`),
+    );
     pythonProcess.on("close", (code) => {
       if (code === 0) {
         try {
@@ -53,12 +62,19 @@ export const runIndeedScraper = (
   resultsWanted: number,
   isRemote: boolean,
   jobType: string,
-  hoursOld: number
+  hoursOld: number,
 ): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     // Correct path after refactor: src/scrapers/python/indeed/indeed-scraper.py
-    const scriptPath = path.join(__dirname, "python", "indeed", "indeed-scraper.py");
-    const pythonCommand = process.env.VIRTUAL_ENV ? `${process.env.VIRTUAL_ENV}/bin/python` : "python3";
+    const scriptPath = path.join(
+      __dirname,
+      "python",
+      "indeed",
+      "indeed-scraper.py",
+    );
+    const pythonCommand = process.env.VIRTUAL_ENV
+      ? `${process.env.VIRTUAL_ENV}/bin/python`
+      : "python3";
     const args = [
       scriptPath,
       searchTerm,

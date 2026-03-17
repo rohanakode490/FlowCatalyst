@@ -358,13 +358,13 @@ const useStore = createWithEqualityFn<AppState>()(
             newNodes = nodes.map((node) =>
               node.id === "1"
                 ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    metadata: metadataToUse,
-                    configured: isOriginalTrigger ? true : false,
-                  },
-                }
+                    ...node,
+                    data: {
+                      ...node.data,
+                      metadata: metadataToUse,
+                      configured: isOriginalTrigger ? true : false,
+                    },
+                  }
                 : node,
             );
             newFormData = formData.map((node) =>
@@ -378,13 +378,13 @@ const useStore = createWithEqualityFn<AppState>()(
             newNodes = nodes.map((node) =>
               node.id === "1"
                 ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    metadata: metadataToUse,
-                    configured: isOriginalTrigger ? true : false,
-                  },
-                }
+                    ...node,
+                    data: {
+                      ...node.data,
+                      metadata: metadataToUse,
+                      configured: isOriginalTrigger ? true : false,
+                    },
+                  }
                 : node,
             );
             newFormData = formData.map((node) =>
@@ -399,13 +399,13 @@ const useStore = createWithEqualityFn<AppState>()(
             newNodes = nodes.map((node) =>
               node.id === "1"
                 ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    metadata: metadataToUse,
-                    configured: isOriginalTrigger ? true : false,
-                  },
-                }
+                    ...node,
+                    data: {
+                      ...node.data,
+                      metadata: metadataToUse,
+                      configured: isOriginalTrigger ? true : false,
+                    },
+                  }
                 : node,
             );
             newFormData = formData.map((node) =>
@@ -936,9 +936,9 @@ const useStore = createWithEqualityFn<AppState>()(
           }
           allowedFields =
             GITHUB_TRIGGER_FIELDS_MAP[
-            updatedFormData.githubEventType ||
-            triggerName?.githubEventType ||
-            "issue_comment"
+              updatedFormData.githubEventType ||
+                triggerName?.githubEventType ||
+                "issue_comment"
             ];
         } else if (triggerType === "linkedin" || triggerType === "indeed") {
           allowedFields = LINKEDIN_TRIGGER_FIELDS_MAP["linkedin"];

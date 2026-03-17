@@ -52,7 +52,9 @@ export async function runZap(zapRunId: string) {
     const actions = zapRunDetails.zap.actions;
 
     for (const currentAction of actions) {
-      console.log(`Executing stage ${currentAction.sortingOrder}: ${currentAction.type.name}`);
+      console.log(
+        `Executing stage ${currentAction.sortingOrder}: ${currentAction.type.name}`,
+      );
 
       if (currentAction.type.name === "Email") {
         try {
@@ -70,19 +72,37 @@ export async function runZap(zapRunId: string) {
           const containsTriggerPlaceholders =
             subject.includes("{{trigger.") || emailBody.includes("{{trigger.");
 
-          if (containsTriggerPlaceholders && dynamicFields.jobs && Array.isArray(dynamicFields.jobs)) {
+          if (
+            containsTriggerPlaceholders &&
+            dynamicFields.jobs &&
+            Array.isArray(dynamicFields.jobs)
+          ) {
             if (subject.includes("{{trigger.")) {
-              subject = dynamicFields.jobs.map((job: any) => parseDynamicFields(subject, { trigger: job })).join(", ");
+              subject = dynamicFields.jobs
+                .map((job: any) =>
+                  parseDynamicFields(subject, { trigger: job }),
+                )
+                .join(", ");
             }
 
             if (emailBody.includes("{{trigger.emailBodyTemplate}}")) {
               const template = loadTemplate("emailTemplate");
-              const renderedTemplate = renderTemplate(template, dynamicFields.jobs);
-              emailBody = emailBody.replace("{{trigger.emailBodyTemplate}}", renderedTemplate);
+              const renderedTemplate = renderTemplate(
+                template,
+                dynamicFields.jobs,
+              );
+              emailBody = emailBody.replace(
+                "{{trigger.emailBodyTemplate}}",
+                renderedTemplate,
+              );
             }
 
             if (emailBody.includes("{{trigger.")) {
-              emailBody = dynamicFields.jobs.map((job: any) => parseDynamicFields(emailBody, { trigger: job })).join("</br>");
+              emailBody = dynamicFields.jobs
+                .map((job: any) =>
+                  parseDynamicFields(emailBody, { trigger: job }),
+                )
+                .join("</br>");
             }
           } else {
             subject = parseDynamicFields(subject, dynamicFields);
@@ -98,7 +118,7 @@ export async function runZap(zapRunId: string) {
         try {
           const SolanaData = parseDynamicFields(
             parseJson(currentAction.metadata),
-            parseJson(dynamicFieldsVal)
+            parseJson(dynamicFieldsVal),
           );
           await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount);
           console.log("✅ Solana transfer completed");
@@ -110,29 +130,60 @@ export async function runZap(zapRunId: string) {
           const sheetsMetadata = parseJson(currentAction.metadata);
           const dynamicFields = parseJson(dynamicFieldsVal);
 
-          if (!sheetsMetadata.refreshToken || !sheetsMetadata.sheetid || !sheetsMetadata.sheetOperation) {
+          if (
+            !sheetsMetadata.refreshToken ||
+            !sheetsMetadata.sheetid ||
+            !sheetsMetadata.sheetOperation
+          ) {
             throw new Error("Missing required Google Sheets fields");
           }
 
-          const accessToken = await getGoogleAccessToken(sheetsMetadata.refreshToken);
+          const accessToken = await getGoogleAccessToken(
+            sheetsMetadata.refreshToken,
+          );
           const sheetName = sheetsMetadata.sheetName || "Sheet1";
 
           if (sheetsMetadata.sheetOperation === "1") {
-            const data = Array.isArray(dynamicFields.jobs) ? dynamicFields.jobs : [dynamicFields.jobs || ""];
-            await appendRowToSheet(accessToken, sheetsMetadata.sheetid, sheetName, data, dynamicFields);
+            const data = Array.isArray(dynamicFields.jobs)
+              ? dynamicFields.jobs
+              : [dynamicFields.jobs || ""];
+            await appendRowToSheet(
+              accessToken,
+              sheetsMetadata.sheetid,
+              sheetName,
+              data,
+              dynamicFields,
+            );
           } else if (sheetsMetadata.sheetOperation === "2") {
-            const data = Array.isArray(dynamicFields.jobs) ? dynamicFields.jobs : [dynamicFields.jobs || ""];
-            await appendColumnToSheet(accessToken, sheetsMetadata.sheetid, data, dynamicFields);
+            const data = Array.isArray(dynamicFields.jobs)
+              ? dynamicFields.jobs
+              : [dynamicFields.jobs || ""];
+            await appendColumnToSheet(
+              accessToken,
+              sheetsMetadata.sheetid,
+              data,
+              dynamicFields,
+            );
           } else if (sheetsMetadata.sheetOperation === "3") {
-            const data = Array.isArray(dynamicFields.jobs) ? dynamicFields.jobs : [dynamicFields.jobs || ""];
-            await createSheet(accessToken, sheetsMetadata.sheetid, sheetName, data);
+            const data = Array.isArray(dynamicFields.jobs)
+              ? dynamicFields.jobs
+              : [dynamicFields.jobs || ""];
+            await createSheet(
+              accessToken,
+              sheetsMetadata.sheetid,
+              sheetName,
+              data,
+            );
           }
           console.log("✅ Google Sheets operation completed");
         } catch (error: any) {
-          console.error("Failed to process Google Sheets action:", error.message);
+          console.error(
+            "Failed to process Google Sheets action:",
+            error.message,
+          );
         }
       }
-      
+
       await new Promise((r) => setTimeout(r, 500));
     }
 
