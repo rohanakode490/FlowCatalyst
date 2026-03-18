@@ -1,11 +1,11 @@
 {
-  "name": "flowcatalyst",
+  "name": "flowentis",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "start": "turbo start",
     "dev": "turbo dev",
-    "dev:server": "turbo dev --filter=@flowcatalyst/frontend --filter=@flowcatalyst/primary-backend --filter=@flowcatalyst/server",
+    "dev:server": "turbo dev --filter=@flowentis/frontend --filter=@flowentis/primary-backend --filter=@flowentis/server",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:update": "turbo run db:generate && turbo run db:push",

@@ -21,7 +21,7 @@ RUN npm install -g turbo@^2.1.3
 FROM base AS builder
 # Copy package files for pruning
 COPY . .
-RUN turbo prune --scope=@flowcatalyst/server --docker
+RUN turbo prune --scope=@flowentis/server --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -40,7 +40,7 @@ COPY --from=builder /app/out/full/ .
 RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the app
-RUN npx turbo run build --filter=@flowcatalyst/server...
+RUN npx turbo run build --filter=@flowentis/server...
 
 # Remove devDependencies to keep image small
 # RUN npm prune --omit=dev

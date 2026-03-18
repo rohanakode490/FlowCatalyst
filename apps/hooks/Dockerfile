@@ -37,7 +37,7 @@ COPY apps/hooks ./apps/hooks
 COPY packages ./packages
 
 # Prune workspace
-RUN turbo prune --scope=@flowcatalyst/hooks --docker
+RUN turbo prune --scope=@flowentis/hooks --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -67,7 +67,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the app
-RUN turbo run build --filter=@flowcatalyst/hooks...
+RUN turbo run build --filter=@flowentis/hooks...
 
 # ====== Runner Stage ======
 FROM base AS runner

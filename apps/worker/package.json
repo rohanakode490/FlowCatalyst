@@ -1,5 +1,5 @@
 {
-  "name": "@flowcatalyst/worker",
+  "name": "@flowentis/worker",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@flowcatalyst/database": "*",
+    "@flowentis/database": "*",
     "@solana/web3.js": "^1.98.0",
     "axios": "^1.11.0",
     "bs58": "^6.0.0",

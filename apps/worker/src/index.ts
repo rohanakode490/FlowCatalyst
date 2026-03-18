@@ -2,7 +2,7 @@ require("dotenv").config();
 
 import dotenv from "dotenv";
 import { Kafka, Partitioners } from "kafkajs";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { parseDynamicFields } from "./parser";
 import { sendEmail } from "./email";
 import { transferSOL } from "./solana";

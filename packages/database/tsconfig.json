@@ -1,5 +1,5 @@
 {
-  //"extends": "@flowcatalyst/typeScript-config/base.json",
+  //"extends": "@flowentis/typeScript-config/base.json",
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

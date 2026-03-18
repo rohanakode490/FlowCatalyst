@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FooterLinks } from "./footer-links";
 
 const communityLinks = [
-  { label: "GitHub", href: "https://github.com/rohanakode490/flowcatalyst" },
+  { label: "GitHub", href: "https://github.com/rohanakode490/flowentis" },
   { label: "X", href: "https://x.com/rohanakode7" },
 ];
 
@@ -16,7 +16,7 @@ export function Footer() {
           <div className="space-y-8">
             <div className="flex items-center gap-2">
               <Zap className="h-6 w-6 text-white" />
-              <span className="text-white font-bold text-xl">FlowCatalyst</span>
+              <span className="text-white font-bold text-xl">Flowentis</span>
             </div>
             <p className="text-neutral-400 text-lg leading-relaxed">
               A personal project to help automate your daily workflows and boost
@@ -65,7 +65,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-400 text-sm">
-            ©2025 FlowCatalyst. Built with ❤️ by Rohan Akode
+            ©2025 Flowentis. Built with ❤️ by Rohan Akode
           </p>
           <div className="flex gap-6 items-center">
             <Link

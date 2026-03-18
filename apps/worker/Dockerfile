@@ -17,7 +17,7 @@ COPY apps/worker ./apps/worker
 COPY packages ./packages
 
 # Prune the workspace for the worker app
-RUN turbo prune --scope=@flowcatalyst/worker --docker
+RUN turbo prune --scope=@flowentis/worker --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -45,8 +45,8 @@ COPY --from=builder /app/out/full/ ./
 RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the application
-RUN turbo run build --filter=@flowcatalyst/worker...
-# RUN npm run build --workspace=@flowcatalyst/database && npm run build --workspace=@flowcatalyst/worker
+RUN turbo run build --filter=@flowentis/worker...
+# RUN npm run build --workspace=@flowentis/database && npm run build --workspace=@flowentis/worker
 # RUN ls -la node_modules | grep dotenv
 
 # Verify dependencies

@@ -24,9 +24,9 @@ RUN npm ci
 # ENV NODE_OPTIONS="--max_old_space_size=4096"
 ENV NODE_OPTIONS="--max_old_space_size=6144"
 ENV TURBO_WORKER_CONCURRENCY=1
-RUN turbo run build --filter=@flowcatalyst/primary-backend...
-# Prune the workspace for @flowcatalyst/primary-backend
-RUN turbo prune --scope=@flowcatalyst/primary-backend --docker
+RUN turbo run build --filter=@flowentis/primary-backend...
+# Prune the workspace for @flowentis/primary-backend
+RUN turbo prune --scope=@flowentis/primary-backend --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -50,7 +50,7 @@ COPY --from=builder /app/out/full/ .
 RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Build the app
-# RUN turbo run build --filter=@flowcatalyst/primary-backend...
+# RUN turbo run build --filter=@flowentis/primary-backend...
 # RUN ls -la node_modules | grep dotenv
 # ====== Runner Stage ======
 FROM base AS runner
@@ -95,7 +95,7 @@ CMD ["sh", "-c", "npx prisma migrate deploy --schema=/app/packages/database/pris
 # COPY . .
 #
 # # Prune the workspace to only include necessary files for `primary-backend`
-# RUN turbo prune --scope=@flowcatalyst/primary-backend --docker
+# RUN turbo prune --scope=@flowentis/primary-backend --docker
 #
 # # ====== Installer Stage ======
 # FROM base AS installer
@@ -129,7 +129,7 @@ CMD ["sh", "-c", "npx prisma migrate deploy --schema=/app/packages/database/pris
 # RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 #
 # # Run build (compiles `database` first)
-# RUN npm run build --workspace=@flowcatalyst/database && npm run build --workspace=@flowcatalyst/primary-backend
+# RUN npm run build --workspace=@flowentis/database && npm run build --workspace=@flowentis/primary-backend
 #
 # # ====== Runner Stage (Final Production Image) ======
 # FROM base AS runner

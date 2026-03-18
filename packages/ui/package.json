@@ -12,8 +12,8 @@
     "generate:component": "turbo gen react-component"
   },
   "devDependencies": {
-    "@flowcatalyst/eslint-config": "*",
-    "@flowcatalyst/typescript-config": "*",
+    "@flowentis/eslint-config": "*",
+    "@flowentis/typescript-config": "*",
     "@turbo/gen": "^1.12.4",
     "@types/eslint": "^8.56.5",
     "@types/node": "^20.11.24",

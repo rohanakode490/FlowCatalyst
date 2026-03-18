@@ -1,3 +1,3 @@
-import { Prisma } from "@flowcatalyst/database";
+import { Prisma } from "@flowentis/database";
 
 export type PrismaTransactionalClient = Prisma.TransactionClient;

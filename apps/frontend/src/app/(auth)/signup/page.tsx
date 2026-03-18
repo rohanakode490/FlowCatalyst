@@ -72,7 +72,7 @@ export default function SignUp() {
               Create Account
             </CardTitle>
             <CardDescription className="text-neutral-400">
-              Get started with FlowCatalyst
+              Get started with Flowentis
             </CardDescription>
           </CardHeader>
           <CardContent>

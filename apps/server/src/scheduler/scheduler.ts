@@ -1,4 +1,4 @@
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { executeScrapingFlow } from "../scrapers/flow";
 
 export const startScheduler = async () => {

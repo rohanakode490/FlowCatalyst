@@ -1,5 +1,5 @@
 import { Kafka, Partitioners } from "kafkajs";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import dotenv from "dotenv";
 dotenv.config();
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware";
 import { google } from "googleapis";
 import axios from "axios";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 
 const router = Router();
 

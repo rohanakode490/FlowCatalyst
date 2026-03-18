@@ -35,7 +35,7 @@ export async function sendEmail({
             name: to.split("@")[0],
           },
         ],
-        subject: subject || "Notification from FlowCatalyst",
+        subject: subject || "Notification from Flowentis",
         htmlContent: `<div>${body}</div>`,
       }),
     });

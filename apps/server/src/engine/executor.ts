@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 
 dotenv.config();
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { parseDynamicFields } from "./utils/parser";
 import { sendEmail } from "./actions/email";
 import { transferSOL } from "./actions/solana";

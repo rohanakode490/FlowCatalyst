@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { runZap } from "../engine/executor";
 
 export type EventData = {

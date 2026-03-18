@@ -1,5 +1,5 @@
 import express from "express";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import crypto from "crypto";
 import { authMiddleware } from "../middleware";
 import DodoPayments from "dodopayments";

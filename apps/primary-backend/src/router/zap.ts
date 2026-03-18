@@ -3,7 +3,7 @@ import { authMiddleware } from "../middleware";
 import { ZapCreateSchema } from "../types";
 import { PrismaTransactionalClient } from "../db";
 
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import axios from "axios";
 
 const router = Router();

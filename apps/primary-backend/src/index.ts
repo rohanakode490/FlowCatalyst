@@ -12,7 +12,7 @@ const rateLimiter = require("express-rate-limit");
 const session = require("express-session");
 const passport = require("passport");
 const axios = require("axios");
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 import jwt from "jsonwebtoken";

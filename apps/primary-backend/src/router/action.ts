@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { handleGitHubWebhook } from "./webhooks/github-handlers";
 import { executeScrapingFlow } from "./scrapers/flow";
 import { startScheduler } from "./scheduler/scheduler";
@@ -66,5 +66,5 @@ startScheduler();
 
 const PORT = process.env.PORT || 7860;
 app.listen(PORT, () => {
-  console.log(`🚀 FlowCatalyst Server running on port ${PORT}`);
+  console.log(`🚀 Flowentis Server running on port ${PORT}`);
 });

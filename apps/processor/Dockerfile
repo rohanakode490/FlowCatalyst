@@ -14,8 +14,8 @@ COPY package-lock.json package.json turbo.json ./
 COPY apps/processor ./apps/processor
 COPY packages ./packages
 
-# Prune the workspace for @flowcatalyst/processor
-RUN turbo prune --scope=@flowcatalyst/processor --docker
+# Prune the workspace for @flowentis/processor
+RUN turbo prune --scope=@flowentis/processor --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -36,7 +36,7 @@ RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 RUN npm install -g turbo@^2.1.3
 # Build the app
-RUN turbo run build --filter=@flowcatalyst/processor...
+RUN turbo run build --filter=@flowentis/processor...
 
 # ====== Runner Stage ======
 FROM base AS runner

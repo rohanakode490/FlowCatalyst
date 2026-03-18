@@ -79,7 +79,7 @@ export default function LogIn() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl text-white">Welcome Back</CardTitle>
             <CardDescription className="text-neutral-400">
-              Sign in to continue to FlowCatalyst
+              Sign in to continue to Flowentis
             </CardDescription>
           </CardHeader>
           <CardContent>

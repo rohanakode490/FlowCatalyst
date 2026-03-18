@@ -13,7 +13,7 @@ export default function RefundPolicyPage() {
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">1. Overview</h2>
         <p>
-          At FlowCatalyst, we want you to be satisfied with our service. This Refund Policy explains the conditions under which we offer refunds for our subscription plans.
+          At Flowentis, we want you to be satisfied with our service. This Refund Policy explains the conditions under which we offer refunds for our subscription plans.
         </p>
       </section>
 

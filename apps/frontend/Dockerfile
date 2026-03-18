@@ -14,13 +14,13 @@
 # COPY . .
 #
 # # Prune the workspace for the frontend app 
-# RUN turbo prune @flowcatalyst/frontend --docker
+# RUN turbo prune @flowentis/frontend --docker
 #
 # # Install dependencies using npm
 # RUN npm install --frozen-lockfile
 #
 # # Build the Next.js app
-# RUN npm run build --workspace=@flowcatalyst/frontend
+# RUN npm run build --workspace=@flowentis/frontend
 #
 # # Use a smaller image for production
 # FROM node:18-alpine AS runner
@@ -60,8 +60,8 @@ COPY package.json package-lock.json turbo.json ./
 # Copy the frontend app
 COPY apps/frontend ./apps/frontend
 
-# Prune the workspace to keep only what's necessary for @flowcatalyst/frontend
-RUN turbo prune --scope=@flowcatalyst/frontend --docker
+# Prune the workspace to keep only what's necessary for @flowentis/frontend
+RUN turbo prune --scope=@flowentis/frontend --docker
 
 # ====== Installer Stage ======
 FROM base AS installer
@@ -79,7 +79,7 @@ RUN npm install --omit=dev
 
 # Copy the pruned workspace and build it
 COPY --from=builder /app/out/full/ .
-RUN turbo run build --filter=@flowcatalyst/frontend...
+RUN turbo run build --filter=@flowentis/frontend...
 
 # ====== Runner Stage (Final Production Image) ======
 FROM base AS runner

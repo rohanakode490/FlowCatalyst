@@ -1,4 +1,4 @@
-import { Prisma } from "@flowcatalyst/database";
+import { Prisma } from "@flowentis/database";
 
 export async function createFreeSubscription(
   prisma: Prisma.TransactionClient,

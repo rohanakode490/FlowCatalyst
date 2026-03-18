@@ -15,7 +15,7 @@ const Navbar = ({ OnlyLogo = false }: Props) => {
       {/* Logo Section */}
       <aside className="flex items-center">
         <p className="text-3xl font-bold text-white">
-          <Link href="/">FlowCatalyst</Link>
+          <Link href="/">Flowentis</Link>
         </p>
       </aside>
       {!OnlyLogo && (

@@ -1,4 +1,4 @@
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 import { runIndeedScraper, runLinkedinScraper } from "./runners";
 import { runZap } from "../engine/executor";
 

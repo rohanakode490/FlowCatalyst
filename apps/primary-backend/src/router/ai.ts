@@ -2,7 +2,7 @@ import Together from "together-ai";
 import { z } from "zod";
 import { Router } from "express";
 import { aiRateLimiter, authMiddleware } from "../middleware";
-import { prismaClient } from "@flowcatalyst/database";
+import { prismaClient } from "@flowentis/database";
 
 const router = Router();
 

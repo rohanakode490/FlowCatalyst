@@ -1,5 +1,5 @@
 {
-  "name": "@flowcatalyst/processor",
+  "name": "@flowentis/processor",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@flowcatalyst/database": "*",
+    "@flowentis/database": "*",
     "dotenv": "^16.0.3",
     "kafkajs": "^2.2.4"
   }

@@ -11,7 +11,7 @@ COPY package.json package-lock.json turbo.json ./
 RUN npm install -g turbo
 
 # Prune the workspace for the database package
-RUN turbo prune --scope=@flowcatalyst/database --docker
+RUN turbo prune --scope=@flowentis/database --docker
 
 # Copy the pruned workspace
 COPY . .

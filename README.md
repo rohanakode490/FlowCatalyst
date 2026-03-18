@@ -1,5 +1,5 @@
 ---
-title: FlowCatalyst Server
+title: Flowentis Server
 emoji: 🚀
 colorFrom: blue
 colorTo: green
@@ -7,9 +7,9 @@ sdk: docker
 app_port: 7860
 ---
 
-# FlowCatalyst - Enterprise Workflow Automation Platform
+# Flowentis - Enterprise Workflow Automation Platform
 
-FlowCatalyst is a high-performance, scalable SaaS platform designed for seamless workflow automation. Much like Zapier, FlowCatalyst empowers users to connect disparate applications and automate repetitive tasks through "Zaps"—powerful, multi-step workflows triggered by real-time events.
+Flowentis is a high-performance, scalable SaaS platform designed for seamless workflow automation. Much like Zapier, Flowentis empowers users to connect disparate applications and automate repetitive tasks through "Zaps"—powerful, multi-step workflows triggered by real-time events.
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -32,7 +32,7 @@ FlowCatalyst is a high-performance, scalable SaaS platform designed for seamless
 
 ## 🏗️ System Architecture
 
-FlowCatalyst is built as a modern monorepo using **Turborepo**, ensuring consistency and high performance across all services.
+Flowentis is built as a modern monorepo using **Turborepo**, ensuring consistency and high performance across all services.
 
 ### Applications (`apps/`)
 

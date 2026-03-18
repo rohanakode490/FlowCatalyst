@@ -33,11 +33,11 @@ export default function Home() {
                 </Button>
 
                 <h1 className="mt-8 text-5xl md:text-7xl lg:text-6xl xl:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-600 font-sans font-bold">
-                  Automate Your Work With FlowCatalyst
+                  Automate Your Work With Flowentis
                 </h1>
 
                 <p className="mt-6 max-w-2xl text-neutral-300/90 text-lg md:text-xl leading-relaxed">
-                  FlowCatalyst is a visual automation platform that lets you
+                  Flowentis is a visual automation platform that lets you
                   connect tools like GitHub, Google Sheets, and Email to handle
                   your repetitive tasks in minutes. Build custom workflows that
                   run silently in the background, keeping your data in sync and
@@ -50,7 +50,7 @@ export default function Home() {
                   <div className="relative aspect-[16/10] w-full">
                     <Image
                       src="/app-preview.gif"
-                      alt="FlowCatalyst app preview"
+                      alt="Flowentis app preview"
                       fill
                       unoptimized
                       className="object-cover"

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
-import { Prisma, prismaClient } from "@flowcatalyst/database";
+import { Prisma, prismaClient } from "@flowentis/database";
 const path = require("path");
 const { spawn } = require("child_process");
 
@@ -237,7 +237,7 @@ const runLinkedinScraper = (
       "linkedin-scraper.py",
     );
     // const pythonCommand =
-    //   "/mnt/f/Project/FlowCatalyst/apps/hooks/venv/bin/python3";
+    //   "/mnt/f/Project/Flowentis/apps/hooks/venv/bin/python3";
     // "python3";
     const pythonCommand = process.env.VIRTUAL_ENV
       ? `${process.env.VIRTUAL_ENV}/bin/python`
