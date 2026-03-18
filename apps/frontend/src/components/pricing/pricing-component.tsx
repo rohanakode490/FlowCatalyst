@@ -41,7 +41,7 @@ export const Pricing = () => {
   // if (error) return <div>{error}</div>;
 
   return (
-    <main className="[background:radial-gradient(125%_125%_at_50%_10%,#000_35%,#223_100%)]">
+    <div>
       <section className="pt-24 pb-12">
         <div className="container px-4 py-4">
           <motion.div
@@ -64,6 +64,6 @@ export const Pricing = () => {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 };
