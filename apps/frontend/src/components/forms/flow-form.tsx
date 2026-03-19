@@ -86,9 +86,7 @@ function DynamicForm({
     })),
   );
 
-  // Local state for form data and saving status
-  const [localFormData, setLocalFormData] = useState({ ...initialData });
-  const [isSaving, setIsSaving] = useState(false);
+  // Local state for sheet options
   const [sheetOptions, setSheetOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
@@ -191,39 +189,13 @@ function DynamicForm({
   );
 
   // Handle form submission
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   // Use store's submitForm action
-  //   submitForm(nodeId, fields, schema, triggerType, onSubmit, onClose);
-  // };
-
-  // Handle auto-save on blur
-  const handleBlur = useCallback(
-    async (fieldName: string) => {
-      setIsSaving(true);
-      await submitForm(
-        nodeId,
-        fields,
-        schema,
-        triggerType,
-        (data) => {
-          onSubmit(data);
-          setLocalFormData(data); // Update local state to reflect saved data
-        },
-        () => {},
-      );
-      setIsSaving(false);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      // Use store's submitForm action
+      submitForm(nodeId, fields, schema, triggerType, onSubmit, onClose);
     },
-    [
-      nodeId,
-      fields,
-      schema,
-      triggerType,
-      onSubmit,
-      onClose,
-      localFormData,
-      submitForm,
-    ],
+    [submitForm, nodeId, fields, schema, triggerType, onSubmit, onClose],
   );
 
   // Handle adding a trigger field to the active input
@@ -366,8 +338,7 @@ function DynamicForm({
               onChange={(e) => handleInputChange(field.name, e.target.value)}
               onFocus={() => setActiveInput(field.name)} // Set active input on focus
               onBlur={() => {
-                validateField(field.name, localFormData[field.name]);
-                handleBlur(field.name);
+                validateField(field.name, nodeData[field.name]);
               }}
             />
             {/* Buttons to insert trigger fields */}
@@ -399,7 +370,7 @@ function DynamicForm({
           <div className="flex flex-col gap-2">
             <Label
               htmlFor={field.name}
-              className={isDarkMode ? "text-white" : "text-[#111827]"}
+              className="text-foreground"
             >
               {field.label}{" "}
               {field.required && <span className="text-red-500">*</span>}
@@ -413,14 +384,9 @@ function DynamicForm({
                 }
                 onChange={(e) => handleInputChange(field.name, e.target.value)}
                 onBlur={() => {
-                  validateField(field.name, localFormData[field.name]);
-                  handleBlur(field.name);
+                  validateField(field.name, nodeData[field.name]);
                 }}
-                className={`mt-1 block flex-1 p-2 border rounded-md ${
-                  isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
-                }`}
+                className="mt-1 block flex-1 p-2 border rounded-md bg-input border-border text-foreground"
               >
                 <option value="">Select an Option</option>
                 {options?.map((option) => (
@@ -512,7 +478,6 @@ function DynamicForm({
             selected={nodeData[field.name] || []}
             onChange={(selected) => {
               handleInputChange(field.name, selected);
-              handleBlur(field.name);
             }}
             label={field.label}
             required={field.required}
@@ -525,7 +490,6 @@ function DynamicForm({
             tags={nodeData[field.name] || []}
             onTagsChange={(tags) => {
               handleInputChange(field.name, tags);
-              handleBlur(field.name);
             }}
             placeholder={field.placeholder}
             label={field.label}
@@ -539,7 +503,7 @@ function DynamicForm({
             <div className="flex flex-col gap-2">
               <Label
                 htmlFor="country"
-                className={isDarkMode ? "text-white" : "text-[#111827]"}
+                className="text-foreground"
               >
                 Country{" "}
                 {field.required && <span className="text-red-500">*</span>}
@@ -552,14 +516,9 @@ function DynamicForm({
                   handleCountryChange(e.target.value);
                 }}
                 onBlur={() => {
-                  validateField("country", localFormData[field.name]);
-                  handleBlur("country");
+                  validateField("country", nodeData.country);
                 }}
-                className={`mt-1 block w-full p-2 border rounded-md ${
-                  isDarkMode
-                    ? "bg-[#1f2937] border-[#374151] text-white"
-                    : "bg-white border-[#d1d5db] text-[#111827]"
-                }`}
+                className="mt-1 block w-full p-2 border rounded-md bg-input border-border text-foreground"
                 disabled={loadingCountries}
               >
                 <option value="">Select Country</option>
@@ -570,9 +529,7 @@ function DynamicForm({
                 ))}
               </select>
               {loadingCountries && (
-                <p
-                  className={`text-sm ${isDarkMode ? "text-white" : "text-[#111827]"}`}
-                >
+                <p className="text-sm text-muted-foreground">
                   Loading countries...
                 </p>
               )}
@@ -586,7 +543,7 @@ function DynamicForm({
               <div className="flex flex-col gap-2">
                 <Label
                   htmlFor="state"
-                  className={isDarkMode ? "text-white" : "text-[#111827]"}
+                  className="text-foreground"
                 >
                   State{" "}
                 </Label>
@@ -595,14 +552,9 @@ function DynamicForm({
                   value={nodeData.state || ""}
                   onChange={(e) => handleInputChange("state", e.target.value)}
                   onBlur={() => {
-                    validateField("state", localFormData[field.name]);
-                    handleBlur("state");
+                    validateField("state", nodeData.state);
                   }}
-                  className={`mt-1 block w-full p-2 border rounded-md ${
-                    isDarkMode
-                      ? "bg-[#1f2937] border-[#374151] text-white"
-                      : "bg-white border-[#d1d5db] text-[#111827]"
-                  }`}
+                  className="mt-1 block w-full p-2 border rounded-md bg-input border-border text-foreground"
                   disabled={loadingStates}
                 >
                   <option value="">Select State</option>
@@ -613,9 +565,7 @@ function DynamicForm({
                   ))}
                 </select>
                 {loadingStates && (
-                  <p
-                    className={`text-sm ${isDarkMode ? "text-white" : "text-[#111827]"}`}
-                  >
+                  <p className="text-sm text-muted-foreground">
                     Loading states...
                   </p>
                 )}
@@ -650,29 +600,10 @@ function DynamicForm({
   }
 
   return (
-    <div className="space-y-4 overflow-y-auto">
-      {isSaving && (
-        <div className="absolute top-0 right-0 p-2">
-          <svg
-            className="animate-spin h-5 w-5 text-gray-500"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4l3.5-3.5L12 8V4a8 8 0 00-8 8h4z"
-            />
-          </svg>
-        </div>
-      )}
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 overflow-y-auto pb-4 relative"
+    >
       {fields.map((field, index) => (
         <div key={index}>
           {renderField(field)}
@@ -681,10 +612,10 @@ function DynamicForm({
           )}
         </div>
       ))}
-      {/* <Button type="submit" className="w-full"> */}
-      {/*   Save */}
-      {/* </Button> */}
-    </div>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Saving..." : "Save Configuration"}
+      </Button>
+    </form>
   );
 }
 

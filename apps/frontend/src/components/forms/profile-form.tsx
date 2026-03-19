@@ -55,7 +55,7 @@ export default function ProfileForm() {
 
         <Button
           type="submit"
-          className="self-start hover:bg-[#2F006B] hover:text-white"
+          className="self-start hover:bg-primary/90 hover:text-white"
         >
           {isLoading ? (
             <>

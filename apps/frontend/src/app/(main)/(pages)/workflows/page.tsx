@@ -34,7 +34,7 @@ function WorkflowsContent() {
   return (
     <div className="flex flex-col gap-6">
       <Button
-        className="self-start hover:bg-[#2F006B] hover:text-white ml-3 px-5 font-semibold gap-1"
+        className="self-start hover:bg-primary/90 hover:text-white ml-3 px-5 font-semibold gap-1"
         onClick={() => {
           router.push("/flow/create");
         }}

@@ -44,13 +44,13 @@ export const FlowControls = ({ onAlignNodes, zapId }: FlowControlsProps) => {
     <div className="flex gap-2">
       <Button
         onClick={onAlignNodes}
-        className="self-start hover:bg-[#3F006B] hover:text-white"
+        className="self-start hover:bg-primary/90 hover:text-white"
       >
         Align Nodes
       </Button>
       <Button
         onClick={handleSaveFlow}
-        className="self-start hover:bg-[#3F006B] hover:text-white"
+        className="self-start hover:bg-primary/90 hover:text-white"
         disabled={isSaveDisabled || isSubmitting} // Combined disabled states
       >
         {isSubmitting ? "Saving..." : "Save Flow"} {/* Show loading state */}

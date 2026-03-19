@@ -74,11 +74,11 @@ export default function LogIn() {
   return (
     <>
       <Navbar OnlyLogo={true} />
-      <div className="min-h-screen flex items-center justify-center bg-[#181825]">
-        <Card className="w-[400px] bg-[#1F1F2F] border-neutral-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-[400px] bg-card border-border">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">Welcome Back</CardTitle>
-            <CardDescription className="text-neutral-400">
+            <CardTitle className="text-2xl text-foreground">Welcome Back</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Sign in to continue to Flowentis
             </CardDescription>
           </CardHeader>
@@ -89,7 +89,7 @@ export default function LogIn() {
             {/* Signup Form  */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">
+                <Label htmlFor="email" className="text-foreground">
                   Email
                 </Label>
                 <Input
@@ -97,12 +97,12 @@ export default function LogIn() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-[#2A2A3C] border-neutral-700 text-white"
+                  className="bg-input border-border text-foreground"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">
+                <Label htmlFor="password" className="text-foreground">
                   Password
                 </Label>
                 <Input
@@ -110,7 +110,7 @@ export default function LogIn() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#2A2A3C] border-neutral-700 text-white"
+                  className="bg-input border-border text-foreground"
                   required
                 />
               </div>

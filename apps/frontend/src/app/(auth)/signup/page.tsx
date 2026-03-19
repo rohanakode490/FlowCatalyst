@@ -65,13 +65,13 @@ export default function SignUp() {
   return (
     <>
       <Navbar OnlyLogo={true} />
-      <div className="min-h-screen flex items-center justify-center bg-[#181825]">
-        <Card className="w-[400px] bg-[#1F1F2F] border-neutral-800">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-[400px] bg-card border-border">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">
+            <CardTitle className="text-2xl text-foreground">
               Create Account
             </CardTitle>
-            <CardDescription className="text-neutral-400">
+            <CardDescription className="text-muted-foreground">
               Get started with Flowentis
             </CardDescription>
           </CardHeader>
@@ -82,19 +82,19 @@ export default function SignUp() {
             {/* Signup Form  */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-white">
+                <Label htmlFor="name" className="text-foreground">
                   Full Name
                 </Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-[#2A2A3C] border-neutral-700 text-white"
+                  className="bg-input border-border text-foreground"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">
+                <Label htmlFor="email" className="text-foreground">
                   Email
                 </Label>
                 <Input
@@ -102,12 +102,12 @@ export default function SignUp() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-[#2A2A3C] border-neutral-700 text-white"
+                  className="bg-input border-border text-foreground"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">
+                <Label htmlFor="password" className="text-foreground">
                   Password
                 </Label>
                 <Input
@@ -115,7 +115,7 @@ export default function SignUp() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#2A2A3C] border-neutral-700 text-white"
+                  className="bg-input border-border text-foreground"
                   required
                 />
               </div>

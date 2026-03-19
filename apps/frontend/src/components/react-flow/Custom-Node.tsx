@@ -34,11 +34,7 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
   return (
     <>
       <div
-        className={`w-48 h-20 rounded-md border-2 shadow-md flex items-center justify-around px-3 ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-600"
-            : "bg-white border-gray-400"
-        }`}
+        className="w-48 h-20 rounded-md border-2 shadow-md flex items-center justify-around px-3 bg-card border-border"
         onClick={handleNodeClick}
       >
         {/* Delete button */}
@@ -52,20 +48,15 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
                 alert("At least 2 Flows needed");
               }
             }}
-            className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 
-        ${
-          isDarkMode
-            ? "bg-red-600 hover:bg-red-700"
-            : "bg-red-500 hover:bg-red-600"
-        }`}
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 bg-destructive hover:bg-destructive/90"
           >
-            <X className="w-4 h-4 text-white" />
+            <X className="w-4 h-4 text-destructive-foreground" />
           </button>
         )}
 
         {/* Left side: Logo */}
         <div
-          className={`rounded-full w-12 h-12 flex justify-center items-center bg-gray-400`}
+          className="rounded-full w-12 h-12 flex justify-center items-center bg-muted"
         >
           {data.image && (
             <img
@@ -79,9 +70,7 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
 
         {/* Right side: Name of the Zap */}
         <div
-          className={`text-sm font-medium truncate ${
-            isDarkMode ? "text-white" : "text-gray-900"
-          }`}
+          className="text-sm font-medium truncate text-foreground"
         >
           {data.name}
         </div>
@@ -91,13 +80,13 @@ const CustomNode = memo(({ data, id }: CustomNodeProps) => {
           <Handle
             type="target"
             position={Position.Top}
-            className={`w-12 bg-teal-500 ${isDarkMode ? "bg-teal-600" : "bg-teal-400"}`}
+            className="w-12 bg-primary"
           />
         )}
         <Handle
           type="source"
           position={Position.Bottom}
-          className={`w-12 bg-teal-500 ${isDarkMode ? "bg-teal-600" : "bg-teal-400"}`}
+          className="w-12 bg-primary"
         />
       </div>
     </>

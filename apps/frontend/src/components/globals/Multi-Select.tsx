@@ -35,36 +35,32 @@ export const MultiSelect = ({
   const customStyles = {
     control: (provided: any) => ({
       ...provided,
-      backgroundColor: isDarkMode ? "#1f2937" : "#fff",
-      borderColor: isDarkMode ? "#374151" : "#d1d5db",
-      color: isDarkMode ? "#fff" : "#111827",
+      backgroundColor: "var(--input)",
+      borderColor: "var(--border)",
+      color: "var(--foreground)",
     }),
     menu: (provided: any) => ({
       ...provided,
-      backgroundColor: isDarkMode ? "#1f2937" : "#fff",
+      backgroundColor: "var(--popover)",
     }),
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isFocused
-        ? isDarkMode
-          ? "#374151"
-          : "#d1d5db"
-        : isDarkMode
-          ? "#02081f"
-          : "#f9fafb",
-      color: isDarkMode ? "#fff" : "#505050",
+        ? "var(--accent)"
+        : "transparent",
+      color: state.isFocused ? "var(--accent-foreground)" : "var(--foreground)",
     }),
     multiValue: (provided: any) => ({
       ...provided,
-      backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
+      backgroundColor: "var(--secondary)",
     }),
     multiValueLabel: (provided: any) => ({
       ...provided,
-      color: isDarkMode ? "#fff" : "#111827",
+      color: "var(--secondary-foreground)",
     }),
     input: (provided: any) => ({
       ...provided,
-      color: isDarkMode ? "#fff" : "#111827",
+      color: "var(--foreground)",
     }),
   };
 

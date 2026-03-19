@@ -80,10 +80,10 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="relative bg-[#f9fafb] dark:bg-[#02081f] border border-[#e5e7eb] dark:border-[#1f2937] rounded-md shadow-sm p-4">
+    <div className="relative bg-background border border-border rounded-md shadow-sm p-4">
       {/* Prompt Counter */}
       {!limits.isPro && (
-        <div className="absolute top-2 right-2 bg-[#f9fafb] dark:bg-[#1f2937] px-2 py-1 rounded-full text-xs text-[#505050] dark:text-gray-300">
+        <div className="absolute top-2 right-2 bg-secondary px-2 py-1 rounded-full text-xs text-muted-foreground">
           <span className="font-medium">{limits.remaining}</span> prompts left
         </div>
       )}
@@ -94,7 +94,7 @@ export const ChatInterface = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe your workflow (e.g., 'When I get new GitHub issues, email me')"
-          className="w-full p-2 border border-[#e5e7eb] dark:border-[#374151] rounded-md bg-white dark:bg-[#1f2937] text-[#111827] dark:text-gray-100 placeholder-[#9ca3af] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+          className="w-full p-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none transition-all resize-none"
           rows={3}
           disabled={loading || (!limits.isPro && limits.remaining <= 0)}
         />
@@ -102,12 +102,12 @@ export const ChatInterface = ({
         <button
           type="submit"
           disabled={loading || (!limits.isPro && limits.remaining <= 0)}
-          className="w-full px-4 py-2 bg-[#f9fafb] dark:bg-[#1f2937] text-[#505050] dark:text-gray-300 border border-[#e5e7eb] dark:border-[#374151] rounded-md hover:bg-[#d1d5db] dark:hover:bg-[#374151] hover:text-white dark:hover:text-white transition-all duration-200 ease-in-out flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 ease-in-out flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
               <svg
-                className="animate-spin h-4 w-4 text-[#505050] dark:text-gray-300"
+                className="animate-spin h-4 w-4 text-muted-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -138,7 +138,7 @@ export const ChatInterface = ({
 
       {/* Pro Indicator */}
       {limits.isPro && (
-        <div className="mt-3 text-center text-xs text-[#9ca3af] dark:text-gray-400">
+        <div className="mt-3 text-center text-xs text-muted-foreground">
           ✨ You're on a Pro plan - unlimited prompts!
         </div>
       )}

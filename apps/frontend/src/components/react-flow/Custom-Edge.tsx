@@ -58,9 +58,7 @@ const CustomEdge = memo(
           path={edgePath}
           markerEnd={markerEnd}
           style={style}
-          className={`stroke-[2px] ${
-            isDarkMode ? "stroke-white" : "stroke-black"
-          }`}
+          className="stroke-[2px] stroke-foreground"
         />
         <EdgeLabelRenderer>
           <div
@@ -73,12 +71,7 @@ const CustomEdge = memo(
             }}
           >
             <button
-              className={`flex items-center justify-center w-8 h-8 border-[3px] cursor-pointer rounded-full 
-            ${
-              isDarkMode
-                ? "bg-[#02081f] text-white border-[#1f2937] hover:bg-[#374151]"
-                : "bg-[#f9fafb] text-[#505050] border-[#e5e7eb] hover:bg-[#d1d5db] hover:text-white"
-            }`}
+              className="flex items-center justify-center w-8 h-8 border-[3px] cursor-pointer rounded-full bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
               onClick={onEdgeClick}
             >
               <Plus className="w-4 h-4" />

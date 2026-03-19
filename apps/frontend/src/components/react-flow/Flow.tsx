@@ -202,16 +202,16 @@ export default function Flow({ zapId }: FlowProps) {
 
         {/* Chat Interface */}
         {showChat && (
-          <div className="absolute top-48 left-8 w-96 bg-white dark:bg-[#1f2937] border border-[#e5e7eb] dark:border-[#374151] rounded-md shadow-lg">
-            <div className="flex justify-between items-center p-3 border-b border-[#e5e7eb] dark:border-[#374151]">
-              <h3 className="font-medium text-[#111827] dark:text-gray-100">
+          <div className="absolute top-48 left-8 w-96 bg-card border border-border rounded-md shadow-lg">
+            <div className="flex justify-between items-center p-3 border-b border-border">
+              <h3 className="font-medium text-foreground">
                 AI Workflow Assistant
               </h3>
               <button
                 onClick={toggleChat}
-                className="p-1 rounded-full hover:bg-[#f9fafb] dark:hover:bg-[#374151] transition-colors"
+                className="p-1 rounded-full hover:bg-accent transition-colors"
               >
-                <X className="w-4 h-4 text-[#6b7280] dark:text-gray-300" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="p-4">
@@ -224,9 +224,9 @@ export default function Flow({ zapId }: FlowProps) {
         {!showChat && (
           <button
             onClick={toggleChat}
-            className="absolute top-48 left-7 p-2 bg-white dark:bg-[#1f2937] border border-[#e5e7eb] dark:border-[#374151] rounded-md shadow-sm hover:bg-[#f9fafb] dark:hover:bg-[#374151] transition-colors"
+            className="absolute top-48 left-7 p-2 bg-card border border-border rounded-md shadow-sm hover:bg-accent transition-colors"
           >
-            <span className="text-sm text-[#111827] dark:text-gray-100">
+            <span className="text-sm text-foreground">
               Open AI Assistant
             </span>
           </button>

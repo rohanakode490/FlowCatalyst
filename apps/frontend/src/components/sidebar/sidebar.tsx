@@ -36,7 +36,7 @@ export default function Sidebar() {
                       className={clsx(
                         "group h-6 w-8 flex items-center justify-center scale-[1.5] rounded-lg p-[3px] cursor-pointer",
                         {
-                          "dark:bg-[#4F006B] bg-[#EEE0FF]":
+                          "bg-primary":
                             pathName === menuItem.href,
                         },
                       )}

@@ -42,36 +42,24 @@ export const TagInput = ({
     <div className="space-y-2">
       {label && (
         <label
-          className={`block text-sm font-medium ${isDarkMode ? "text-gray-200" : "text-gray-700"}`}
+          className="block text-sm font-medium text-foreground"
         >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <div
-        className={`flex flex-wrap gap-2 p-2 border rounded-md ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-gray-300"
-        }`}
+        className="flex flex-wrap gap-2 p-2 border rounded-md bg-input border-border"
       >
         {tags.map((tag, index) => (
           <div
             key={index}
-            className={`flex items-center gap-1 px-2 py-1 text-sm rounded-full ${
-              isDarkMode
-                ? "bg-gray-700 text-gray-200"
-                : "bg-gray-100 text-gray-700"
-            }`}
+            className="flex items-center gap-1 px-2 py-1 text-sm rounded-full bg-secondary text-secondary-foreground"
           >
             <span>{tag}</span>
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className={`${
-                isDarkMode
-                  ? "text-gray-400 hover:text-red-400"
-                  : "text-gray-500 hover:text-red-500"
-              }`}
+              className="text-muted-foreground hover:text-destructive"
             >
               <X className="w-4 h-4" />
             </button>
@@ -83,13 +71,7 @@ export const TagInput = ({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || "Type and press Enter..."}
-          className={`flex-1 outline-none bg-transparent ${
-            isDarkMode ? "text-gray-200" : "text-gray-900"
-          }`}
-          style={{
-            color: isDarkMode ? "#e5e7eb" : "#111827",
-            caretColor: isDarkMode ? "#e5e7eb" : "#111827",
-          }}
+          className="flex-1 outline-none bg-transparent text-foreground"
         />
       </div>
     </div>
