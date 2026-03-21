@@ -45,8 +45,6 @@ function DynamicForm({
   onClose,
   nodeId,
 }: DynamicFormProps) {
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
   const params = useParams();
   const router = useRouter();
   const zapId = params.zapId as string;
@@ -56,6 +54,7 @@ function DynamicForm({
     form: {
       formData,
       errors,
+      isSubmitting,
       activeInput,
       dynamicFields,
       setFormData,
@@ -456,13 +455,13 @@ function DynamicForm({
               </p>
             )}
             {field.description && (
-              <p className="text-sm text-gray-300 mx-1 my-4 whitespace-pre-line">
+              <p className="text-sm text-muted-foreground mx-1 my-4 whitespace-pre-line">
                 {field.description}
                 <a
                   href={field.docsLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
+                  className="text-primary hover:underline ml-1"
                 >
                   Learn more
                 </a>

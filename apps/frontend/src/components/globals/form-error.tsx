@@ -11,10 +11,9 @@ export default function Error(props: ErrorProps) {
   return (
     <Alert
       variant="destructive"
-      className={`mb-4 border-red-200 text-red-300 ${props.className}`}
+      className={`mb-4 border-destructive/20 bg-destructive/10 text-destructive ${props.className}`}
     >
-      {/* @ts-ignore */}
-      <AlertCircle color="#fca5a5" className="h-5 w-5" />
+      <AlertCircle className="h-5 w-5" />
       <AlertTitle className="font-bold">Error</AlertTitle>
       <AlertDescription className="text-sm">
         {props.errorMessage}

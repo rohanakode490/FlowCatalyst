@@ -11,7 +11,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-black [background:radial-gradient(125%_125%_at_50%_10%,#000_35%,#223_100%)] bg-fixed">
+    <main className="relative min-h-screen bg-background [background:radial-gradient(125%_125%_at_50%_10%,var(--background)_35%,var(--secondary)_100%)] bg-fixed">
       <Navbar />
 
       {/* Banner  */}
@@ -22,21 +22,21 @@ export default function Home() {
               <div className="flex flex-col items-start">
                 <Button
                   size={"lg"}
-                  className="p-8 text-2xl w-full sm:w-fit border-t-2 rounded-full border-[#4D4D4D] bg-[#1F1F1F] hover:bg-white group transition-all flex items-center justify-center gap-4 hover:shadow-xl hover:shadow-neutral-500 duration-500"
+                  className="p-8 text-2xl w-full sm:w-fit border-t-2 rounded-full border-border bg-card hover:bg-accent group transition-all flex items-center justify-center gap-4 hover:shadow-xl hover:shadow-primary/50 duration-500"
                   asChild
                 >
                   <Link href="/login">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-neutral-500 to-neutral-600 md:text-center font-sans group-hover:bg-gradient-to-r group-hover:from-black goup-hover:to-black">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent md:text-center font-sans group-hover:from-foreground group-hover:to-foreground transition-all">
                       Start For Free Today
                     </span>
                   </Link>
                 </Button>
 
-                <h1 className="mt-8 text-5xl md:text-7xl lg:text-6xl xl:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-600 font-sans font-bold">
+                <h1 className="mt-8 text-5xl md:text-7xl lg:text-6xl xl:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-primary font-sans font-bold">
                   Automate Your Work With Flowentis
                 </h1>
 
-                <p className="mt-6 max-w-2xl text-neutral-300/90 text-lg md:text-xl leading-relaxed">
+                <p className="mt-6 max-w-2xl text-muted-foreground text-lg md:text-xl leading-relaxed">
                   Flowentis is a visual automation platform that lets you
                   connect tools like GitHub, Google Sheets, and Email to handle
                   your repetitive tasks in minutes. Build custom workflows that
@@ -46,7 +46,7 @@ export default function Home() {
               </div>
 
               <div className="lg:justify-self-end w-full">
-                <div className="relative w-full max-w-2xl mx-auto lg:mx-0 rounded-3xl border border-white/10 bg-white/5 overflow-hidden">
+                <div className="relative w-full max-w-2xl mx-auto lg:mx-0 rounded-3xl border border-border bg-card/50 overflow-hidden">
                   <div className="relative aspect-[16/10] w-full">
                     <Image
                       src="/app-preview.gif"
@@ -76,7 +76,7 @@ export default function Home() {
 
       <section>
         <div className="container px-4">
-          <h2 className="text-3xl font-bold text-center">
+          <h2 className="text-3xl font-bold text-center text-foreground">
             Popular Integrations
           </h2>
 

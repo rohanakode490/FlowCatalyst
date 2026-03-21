@@ -63,11 +63,11 @@ export const ChatInterface = ({
       toast.error(
         <div className="flex flex-col space-y-1">
           <strong className="font-medium">🔒 {data.error}</strong>
-          <span className="text-sm text-gray-600">{data.message}</span>
+          <span className="text-sm text-muted-foreground">{data.message}</span>
           {data.upgradeUrl && (
             <a
               href={data.upgradeUrl}
-              className="text-blue-500 hover:text-blue-600 hover:underline text-sm"
+              className="text-primary hover:text-primary/80 hover:underline text-sm font-semibold"
             >
               Upgrade to Pro →
             </a>
@@ -80,11 +80,11 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="relative bg-background border border-border rounded-md shadow-sm p-4">
+    <div className="relative bg-card border border-border rounded-md shadow-sm p-4">
       {/* Prompt Counter */}
       {!limits.isPro && (
-        <div className="absolute top-2 right-2 bg-secondary px-2 py-1 rounded-full text-xs text-muted-foreground">
-          <span className="font-medium">{limits.remaining}</span> prompts left
+        <div className="absolute top-2 right-2 bg-primary/10 border border-primary/20 px-2 py-1 rounded-full text-[10px] text-primary">
+          <span className="font-bold">{limits.remaining}</span> prompts left
         </div>
       )}
 
@@ -94,7 +94,7 @@ export const ChatInterface = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe your workflow (e.g., 'When I get new GitHub issues, email me')"
-          className="w-full p-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:border-primary outline-none transition-all resize-none"
+          className="w-full p-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all resize-none text-sm"
           rows={3}
           disabled={loading || (!limits.isPro && limits.remaining <= 0)}
         />
@@ -102,12 +102,12 @@ export const ChatInterface = ({
         <button
           type="submit"
           disabled={loading || (!limits.isPro && limits.remaining <= 0)}
-          className="w-full px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 ease-in-out flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-primary text-primary-foreground border border-transparent rounded-md hover:bg-primary/90 transition-all duration-200 ease-in-out flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
           {loading ? (
             <>
               <svg
-                className="animate-spin h-4 w-4 text-muted-foreground"
+                className="animate-spin h-4 w-4 text-primary-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -129,7 +129,7 @@ export const ChatInterface = ({
               <span>Generating...</span>
             </>
           ) : (
-            <span>
+            <span className="font-semibold">
               Generate Workflow {!limits.isPro && limits.remaining <= 0 && "❌"}
             </span>
           )}
@@ -138,7 +138,7 @@ export const ChatInterface = ({
 
       {/* Pro Indicator */}
       {limits.isPro && (
-        <div className="mt-3 text-center text-xs text-muted-foreground">
+        <div className="mt-3 text-center text-xs text-primary font-medium">
           ✨ You're on a Pro plan - unlimited prompts!
         </div>
       )}

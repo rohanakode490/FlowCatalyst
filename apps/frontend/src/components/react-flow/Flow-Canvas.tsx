@@ -56,7 +56,7 @@ export const FlowCanvas = ({
   return (
     <div className="flex-1 relative">
       <ReactFlow {...reactFlowProps}>
-        <Background color={isDarkMode ? "#3e1e2f" : "#fff"} gap={16} />
+        <Background color={isDarkMode ? "var(--border)" : "var(--muted)"} gap={16} />
       </ReactFlow>
     </div>
   );

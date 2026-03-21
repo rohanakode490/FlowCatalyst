@@ -98,13 +98,13 @@ export const Card = ({
         boxShadow:
           "0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003",
       }}
-      className={`relative z-10 max-w-5xl mt-10 md:mt-12 mx-auto h-[30rem] md:h-[40rem] w-full p-3 sm:p-6 bg-[#222222] rounded-[30px] shadow-2xl ${
+      className={`relative z-10 max-w-5xl mt-10 md:mt-12 mx-auto h-[30rem] md:h-[40rem] w-full p-3 sm:p-6 bg-card border border-border rounded-[30px] shadow-2xl ${
         className ?? ""
       }`}
     >
       <div
         className="relative w-full h-full rounded-2xl overflow-hidden 
-        bg-[#333333] 
+        bg-muted 
         before:content-[''] before:block before:pt-[56.25%] sm:before:pt-[45%] md:before:pt-[40%]"
       >
         <Image

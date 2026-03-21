@@ -20,7 +20,7 @@ export default function FlowCreatePage() {
   }, []);
 
   return (
-    <Heading heading="Create">
+    <Heading heading="Create Workflow">
       <ReactFlowProvider>
         <Flow />
       </ReactFlowProvider>

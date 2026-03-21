@@ -68,10 +68,10 @@ interface FlowState {
 }
 
 interface WebhookState {
-  webhooks: Webhook[];
+  availableTriggers: Webhook[];
+  availableActions: Webhook[];
   selectedWebhook: Webhook | null;
   isDialogOpen: boolean;
-  setWebhooks: (webhooks: Webhook[]) => void;
   setSelectedWebhook: (webhook: Webhook | null) => void;
   setIsDialogOpen: (open: boolean) => void;
   fetchWebhooks: (type: "action" | "trigger") => Promise<void>;
@@ -549,13 +549,10 @@ const useStore = createWithEqualityFn<AppState>()(
       },
     },
     webhook: {
-      webhooks: [],
+      availableTriggers: [],
+      availableActions: [],
       selectedWebhook: null,
       isDialogOpen: false,
-      setWebhooks: (webhooks) =>
-        set((state) => {
-          state.webhook.webhooks = webhooks;
-        }),
       setSelectedWebhook: (webhook) =>
         set((state) => {
           state.webhook.selectedWebhook = webhook;
@@ -569,12 +566,16 @@ const useStore = createWithEqualityFn<AppState>()(
           const response = await api.get(
             type === "action" ? "/action/available" : "/trigger/available",
           );
-          const webhooks =
+          const results =
             type === "action"
               ? response.data.availableActions
               : response.data.availableTriggers;
           set((state) => {
-            state.webhook.webhooks = webhooks;
+            if (type === "action") {
+              state.webhook.availableActions = results;
+            } else {
+              state.webhook.availableTriggers = results;
+            }
           });
         } catch (error) {
           console.error(`Failed to fetch ${type}s:`, error);

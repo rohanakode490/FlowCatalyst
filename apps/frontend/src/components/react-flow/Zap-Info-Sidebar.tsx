@@ -114,7 +114,7 @@ export const Sidebar = ({
     >
       {/* Resize Handle */}
       <div className="resize-handle absolute top-0 bottom-0 left-0 w-2 cursor-col-resize hover:bg-gray-300 transition-colors" />
-      <div className="p-4 flex-1 overflow-y-auto">
+      <div className="p-4 flex-1 overflow-y-auto mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">
             Configure {selectedNode.data.name}
@@ -139,7 +139,7 @@ export const Sidebar = ({
             variant="outline"
             className="w-full mt-4"
           >
-            Change Webhook
+            Change Trigger
           </Button>
         </div>
       </div>

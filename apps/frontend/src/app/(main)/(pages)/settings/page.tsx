@@ -7,8 +7,8 @@ export default function SettingPage() {
     <Header heading="Setting">
       <div className="flex flex-col gap-10 p-6">
         <div>
-          <h2 className="text-2xl font-bold">User Profile</h2>
-          <p className="text-base text-white/50">
+          <h2 className="text-2xl font-bold text-foreground">User Profile</h2>
+          <p className="text-base text-muted-foreground">
             Add or Update your Information
           </p>
         </div>

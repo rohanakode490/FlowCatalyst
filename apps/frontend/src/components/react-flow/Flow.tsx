@@ -244,6 +244,7 @@ export default function Flow({ zapId }: FlowProps) {
         {/* Conditionally Render Sidebar Panel */}
         {selectedNode && !isDialogOpen && (
           <Sidebar
+            key={selectedNode.id}
             selectedNode={selectedNode}
             onClose={() => setSelectedNodeId("")}
             openDialog={() => handleOpenDialog()}

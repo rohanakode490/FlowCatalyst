@@ -17,10 +17,9 @@ export default function Sidebar() {
   const pathName = usePathname();
 
   return (
-    <nav className="dark:bg-black h-screen justify-between flex items-center flex-col gap-10 py-6 px-4">
+    <nav className="bg-background h-screen justify-between flex items-center flex-col gap-10 py-6 px-4 border-r border-border">
       <div className="flex items-center justify-center flex-col gap-8">
-        {/* TODO: Add Logo */}
-        <Link className="flex font-bold flex-row py-2" href="/">
+        <Link className="flex font-bold flex-row py-2 text-foreground" href="/">
           Flow
         </Link>
 
@@ -34,9 +33,9 @@ export default function Sidebar() {
                     <Link
                       href={menuItem.href}
                       className={clsx(
-                        "group h-6 w-8 flex items-center justify-center scale-[1.5] rounded-lg p-[3px] cursor-pointer",
+                        "group h-6 w-8 flex items-center justify-center scale-[1.5] rounded-lg p-[3px] cursor-pointer transition-all",
                         {
-                          "bg-primary":
+                          "bg-primary shadow-lg shadow-primary/30":
                             pathName === menuItem.href,
                         },
                       )}
@@ -49,9 +48,9 @@ export default function Sidebar() {
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className={`bg-black/10 backdrop-blur-xl ${pathName == menuItem.href ? "ml-2" : ""}`}
+                  className={`bg-background/80 backdrop-blur-xl border-border ${pathName == menuItem.href ? "ml-2" : ""}`}
                 >
-                  <p>{menuItem.name}</p>
+                  <p className="text-foreground">{menuItem.name}</p>
                 </TooltipContent>
               </Tooltip>
             </ul>

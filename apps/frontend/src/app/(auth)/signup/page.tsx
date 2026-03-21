@@ -128,6 +128,7 @@ export default function SignUp() {
                 type="button"
                 onClick={handleGoogleLogin}
                 className="w-full"
+                variant="outline"
               >
                 <FcGoogle className="text-lg" />
                 <span>Sign Up with Google</span>
@@ -136,6 +137,7 @@ export default function SignUp() {
                 type="button"
                 onClick={handleGithubLogin}
                 className="w-full"
+                variant="outline"
               >
                 <SiGithub className="text-lg" />
                 <span>Sign Up with Github</span>
@@ -145,7 +147,7 @@ export default function SignUp() {
             <div className="mt-4 text-center">
               <a
                 href="/login"
-                className="text-sm text-neutral-400 hover:text-white"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 Already have an account? Sign in
               </a>

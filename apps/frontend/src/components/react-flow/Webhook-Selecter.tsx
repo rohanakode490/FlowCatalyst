@@ -13,7 +13,7 @@ interface WebhookSelectorProps {
 function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
   const {
     flow: { nodes, setTriggerName },
-    webhook: { webhooks, fetchWebhooks },
+    webhook: { availableTriggers, availableActions, fetchWebhooks },
     ui: { addToast },
     user: {
       userSubscription,
@@ -22,6 +22,8 @@ function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
       fetchUserTriggers,
     },
   } = useStore();
+
+  const webhooks = type === "action" ? availableActions : availableTriggers;
 
   // Fetch available actions or triggers based on the type
   useEffect(() => {
@@ -83,16 +85,17 @@ function WebhookSelector({ onSelect, type }: WebhookSelectorProps) {
               className={`w-full ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
               <Button
-                className={`w-full flex items-center justify-center p-3 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
+                variant="outline"
+                className={`w-full flex items-center justify-start gap-3 p-4 border rounded-lg hover:bg-accent hover:text-accent-foreground transition-all duration-200
                   ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                 disabled={isDisabled}
               >
                 <img
                   src={webhook.image}
                   alt={webhook.name}
-                  className="w-8 h-8 rounded-full"
+                  className="w-10 h-10 rounded-full"
                 />
-                <span className="text-sm font-medium">{webhook.name}</span>
+                <span className="text-base font-semibold">{webhook.name}</span>
               </Button>
             </div>
           );

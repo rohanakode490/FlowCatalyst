@@ -68,13 +68,13 @@ const ConnectionCard: React.FC<ConnectionCardProps> = ({
       </CardHeader>
       <div className="flex flex-col items-center gap-2 p-4">
         {connected[type] ? (
-          <div className="border-bg-primary rounded-lg border-2 px-3 py-2 font-bold text-white">
+          <div className="border-primary rounded-lg border-2 px-3 py-2 font-bold text-primary">
             Connected
           </div>
         ) : (
           <button
             onClick={onConnect}
-            className="rounded-lg bg-primary p-2 font-bold text-primary-foreground"
+            className="rounded-lg bg-primary p-2 font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Connect
           </button>
@@ -228,7 +228,7 @@ const Connections: React.FC = () => {
                   <button
                     key={connection.title}
                     onClick={() => handleDisconnect(connection.title)}
-                    className="m-2 rounded-lg bg-red-500 p-2 font-bold text-white"
+                    className="m-2 rounded-lg bg-destructive p-2 font-bold text-destructive-foreground hover:bg-destructive/90 transition-colors"
                   >
                     Disconnect {connection.title}
                   </button>

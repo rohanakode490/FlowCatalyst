@@ -120,7 +120,8 @@ export default function ZapTable({ zaps }: { zaps: Zap[] }) {
               <TableCell>
                 <Button
                   onClick={() => setZapToDelete(zap.id)}
-                  className="text-red-600 hover:text-red-700"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
