@@ -102,7 +102,7 @@ router.post("/login", async (req, res) => {
 
   // Only set domain in production (for subdomain support)
   if (process.env.NODE_ENV === "production") {
-    cookieOptions.domain = ".rohanakode.dev";
+    cookieOptions.domain = "flowentis.in";
   }
 
   res.cookie("token", token, cookieOptions);

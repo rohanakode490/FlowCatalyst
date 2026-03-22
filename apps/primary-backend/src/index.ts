@@ -65,7 +65,7 @@ app.use(
       httpOnly: true, // Prevent access from JavaScript
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS
       sameSite: "none",
-      domain: ".rohanakode.dev",
+      domain: "flowentis.in",
     },
   }),
 );
