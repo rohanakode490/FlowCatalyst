@@ -108,7 +108,7 @@ export const Card = ({
         before:content-[''] before:block before:pt-[56.25%] sm:before:pt-[45%] md:before:pt-[40%]"
       >
         <Image
-          src="/temp-banner.png"
+          src="/banner.png"
           fill
           alt="bannerImage"
           priority
@@ -117,7 +117,7 @@ export const Card = ({
          (max-width: 768px) 90vw,
          (max-width: 1024px) 80vw,
          75vw"
-          className="object-cover"
+          className="object-fill"
           style={{
             position: "absolute",
             top: "50%",

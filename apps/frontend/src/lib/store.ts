@@ -526,7 +526,7 @@ const useStore = createWithEqualityFn<AppState>()(
               headers: { Authorization: `Bearer ${token}` },
             });
             set((state) => {
-              state.ui.addToast("Zap updated successfully!", "success");
+              state.ui.addToast("Workflow updated successfully!", "success");
             });
           } else {
             const response = await api.post(
@@ -535,7 +535,7 @@ const useStore = createWithEqualityFn<AppState>()(
               { headers: { Authorization: `Bearer ${token}` } },
             );
             set((state) => {
-              state.ui.addToast("Zap created successfully!", "success");
+              state.ui.addToast("Workflow created successfully!", "success");
             });
             await get().zap.fetchZaps();
             return response.data.zapId;

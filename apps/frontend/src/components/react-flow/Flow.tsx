@@ -189,7 +189,7 @@ export default function Flow({ zapId }: FlowProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex w-[90vw] h-[90vh] overflow-hidden">
+      <div className="flex w-full h-[95vh] overflow-hidden">
         <FlowCanvas
           nodes={nodesWithHandlers}
           edges={edgesWithHandlers}
