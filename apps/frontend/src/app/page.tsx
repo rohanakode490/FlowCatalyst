@@ -7,7 +7,6 @@ import { Integrations } from "@/lib/constant";
 import { Footer } from "@/components/footer/footer";
 import { Pricing } from "@/components/pricing/pricing-component";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Home() {
   return (
@@ -48,13 +47,13 @@ export default function Home() {
               <div className="lg:justify-self-end w-full">
                 <div className="relative w-full max-w-2xl mx-auto lg:mx-0 rounded-3xl border border-border bg-card/50 overflow-hidden">
                   <div className="relative aspect-[16/10] w-full">
-                    <Image
-                      src="/app-preview.gif"
-                      alt="Flowentis app preview"
-                      fill
-                      unoptimized
-                      className="object-cover"
-                      priority
+                    <video
+                      src="/app-preview.webm"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="object-cover w-full h-full"
                     />
                   </div>
                 </div>
