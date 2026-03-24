@@ -46,14 +46,14 @@ export default function Home() {
 
               <div className="lg:justify-self-end w-full">
                 <div className="relative w-full max-w-2xl mx-auto lg:mx-0 rounded-3xl border border-border bg-card/50 overflow-hidden">
-                  <div className="relative aspect-[16/10] w-full">
+                  <div className="relative w-full">
                     <video
                       src="/app-preview.webm"
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="object-cover w-full h-full"
+                      className="object-contain w-full h-full"
                     />
                   </div>
                 </div>
