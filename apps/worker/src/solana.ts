@@ -8,10 +8,18 @@ import {
 } from "@solana/web3.js";
 import bs58 from "bs58";
 
+/**
+ * Transfers SOL from one account to another.
+ * @param toPublicKey The recipient's public key
+ * @param amountInSol The amount of SOL to transfer
+ * @param rpcUrl The RPC endpoint URL
+ * @param privateKeyBase58 The sender's private key (Base58 encoded)
+ */
 export async function transferSOL(
   toPublicKey: string | PublicKey,
   amountInSol: number,
   rpcUrl: string = "https://api.mainnet-beta.solana.com",
+  privateKeyBase58?: string,
 ) {
   try {
     // Validate inputs
@@ -19,14 +27,15 @@ export async function transferSOL(
       throw new Error("Amount must be greater than 0");
     }
 
-    // Load the private key from the .env file
-    const privateKeyBase58 = process.env.SOLANA_PRIVATE_KEY;
-    if (!privateKeyBase58) {
-      throw new Error("Private key not found in .env file");
+    // Use the provided private key, or fallback to the .env key (legacy/system default)
+    const activePrivateKey = privateKeyBase58 || process.env.SOLANA_PRIVATE_KEY;
+
+    if (!activePrivateKey) {
+      throw new Error("No Solana private key provided or found in environment");
     }
 
     // Convert the private key from base58 to Uint8Array
-    const fromPrivateKey = bs58.decode(privateKeyBase58);
+    const fromPrivateKey = bs58.decode(activePrivateKey);
     const senderKeypair = Keypair.fromSecretKey(fromPrivateKey);
 
     // Connect to the Solana network
@@ -39,7 +48,7 @@ export async function transferSOL(
         : toPublicKey;
 
     // Convert SOL to lamports (1 SOL = 1,000,000,000 lamports)
-    const lamports = amountInSol * 1e9;
+    const lamports = Math.round(amountInSol * 1e9);
 
     // Create a transfer instruction
     const transferInstruction = SystemProgram.transfer({
@@ -55,6 +64,8 @@ export async function transferSOL(
     const signature = await sendAndConfirmTransaction(connection, transaction, [
       senderKeypair,
     ]);
+    
+    return signature;
   } catch (error) {
     console.error("SOL transfer failed:", error);
     throw error;

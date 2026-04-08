@@ -5,10 +5,43 @@ import { prismaClient } from "@flowentis/database";
 import { JWT_PASSWORD } from "../config";
 import jwt from "jsonwebtoken";
 import { createFreeSubscription } from "../utis/subscription";
+import { encrypt } from "../utils/crypto";
 const passport = require("passport");
 const bcrypt = require("bcryptjs");
 
 const router = Router();
+
+router.post("/solana-key", authMiddleware, async (req, res) => {
+  try {
+    //@ts-ignore
+    const userId = req.id;
+    const { privateKey } = req.body;
+
+    if (!privateKey) {
+      return res.status(400).json({ message: "Private key is required" });
+    }
+
+    // This key should ideally be fetched from Infisical at startup and stored in a config
+    const masterKey = process.env.SOLANA_MASTER_KEY;
+    
+    if (!masterKey) {
+      console.error("SOLANA_MASTER_KEY not found in environment");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
+    const encryptedKey = encrypt(privateKey, masterKey);
+
+    await prismaClient.user.update({
+      where: { id: userId },
+      data: { solanaPrivateKey: encryptedKey }
+    });
+
+    return res.json({ message: "Solana key saved securely" });
+  } catch (error) {
+    console.error("Error saving Solana key:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 router.post("/signup", async (req, res) => {
   const body = req.body;

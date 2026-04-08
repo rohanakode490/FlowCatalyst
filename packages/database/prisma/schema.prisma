@@ -34,6 +34,7 @@ model User {
   cashfreeCustomerId String?        @unique
   googleRefreshToken String?        @unique
   aiPromptCount      Int            @default(0)
+  solanaPrivateKey   String?
   subscriptions      Subscription[]
   sessions           Session[]
   zaps               Zap[]

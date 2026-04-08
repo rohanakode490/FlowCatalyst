@@ -6,6 +6,7 @@ import { prismaClient } from "@flowentis/database";
 import { parseDynamicFields } from "./parser";
 import { sendEmail } from "./email";
 import { transferSOL } from "./solana";
+import { decrypt } from "./utils/crypto";
 import { loadTemplate, renderTemplate } from "./templateLoader";
 import {
   appendColumnToSheet,
@@ -184,7 +185,27 @@ async function main() {
           parseJson(dynamicFieldsVal),
         );
         console.log("🪙 Processing Solana transfer:", SolanaData);
-        await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount);
+
+        // Fetch the user's encrypted private key
+        const user = await prismaClient.user.findUnique({
+          where: { id: zapRunDetails?.zap.userId },
+          select: { solanaPrivateKey: true }
+        });
+
+        if (!user?.solanaPrivateKey) {
+          throw new Error("User has not configured a Solana private key");
+        }
+
+        const masterKey = process.env.SOLANA_MASTER_KEY;
+        if (!masterKey) {
+          throw new Error("SOLANA_MASTER_KEY not found in worker environment");
+        }
+
+        // Decrypt the user's private key
+        const decryptedUserKey = decrypt(user.solanaPrivateKey, masterKey);
+
+        await transferSOL(SolanaData.ToSolanaAddress, SolanaData.Amount, undefined, decryptedUserKey);
+        
         console.log("✅ Solana transfer completed:", {
           to: SolanaData.ToSolanaAddress,
           amount: SolanaData.Amount,
