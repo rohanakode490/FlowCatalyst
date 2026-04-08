@@ -30,7 +30,7 @@ export const pricingOptions = [
       "Basic Triggers: GitHub, LinkedIn",
       "Basic Actions: Email, Solana",
       "3 automated workflows",
-      "Daily limit: 10 job fetches.",
+      "Daily limit: 20 job fetches.",
     ],
   },
   {

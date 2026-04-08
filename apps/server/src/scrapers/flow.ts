@@ -9,12 +9,31 @@ export const executeScrapingFlow = async (
   try {
     const trigger = await prismaClient.trigger.findUnique({
       where: { id: triggerId },
-      include: { zap: true },
+      include: {
+        zap: true,
+        user: {
+          include: {
+            subscriptions: {
+              where: { status: "active" },
+              include: { plan: true },
+            },
+          },
+        },
+      },
     });
 
     if (!trigger || !trigger.metadata) return [];
 
+    const isPro = trigger.user.subscriptions.some(
+      (sub) => sub.plan.name === "Pro",
+    );
+    const tierLimit = isPro ? 100 : 20;
+
     const metadata = trigger.metadata as any;
+    const limit = metadata.limit
+      ? Math.min(metadata.limit, tierLimit)
+      : tierLimit;
+
     const location = metadata.state
       ? `${metadata.state}, ${metadata.country || "USA"}`
       : metadata.country || "USA";
@@ -25,7 +44,7 @@ export const executeScrapingFlow = async (
         metadata.keywords?.join(" OR ") || "",
         location,
         metadata.country || "USA",
-        metadata.limit || 10,
+        limit,
         metadata.is_remote || false,
         metadata.job_type || "",
         metadata.hours_old || 168,
@@ -34,7 +53,7 @@ export const executeScrapingFlow = async (
       jobs = await runLinkedinScraper(
         metadata.keywords || [],
         location,
-        metadata.limit || 10,
+        limit,
         0,
         metadata.experience || [],
         metadata.remote || false,
